@@ -1,24 +1,95 @@
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, FileText, Users, CheckSquare, Clock } from "lucide-react"
+import { sessionManager } from "@/lib/session-manager"
+import type { AuthUser } from "@/lib/session-manager"
 
 export default function DashboardPage() {
-  // En una aplicación real, obtendríamos el rol del usuario desde la sesión
-  // Por ahora, simulamos un rol para mostrar el diseño
-  const userRole = "admin" // Puede ser: "patient", "student", "professor", "admin"
+  const [user, setUser] = useState<AuthUser | null>(null)
+  const [loading, setLoading] = useState(true)
 
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-        <p className="text-muted-foreground">Bienvenido al sistema de gestión de la clínica dental.</p>
+  useEffect(() => {
+    // Verificar la sesión al cargar el componente
+    const checkAuth = () => {
+      try {
+        const currentUser = sessionManager.getUser()
+
+        if (currentUser) {
+          console.log("Usuario autenticado en dashboard:", currentUser)
+          setUser(currentUser)
+
+          // Redireccionar según el rol
+          let redirectPath = "/dashboard"
+          switch (currentUser.role) {
+            case "patient":
+              redirectPath = "/dashboard/my-appointments"
+              break
+            case "student":
+              redirectPath = "/dashboard/patients"
+              break
+            case "professor":
+              redirectPath = "/dashboard/specialty"
+              break
+            case "admin":
+              redirectPath = "/dashboard/users"
+              break
+          }
+
+          // Redirección si no estamos ya en la página de destino
+          if (window.location.pathname === "/dashboard") {
+            window.location.href = redirectPath
+          }
+        } else {
+          console.log("No hay usuario autenticado en dashboard, redirigiendo a login")
+          window.location.href = "/login"
+        }
+      } catch (e) {
+        console.error("Error al verificar autenticación en dashboard:", e)
+        window.location.href = "/login"
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-primary mx-auto"></div>
+          <h2 className="text-2xl font-bold">Cargando...</h2>
+          <p className="text-muted-foreground">Por favor espere mientras cargamos su información.</p>
+        </div>
       </div>
+    )
+  }
 
-      {userRole === "patient" && <PatientDashboard />}
-      {userRole === "student" && <StudentDashboard />}
-      {userRole === "professor" && <ProfessorDashboard />}
-      {userRole === "admin" && <AdminDashboard />}
-    </div>
-  )
+  if (!user) {
+    return null
+  }
+
+  // Mostrar el dashboard correspondiente según el rol
+  switch (user.role) {
+    case "patient":
+      return <PatientDashboard />
+    case "student":
+      return <StudentDashboard />
+    case "professor":
+      return <ProfessorDashboard />
+    case "admin":
+      return <AdminDashboard />
+    default:
+      return (
+        <div className="text-center">
+          <h2 className="text-2xl font-bold">Bienvenido al Sistema</h2>
+          <p className="text-muted-foreground">Seleccione una opción del menú para comenzar.</p>
+        </div>
+      )
+  }
 }
 
 function PatientDashboard() {

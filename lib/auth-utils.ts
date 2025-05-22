@@ -57,6 +57,7 @@ export async function authenticate(email: string, password: string) {
     secure: process.env.NODE_ENV === "production",
     maxAge: 60 * 60 * 24 * 7, // 1 week
     path: "/",
+    sameSite: "lax", // Added to ensure cookie is sent with navigation
   })
 
   return { success: true, user: session.user }

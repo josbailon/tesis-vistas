@@ -1,160 +1,161 @@
-import { getCurrentUser } from "@/lib/auth-utils"
-import { redirect } from "next/navigation"
+"use client"
+
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Calendar, Clock, User } from "lucide-react"
+import { Calendar, Clock, User, CheckCircle, XCircle } from "lucide-react"
+import { Badge } from "@/components/ui/badge"
 
-// Mock data for patient appointments
-const patientAppointments = [
-  {
-    id: "apt1",
-    date: "2023-05-25",
-    time: "10:00 AM",
-    student: "Carlos Rodríguez",
-    professor: "Dr. Martínez",
-    specialty: "Endodoncia",
-    status: "confirmed",
-  },
-  {
-    id: "apt2",
-    date: "2023-06-02",
-    time: "11:30 AM",
-    student: "Ana López",
-    professor: "Dra. Sánchez",
-    specialty: "Ortodoncia",
-    status: "pending",
-  },
-  {
-    id: "apt3",
-    date: "2023-06-15",
-    time: "09:15 AM",
-    student: "Carlos Rodríguez",
-    professor: "Dr. Martínez",
-    specialty: "Endodoncia",
-    status: "completed",
-  },
-]
+interface Appointment {
+  id: string
+  date: string
+  time: string
+  doctor: string
+  specialty: string
+  status: "confirmed" | "pending" | "cancelled"
+}
 
-export default async function MyAppointmentsPage() {
-  const user = await getCurrentUser()
+export default function MyAppointmentsPage() {
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-  if (!user || user.role !== "patient") {
-    redirect("/dashboard")
-  }
+  // Datos de ejemplo
+  const appointments: Appointment[] = [
+    {
+      id: "1",
+      date: "2023-05-15",
+      time: "10:00 AM",
+      doctor: "Dr. María Estudiante",
+      specialty: "Odontología General",
+      status: "confirmed",
+    },
+    {
+      id: "2",
+      date: "2023-05-22",
+      time: "11:30 AM",
+      doctor: "Dr. Carlos Profesor",
+      specialty: "Ortodoncia",
+      status: "pending",
+    },
+  ]
 
-  // Function to get status badge
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "confirmed":
-        return <Badge className="bg-green-500">Confirmada</Badge>
-      case "pending":
-        return <Badge className="bg-yellow-500">Pendiente</Badge>
-      case "completed":
-        return <Badge className="bg-blue-500">Completada</Badge>
-      case "cancelled":
-        return <Badge className="bg-red-500">Cancelada</Badge>
-      default:
-        return <Badge>{status}</Badge>
+  useEffect(() => {
+    // Verificar si hay un usuario en localStorage
+    const checkAuth = () => {
+      try {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        } else {
+          // Si no hay usuario, redirigir a login
+          window.location.href = "/login"
+        }
+      } catch (e) {
+        console.error("Error parsing user from localStorage", e)
+        window.location.href = "/login"
+      } finally {
+        setLoading(false)
+      }
     }
+
+    checkAuth()
+  }, [])
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-primary mx-auto"></div>
+          <h2 className="text-2xl font-bold">Cargando...</h2>
+          <p className="text-muted-foreground">Por favor espere mientras cargamos sus citas.</p>
+        </div>
+      </div>
+    )
   }
 
-  // Format date to local format
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString("es-ES", {
-      year: "numeric",
-      month: "long",
-      day: "numeric",
-    })
+  if (!user) {
+    return null
   }
 
   return (
     <div className="space-y-6">
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Mis Citas</h1>
-        <p className="text-muted-foreground">Visualiza y gestiona tus citas programadas en la clínica dental.</p>
+        <p className="text-muted-foreground">Gestiona tus citas médicas programadas.</p>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Citas Programadas</CardTitle>
-          <CardDescription>Listado de todas tus citas pasadas y futuras.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {patientAppointments.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Hora</TableHead>
-                  <TableHead>Estudiante</TableHead>
-                  <TableHead>Especialidad</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {patientAppointments.map((appointment) => (
-                  <TableRow key={appointment.id}>
-                    <TableCell className="font-medium">
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-muted-foreground" />
-                        {formatDate(appointment.date)}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Clock className="h-4 w-4 text-muted-foreground" />
-                        {appointment.time}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-muted-foreground" />
-                        {appointment.student}
-                      </div>
-                    </TableCell>
-                    <TableCell>{appointment.specialty}</TableCell>
-                    <TableCell>{getStatusBadge(appointment.status)}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          disabled={appointment.status === "completed" || appointment.status === "cancelled"}
-                        >
-                          Ver detalles
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          ) : (
-            <div className="text-center py-6">
-              <p className="text-muted-foreground">No tienes citas programadas.</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <div className="grid gap-4 md:grid-cols-2">
+        {appointments.map((appointment) => (
+          <Card key={appointment.id}>
+            <CardHeader className="pb-2">
+              <div className="flex justify-between items-start">
+                <CardTitle>Cita {appointment.id}</CardTitle>
+                <Badge
+                  variant={
+                    appointment.status === "confirmed"
+                      ? "default"
+                      : appointment.status === "pending"
+                        ? "outline"
+                        : "destructive"
+                  }
+                >
+                  {appointment.status === "confirmed"
+                    ? "Confirmada"
+                    : appointment.status === "pending"
+                      ? "Pendiente"
+                      : "Cancelada"}
+                </Badge>
+              </div>
+              <CardDescription>{appointment.specialty}</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <div className="flex items-center">
+                  <Calendar className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span>
+                    {new Date(appointment.date).toLocaleDateString("es-ES", {
+                      weekday: "long",
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
+                </div>
+                <div className="flex items-center">
+                  <Clock className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span>{appointment.time}</span>
+                </div>
+                <div className="flex items-center">
+                  <User className="h-4 w-4 mr-2 text-muted-foreground" />
+                  <span>{appointment.doctor}</span>
+                </div>
+                <div className="flex justify-between mt-4">
+                  {appointment.status === "pending" && (
+                    <>
+                      <Button variant="outline" size="sm" className="flex items-center">
+                        <CheckCircle className="h-4 w-4 mr-2" />
+                        Confirmar
+                      </Button>
+                      <Button variant="outline" size="sm" className="flex items-center text-destructive">
+                        <XCircle className="h-4 w-4 mr-2" />
+                        Cancelar
+                      </Button>
+                    </>
+                  )}
+                  {appointment.status === "confirmed" && (
+                    <Button variant="outline" size="sm" className="flex items-center text-destructive">
+                      <XCircle className="h-4 w-4 mr-2" />
+                      Cancelar
+                    </Button>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Solicitar Nueva Cita</CardTitle>
-          <CardDescription>Propón una fecha y hora para tu próxima cita.</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Puedes solicitar una nueva cita indicando tus preferencias de fecha y hora. Ten en cuenta que la cita
-              deberá ser confirmada por un estudiante o profesor.
-            </p>
-            <Button>Solicitar Cita</Button>
-          </div>
-        </CardContent>
-      </Card>
+      <Button className="mt-4">Solicitar Nueva Cita</Button>
     </div>
   )
 }

@@ -1,69 +1,139 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Alert, AlertDescription } from "@/components/ui/alert"
+import { AlertCircle } from "lucide-react"
+
+// Usuarios de prueba para autenticación directa en el cliente
+const TEST_USERS = [
+  { email: "paciente@clinica.com", password: "paciente", role: "patient", name: "Juan Paciente" },
+  { email: "estudiante@clinica.com", password: "estudiante", role: "student", name: "María Estudiante" },
+  { email: "profesor@clinica.com", password: "profesor", role: "professor", name: "Carlos Profesor" },
+  { email: "admin@clinica.com", password: "admin", role: "admin", name: "Ana Administradora" },
+]
 
 export default function LoginPage() {
-  const [userType, setUserType] = useState("patient")
+  const [email, setEmail] = useState("")
+  const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setLoading(true)
+    setError("")
+
+    // Autenticación simple en el cliente
+    const user = TEST_USERS.find((u) => u.email === email && u.password === password)
+
+    if (user) {
+      // Guardar información del usuario en localStorage
+      localStorage.setItem(
+        "user",
+        JSON.stringify({
+          email: user.email,
+          role: user.role,
+          name: user.name,
+        }),
+      )
+
+      // Redirección basada en el rol
+      let redirectPath = "/dashboard"
+      switch (user.role) {
+        case "patient":
+          redirectPath = "/dashboard/my-appointments"
+          break
+        case "student":
+          redirectPath = "/dashboard/patients"
+          break
+        case "professor":
+          redirectPath = "/dashboard/specialty"
+          break
+        case "admin":
+          redirectPath = "/dashboard/users"
+          break
+      }
+
+      // Redirección forzada
+      window.location.href = redirectPath
+    } else {
+      setError("Credenciales incorrectas")
+      setLoading(false)
+    }
+  }
 
   return (
-    <div className="container flex h-screen w-screen flex-col items-center justify-center">
-      <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
-        <div className="flex flex-col space-y-2 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Iniciar Sesión</h1>
-          <p className="text-sm text-muted-foreground">Ingresa tus credenciales para acceder al sistema</p>
-        </div>
+    <div className="flex min-h-screen items-center justify-center p-4">
+      <div className="w-full max-w-md">
         <Card>
           <CardHeader>
-            <CardTitle>Acceso al Sistema</CardTitle>
-            <CardDescription>Selecciona tu tipo de usuario e ingresa tus credenciales</CardDescription>
+            <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
+            <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="user-type">Tipo de Usuario</Label>
-              <Select value={userType} onValueChange={setUserType}>
-                <SelectTrigger id="user-type">
-                  <SelectValue placeholder="Selecciona tu tipo de usuario" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="patient">Paciente</SelectItem>
-                  <SelectItem value="student">Estudiante</SelectItem>
-                  <SelectItem value="professor">Profesor</SelectItem>
-                  <SelectItem value="admin">Administrador</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">Correo Electrónico</Label>
-              <Input id="email" type="email" placeholder="correo@ejemplo.com" />
-            </div>
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="password">Contraseña</Label>
-                <Link
-                  href="/forgot-password"
-                  className="text-xs text-muted-foreground underline-offset-4 hover:underline"
-                >
-                  ¿Olvidaste tu contraseña?
-                </Link>
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+              <div className="space-y-2">
+                <Label htmlFor="email">Correo electrónico</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="correo@ejemplo.com"
+                  required
+                />
               </div>
-              <Input id="password" type="password" />
-            </div>
+              <div className="space-y-2">
+                <Label htmlFor="password">Contraseña</Label>
+                <Input
+                  id="password"
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <Button type="submit" className="w-full" disabled={loading}>
+                {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+              </Button>
+            </form>
           </CardContent>
-          <CardFooter className="flex flex-col space-y-2">
-            <Button className="w-full" type="submit">
-              Iniciar Sesión
-            </Button>
-            <div className="text-center text-sm">
+          <CardFooter className="flex flex-col space-y-4">
+            <p className="text-sm text-muted-foreground">
               ¿No tienes una cuenta?{" "}
-              <Link href="/register" className="underline underline-offset-4 hover:text-primary">
+              <a href="/register" className="text-primary hover:underline">
                 Regístrate
-              </Link>
+              </a>
+            </p>
+
+            <div className="w-full pt-4 border-t">
+              <p className="text-sm font-medium mb-2">Credenciales de prueba:</p>
+              <div className="text-xs text-muted-foreground space-y-1">
+                <p>
+                  <strong>Paciente:</strong> paciente@clinica.com / paciente
+                </p>
+                <p>
+                  <strong>Estudiante:</strong> estudiante@clinica.com / estudiante
+                </p>
+                <p>
+                  <strong>Profesor:</strong> profesor@clinica.com / profesor
+                </p>
+                <p>
+                  <strong>Admin:</strong> admin@clinica.com / admin
+                </p>
+              </div>
             </div>
           </CardFooter>
         </Card>
