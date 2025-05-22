@@ -3,67 +3,57 @@
 import type React from "react"
 
 import { useEffect, useState } from "react"
-import { sessionManager } from "@/lib/session-manager"
+import { usePathname, useRouter } from "next/navigation"
 
-interface SessionCheckProps {
-  children: React.ReactNode
-}
-
-export function SessionCheck({ children }: SessionCheckProps) {
-  const [isChecking, setIsChecking] = useState(true)
+export default function SessionCheck({ children }: { children: React.ReactNode }) {
+  const [isLoading, setIsLoading] = useState(true)
+  const pathname = usePathname()
+  const router = useRouter()
 
   useEffect(() => {
-    // Verificar la sesión al cargar el componente
-    const checkSession = () => {
-      try {
-        const isAuthenticated = sessionManager.isAuthenticated()
-        const currentPath = window.location.pathname
+    // Rutas públicas que no requieren autenticación
+    const publicPaths = ["/", "/login", "/register"]
+    const isPublicPath = publicPaths.some((path) => pathname === path)
 
-        // Si no está autenticado y no está en una ruta pública, redirigir a login
-        if (!isAuthenticated && !isPublicRoute(currentPath)) {
-          console.log("No autenticado, redirigiendo a login")
-          window.location.href = "/login"
-          return
-        }
+    // Verificar si hay un usuario en localStorage
+    const storedUser = localStorage.getItem("user")
+    const isAuthenticated = !!storedUser
 
-        // Si está autenticado y está en login o register, redirigir a dashboard
-        if (isAuthenticated && (currentPath === "/login" || currentPath === "/register")) {
-          console.log("Ya autenticado, redirigiendo a dashboard")
-          window.location.href = "/dashboard"
-          return
-        }
-      } catch (error) {
-        console.error("Error al verificar sesión:", error)
-      } finally {
-        setIsChecking(false)
-      }
+    // Si no está autenticado y no es una ruta pública, redirigir a login
+    if (!isAuthenticated && !isPublicPath) {
+      router.push("/login")
     }
 
-    checkSession()
+    // Si está autenticado y está en una ruta pública, redirigir al dashboard
+    if (isAuthenticated && isPublicPath && pathname !== "/") {
+      const user = JSON.parse(storedUser!)
+      let redirectPath = "/dashboard"
 
-    // Verificar la sesión periódicamente
-    const intervalId = setInterval(() => {
-      if (sessionManager.isAuthenticated()) {
-        console.log("Verificación periódica de sesión: sesión activa")
+      switch (user.role) {
+        case "patient":
+          redirectPath = "/dashboard/my-appointments"
+          break
+        case "student":
+          redirectPath = "/dashboard/patients"
+          break
+        case "professor":
+          redirectPath = "/dashboard/specialty"
+          break
+        case "admin":
+          redirectPath = "/dashboard/users"
+          break
       }
-    }, 60000) // Verificar cada minuto
 
-    return () => clearInterval(intervalId)
-  }, [])
+      router.push(redirectPath)
+    }
 
-  // Determinar si una ruta es pública
-  const isPublicRoute = (path: string): boolean => {
-    const publicRoutes = ["/", "/login", "/register", "/about"]
-    return publicRoutes.some((route) => path === route || path.startsWith(`${route}/`))
-  }
+    setIsLoading(false)
+  }, [pathname, router])
 
-  if (isChecking) {
+  if (isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
-          <p className="text-lg font-medium">Verificando sesión...</p>
-        </div>
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
     )
   }

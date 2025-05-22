@@ -1,19 +1,22 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { LogOut } from "lucide-react"
+import { Power } from "lucide-react"
 import { sessionManager } from "@/lib/session-manager"
+import { useRouter } from "next/navigation"
 
 export function LogoutButton() {
+  const router = useRouter()
+
   const handleLogout = () => {
     sessionManager.logout()
-    window.location.href = "/login"
+    router.push("/login")
   }
 
   return (
-    <Button variant="outline" size="sm" onClick={handleLogout} className="w-full flex items-center justify-center">
-      <LogOut className="mr-2 h-4 w-4" />
-      <span>Cerrar Sesión</span>
+    <Button variant="ghost" onClick={handleLogout}>
+      <Power className="mr-2 h-4 w-4" />
+      Cerrar Sesión
     </Button>
   )
 }

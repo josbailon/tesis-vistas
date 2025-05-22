@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search, Plus, FileText, Calendar, Phone, Mail, Edit, Trash2, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -20,82 +20,114 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { useRouter } from "next/navigation"
 
-// Datos de ejemplo para los pacientes
-const patients = [
-  {
-    id: 1,
-    name: "Ana García",
-    email: "ana.garcia@ejemplo.com",
-    phone: "555-123-4567",
-    dob: "15/05/1990",
-    address: "Calle Principal 123, Ciudad",
-    status: "active",
-    lastVisit: "10/05/2025",
-    nextAppointment: "22/05/2025",
-    treatment: "Tratamiento de conducto",
-    specialty: "Endodoncia",
-  },
-  {
-    id: 2,
-    name: "Carlos López",
-    email: "carlos.lopez@ejemplo.com",
-    phone: "555-987-6543",
-    dob: "20/08/1985",
-    address: "Avenida Central 456, Ciudad",
-    status: "active",
-    lastVisit: "05/05/2025",
-    nextAppointment: "19/05/2025",
-    treatment: "Ortodoncia",
-    specialty: "Ortodoncia",
-  },
-  {
-    id: 3,
-    name: "María Fernández",
-    email: "maria.fernandez@ejemplo.com",
-    phone: "555-456-7890",
-    dob: "10/12/1995",
-    address: "Plaza Mayor 789, Ciudad",
-    status: "inactive",
-    lastVisit: "01/04/2025",
-    nextAppointment: null,
-    treatment: "Limpieza profunda",
-    specialty: "Periodoncia",
-  },
-  {
-    id: 4,
-    name: "Juan Pérez",
-    email: "juan.perez@ejemplo.com",
-    phone: "555-234-5678",
-    dob: "05/03/1980",
-    address: "Calle Secundaria 321, Ciudad",
-    status: "active",
-    lastVisit: "12/05/2025",
-    nextAppointment: "26/05/2025",
-    treatment: "Extracción de muela del juicio",
-    specialty: "Cirugía Oral",
-  },
-  {
-    id: 5,
-    name: "Sofía Ramírez",
-    email: "sofia.ramirez@ejemplo.com",
-    phone: "555-876-5432",
-    dob: "25/07/2010",
-    address: "Avenida Principal 654, Ciudad",
-    status: "active",
-    lastVisit: "08/05/2025",
-    nextAppointment: "22/05/2025",
-    treatment: "Revisión de brackets",
-    specialty: "Ortodoncia",
-  },
-]
+interface Patient {
+  id: string
+  name: string
+  email: string
+  phone: string
+  lastVisit: string
+  specialty: string
+  status: "active" | "inactive"
+}
 
 export default function PatientsPage() {
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
   const [isAddPatientDialogOpen, setIsAddPatientDialogOpen] = useState(false)
   const [isViewPatientDialogOpen, setIsViewPatientDialogOpen] = useState(false)
-  const [selectedPatient, setSelectedPatient] = useState<(typeof patients)[0] | null>(null)
+  const [selectedPatient, setSelectedPatient] = useState<Patient | null>(null)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
+
+  // Datos de ejemplo para los pacientes
+  const patients: Patient[] = [
+    {
+      id: "1",
+      name: "Ana García",
+      email: "ana.garcia@example.com",
+      phone: "555-123-4567",
+      lastVisit: "2023-05-10",
+      specialty: "Odontología General",
+      status: "active",
+    },
+    {
+      id: "2",
+      name: "Carlos López",
+      email: "carlos.lopez@example.com",
+      phone: "555-987-6543",
+      lastVisit: "2023-05-15",
+      specialty: "Ortodoncia",
+      status: "active",
+    },
+    {
+      id: "3",
+      name: "María Fernández",
+      email: "maria.fernandez@example.com",
+      phone: "555-456-7890",
+      lastVisit: "2023-04-01",
+      specialty: "Periodoncia",
+      status: "inactive",
+    },
+    {
+      id: "4",
+      name: "Juan Pérez",
+      email: "juan.perez@example.com",
+      phone: "555-234-5678",
+      lastVisit: "2023-05-12",
+      specialty: "Cirugía Oral",
+      status: "active",
+    },
+    {
+      id: "5",
+      name: "Sofía Ramírez",
+      email: "sofia.ramirez@example.com",
+      phone: "555-876-5432",
+      lastVisit: "2023-05-08",
+      specialty: "Ortodoncia",
+      status: "active",
+    },
+  ]
+
+  useEffect(() => {
+    // Verificar si hay un usuario en localStorage
+    const checkAuth = () => {
+      try {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        } else {
+          // Si no hay usuario, redirigir a login
+          router.push("/login")
+        }
+      } catch (e) {
+        console.error("Error parsing user from localStorage", e)
+        router.push("/login")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [router])
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-primary mx-auto"></div>
+          <h2 className="text-2xl font-bold">Cargando...</h2>
+          <p className="text-muted-foreground">Por favor espere mientras cargamos la lista de pacientes.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
 
   // Filtrar pacientes según los criterios de búsqueda y filtros
   const filteredPatients = patients.filter((patient) => {
@@ -265,16 +297,12 @@ export default function PatientsPage() {
                     <div className="flex items-center">
                       <Calendar className="mr-2 h-4 w-4 text-muted-foreground" />
                       <span>
-                        {patient.nextAppointment ? (
-                          <>Próxima cita: {patient.nextAppointment}</>
-                        ) : (
-                          <>Sin citas programadas</>
-                        )}
+                        {patient.lastVisit ? <>Última visita: {patient.lastVisit}</> : <>Sin citas programadas</>}
                       </span>
                     </div>
                     <div className="pt-2">
                       <p className="text-sm text-muted-foreground">
-                        <strong>Tratamiento actual:</strong> {patient.treatment}
+                        <strong>Tratamiento actual:</strong> {patient.specialty}
                       </p>
                     </div>
                   </div>
@@ -342,7 +370,7 @@ export default function PatientsPage() {
                     </div>
                     <div className="pt-2">
                       <p className="text-sm text-muted-foreground">
-                        <strong>Último tratamiento:</strong> {patient.treatment}
+                        <strong>Último tratamiento:</strong> {patient.specialty}
                       </p>
                     </div>
                   </div>
@@ -408,7 +436,7 @@ export default function PatientsPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Fecha de Nacimiento</p>
-                  <p className="text-sm text-muted-foreground">{selectedPatient.dob}</p>
+                  <p className="text-sm text-muted-foreground">{selectedPatient.lastVisit}</p>
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Teléfono</p>
@@ -420,7 +448,7 @@ export default function PatientsPage() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Dirección</p>
-                  <p className="text-sm text-muted-foreground">{selectedPatient.address}</p>
+                  <p className="text-sm text-muted-foreground">Calle Principal 123, Ciudad</p>
                 </div>
               </div>
 
@@ -431,7 +459,7 @@ export default function PatientsPage() {
 
               <div className="space-y-1">
                 <p className="text-sm font-medium">Tratamiento Actual</p>
-                <p className="text-sm text-muted-foreground">{selectedPatient.treatment}</p>
+                <p className="text-sm text-muted-foreground">{selectedPatient.specialty}</p>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -441,9 +469,7 @@ export default function PatientsPage() {
                 </div>
                 <div className="space-y-1">
                   <p className="text-sm font-medium">Próxima Cita</p>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedPatient.nextAppointment || "Sin citas programadas"}
-                  </p>
+                  <p className="text-sm text-muted-foreground">Sin citas programadas</p>
                 </div>
               </div>
             </div>

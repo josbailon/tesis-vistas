@@ -9,7 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
-import { sessionManager } from "@/lib/session-manager"
 
 // Usuarios de prueba para autenticación directa en el cliente
 const TEST_USERS = [
@@ -38,14 +37,15 @@ export default function LoginForm() {
       if (user) {
         setRedirecting(true)
 
-        // Usar el session manager para establecer la sesión
-        sessionManager.login({
-          email: user.email,
-          role: user.role,
-          name: user.name,
-        })
-
-        console.log("Sesión establecida correctamente:", sessionManager.getUser())
+        // Guardar información del usuario en localStorage
+        localStorage.setItem(
+          "user",
+          JSON.stringify({
+            email: user.email,
+            role: user.role,
+            name: user.name,
+          }),
+        )
 
         // Redirección basada en el rol
         let redirectPath = "/dashboard"

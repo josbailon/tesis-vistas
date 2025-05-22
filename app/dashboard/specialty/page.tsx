@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Users, CheckSquare, Calendar, FileText, Search, ArrowUpDown, BarChart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -11,142 +11,219 @@ import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useRouter } from "next/navigation"
 
-// Datos de ejemplo para la especialidad
-const specialtyInfo = {
-  name: "Endodoncia",
-  description: "Tratamiento de conductos y problemas de la pulpa dental",
-  professors: 2,
-  students: 8,
-  pendingApprovals: 5,
-  activeTreatments: 12,
-  completedTreatments: 24,
+interface Specialty {
+  id: string
+  name: string
+  description: string
+  doctor: string
+  students: number
 }
 
-// Datos de ejemplo para los estudiantes
-const students = [
-  {
-    id: 1,
-    name: "Carlos López",
-    email: "carlos.lopez@ejemplo.com",
-    studentId: "E12345",
-    progress: 75,
-    pendingApprovals: 2,
-    activeTreatments: 3,
-    completedTreatments: 5,
-  },
-  {
-    id: 2,
-    name: "María Fernández",
-    email: "maria.fernandez@ejemplo.com",
-    studentId: "E12346",
-    progress: 60,
-    pendingApprovals: 1,
-    activeTreatments: 2,
-    completedTreatments: 3,
-  },
-  {
-    id: 3,
-    name: "Juan Pérez",
-    email: "juan.perez@ejemplo.com",
-    studentId: "E12347",
-    progress: 90,
-    pendingApprovals: 0,
-    activeTreatments: 4,
-    completedTreatments: 8,
-  },
-  {
-    id: 4,
-    name: "Sofía Ramírez",
-    email: "sofia.ramirez@ejemplo.com",
-    studentId: "E12348",
-    progress: 40,
-    pendingApprovals: 2,
-    activeTreatments: 1,
-    completedTreatments: 2,
-  },
-]
+interface Student {
+  id: number
+  name: string
+  email: string
+  studentId: string
+  progress: number
+  pendingApprovals: number
+  activeTreatments: number
+  completedTreatments: number
+}
 
-// Datos de ejemplo para las solicitudes de aprobación
-const approvalRequests = [
-  {
-    id: 1,
-    title: "Aprobación de Plan de Tratamiento",
-    studentName: "Carlos López",
-    patientName: "Ana García",
-    description: "Solicitud de aprobación para iniciar tratamiento de conducto en molar superior derecho.",
-    submittedDate: "18/05/2025",
-    status: "pending",
-  },
-  {
-    id: 2,
-    title: "Validación de Diagnóstico",
-    studentName: "María Fernández",
-    patientName: "Juan Pérez",
-    description: "Solicitud de validación de diagnóstico de pulpitis irreversible en premolar inferior izquierdo.",
-    submittedDate: "17/05/2025",
-    status: "pending",
-  },
-  {
-    id: 3,
-    title: "Aprobación de Finalización de Tratamiento",
-    studentName: "Carlos López",
-    patientName: "Sofía Ramírez",
-    description: "Solicitud de aprobación para dar por finalizado el tratamiento de conducto en incisivo central.",
-    submittedDate: "15/05/2025",
-    status: "pending",
-  },
-]
+interface ApprovalRequest {
+  id: number
+  title: string
+  studentName: string
+  patientName: string
+  description: string
+  submittedDate: string
+  status: string
+}
 
-// Datos de ejemplo para los casos clínicos
-const clinicalCases = [
-  {
-    id: 1,
-    patientName: "Ana García",
-    studentName: "Carlos López",
-    treatment: "Tratamiento de conducto en molar superior",
-    startDate: "10/05/2025",
-    status: "in-progress",
-    progress: 60,
-    lastUpdate: "18/05/2025",
-  },
-  {
-    id: 2,
-    patientName: "Juan Pérez",
-    studentName: "María Fernández",
-    treatment: "Tratamiento de conducto en premolar inferior",
-    startDate: "05/05/2025",
-    status: "in-progress",
-    progress: 40,
-    lastUpdate: "15/05/2025",
-  },
-  {
-    id: 3,
-    patientName: "Sofía Ramírez",
-    studentName: "Carlos López",
-    treatment: "Tratamiento de conducto en incisivo central",
-    startDate: "01/05/2025",
-    status: "completed",
-    progress: 100,
-    lastUpdate: "15/05/2025",
-  },
-  {
-    id: 4,
-    patientName: "Pedro Gómez",
-    studentName: "Juan Pérez",
-    treatment: "Retratamiento de conducto en molar inferior",
-    startDate: "12/05/2025",
-    status: "in-progress",
-    progress: 30,
-    lastUpdate: "17/05/2025",
-  },
-]
+interface ClinicalCase {
+  id: number
+  patientName: string
+  studentName: string
+  treatment: string
+  startDate: string
+  status: string
+  progress: number
+  lastUpdate: string
+}
 
 export default function SpecialtyPage() {
+  const [user, setUser] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [selectedStudent, setSelectedStudent] = useState<(typeof students)[0] | null>(null)
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
   const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false)
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "ascending" | "descending" } | null>(null)
+  const router = useRouter()
+
+  // Datos de ejemplo
+  const specialty: Specialty = {
+    id: "1",
+    name: "Ortodoncia",
+    description: "Especialidad en corrección de la mordida y alineación dental",
+    doctor: "Dr. Carlos Profesor",
+    students: 15,
+  }
+
+  const students: Student[] = [
+    {
+      id: 1,
+      name: "Carlos López",
+      email: "carlos.lopez@ejemplo.com",
+      studentId: "E12345",
+      progress: 75,
+      pendingApprovals: 2,
+      activeTreatments: 3,
+      completedTreatments: 5,
+    },
+    {
+      id: 2,
+      name: "María Fernández",
+      email: "maria.fernandez@ejemplo.com",
+      studentId: "E12346",
+      progress: 60,
+      pendingApprovals: 1,
+      activeTreatments: 2,
+      completedTreatments: 3,
+    },
+    {
+      id: 3,
+      name: "Juan Pérez",
+      email: "juan.perez@ejemplo.com",
+      studentId: "E12347",
+      progress: 90,
+      pendingApprovals: 0,
+      activeTreatments: 4,
+      completedTreatments: 8,
+    },
+    {
+      id: 4,
+      name: "Sofía Ramírez",
+      email: "sofia.ramirez@ejemplo.com",
+      studentId: "E12348",
+      progress: 40,
+      pendingApprovals: 2,
+      activeTreatments: 1,
+      completedTreatments: 2,
+    },
+  ]
+
+  const approvalRequests: ApprovalRequest[] = [
+    {
+      id: 1,
+      title: "Aprobación de Plan de Tratamiento",
+      studentName: "Carlos López",
+      patientName: "Ana García",
+      description: "Solicitud de aprobación para iniciar tratamiento de conducto en molar superior derecho.",
+      submittedDate: "18/05/2025",
+      status: "pending",
+    },
+    {
+      id: 2,
+      title: "Validación de Diagnóstico",
+      studentName: "María Fernández",
+      patientName: "Juan Pérez",
+      description: "Solicitud de validación de diagnóstico de pulpitis irreversible en premolar inferior izquierdo.",
+      submittedDate: "17/05/2025",
+      status: "pending",
+    },
+    {
+      id: 3,
+      title: "Aprobación de Finalización de Tratamiento",
+      studentName: "Carlos López",
+      patientName: "Sofía Ramírez",
+      description: "Solicitud de aprobación para dar por finalizado el tratamiento de conducto en incisivo central.",
+      submittedDate: "15/05/2025",
+      status: "pending",
+    },
+  ]
+
+  const clinicalCases: ClinicalCase[] = [
+    {
+      id: 1,
+      patientName: "Ana García",
+      studentName: "Carlos López",
+      treatment: "Tratamiento de conducto en molar superior",
+      startDate: "10/05/2025",
+      status: "in-progress",
+      progress: 60,
+      lastUpdate: "18/05/2025",
+    },
+    {
+      id: 2,
+      patientName: "Juan Pérez",
+      studentName: "María Fernández",
+      treatment: "Tratamiento de conducto en premolar inferior",
+      startDate: "05/05/2025",
+      status: "in-progress",
+      progress: 40,
+      lastUpdate: "15/05/2025",
+    },
+    {
+      id: 3,
+      patientName: "Sofía Ramírez",
+      studentName: "Carlos López",
+      treatment: "Tratamiento de conducto en incisivo central",
+      startDate: "01/05/2025",
+      status: "completed",
+      progress: 100,
+      lastUpdate: "15/05/2025",
+    },
+    {
+      id: 4,
+      patientName: "Pedro Gómez",
+      studentName: "Juan Pérez",
+      treatment: "Retratamiento de conducto en molar inferior",
+      startDate: "12/05/2025",
+      status: "in-progress",
+      progress: 30,
+      lastUpdate: "17/05/2025",
+    },
+  ]
+
+  useEffect(() => {
+    // Verificar si hay un usuario en localStorage
+    const checkAuth = () => {
+      try {
+        const storedUser = localStorage.getItem("user")
+        if (storedUser) {
+          setUser(JSON.parse(storedUser))
+        } else {
+          // Si no hay usuario, redirigir a login
+          router.push("/login")
+        }
+      } catch (e) {
+        console.error("Error parsing user from localStorage", e)
+        router.push("/login")
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    checkAuth()
+  }, [router])
+
+  if (loading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <div className="text-center">
+          <div className="mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-primary mx-auto"></div>
+          <h2 className="text-2xl font-bold">Cargando...</h2>
+          <p className="text-muted-foreground">Por favor espere mientras cargamos la información de la especialidad.</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (!user) {
+    return null
+  }
 
   // Filtrar estudiantes según el término de búsqueda
   const filteredStudents = students.filter(
@@ -199,8 +276,8 @@ export default function SpecialtyPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Mi Especialidad: {specialtyInfo.name}</h1>
-        <p className="text-muted-foreground">{specialtyInfo.description}</p>
+        <h1 className="text-3xl font-bold tracking-tight">Especialidad: {specialty.name}</h1>
+        <p className="text-muted-foreground">{specialty.description}</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -210,7 +287,7 @@ export default function SpecialtyPage() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{specialtyInfo.students}</div>
+            <div className="text-2xl font-bold">{specialty.students}</div>
             <p className="text-xs text-muted-foreground">Estudiantes asignados a esta especialidad</p>
           </CardContent>
         </Card>
@@ -220,28 +297,28 @@ export default function SpecialtyPage() {
             <CheckSquare className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{specialtyInfo.pendingApprovals}</div>
+            <div className="text-2xl font-bold">{approvalRequests.length}</div>
             <p className="text-xs text-muted-foreground">Solicitudes pendientes de revisión</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tratamientos Activos</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Casos Activos</CardTitle>
+            <FileText className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{specialtyInfo.activeTreatments}</div>
-            <p className="text-xs text-muted-foreground">Tratamientos en curso actualmente</p>
+            <div className="text-2xl font-bold">12</div>
+            <p className="text-xs text-muted-foreground">Casos clínicos activos en esta especialidad</p>
           </CardContent>
         </Card>
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tratamientos Completados</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium">Próximas Supervisiones</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{specialtyInfo.completedTreatments}</div>
-            <p className="text-xs text-muted-foreground">Tratamientos finalizados este semestre</p>
+            <div className="text-2xl font-bold">3</div>
+            <p className="text-xs text-muted-foreground">Supervisiones programadas para los próximos días</p>
           </CardContent>
         </Card>
       </div>
@@ -522,6 +599,8 @@ export default function SpecialtyPage() {
           </DialogContent>
         </Dialog>
       )}
+
+      <Button className="mt-4">Gestionar Estudiantes</Button>
     </div>
   )
 }
