@@ -4,6 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Sidebar } from "@/components/sidebar"
+import { sessionManager } from "@/lib/session-manager"
 
 export default function DashboardLayout({
   children,
@@ -15,12 +16,14 @@ export default function DashboardLayout({
   const router = useRouter()
 
   useEffect(() => {
-    // Verificar si hay un usuario en localStorage
+    // Verificar si hay un usuario en la sesión
     const checkAuth = () => {
       try {
-        const storedUser = localStorage.getItem("user")
-        if (storedUser) {
-          setUser(JSON.parse(storedUser))
+        const currentUser = sessionManager.getUser()
+        if (currentUser) {
+          setUser(currentUser)
+          // Renovar la sesión
+          sessionManager.renewSession()
         } else {
           router.push("/login")
         }
@@ -40,8 +43,11 @@ export default function DashboardLayout({
     // Verificar la sesión periódicamente
     const intervalId = setInterval(() => {
       if (typeof window !== "undefined") {
-        const storedUser = localStorage.getItem("user")
-        if (!storedUser) {
+        const currentUser = sessionManager.getUser()
+        if (currentUser) {
+          // Renovar la sesión
+          sessionManager.renewSession()
+        } else {
           router.push("/login")
         }
       }
@@ -71,7 +77,7 @@ export default function DashboardLayout({
       <Sidebar />
 
       {/* Main content */}
-      <div className="flex-1 p-8">{children}</div>
+      <div className="flex-1 p-8 overflow-auto">{children}</div>
     </div>
   )
 }

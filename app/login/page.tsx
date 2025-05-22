@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -10,6 +10,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
+import { sessionManager } from "@/lib/session-manager"
 
 // Usuarios de prueba para autenticación directa en el cliente
 const TEST_USERS = [
@@ -27,6 +28,30 @@ export default function LoginPage() {
   const [redirecting, setRedirecting] = useState(false)
   const router = useRouter()
 
+  // Verificar si ya hay una sesión activa
+  useEffect(() => {
+    const user = sessionManager.getUser()
+    if (user) {
+      // Redirección basada en el rol
+      let redirectPath = "/dashboard"
+      switch (user.role) {
+        case "patient":
+          redirectPath = "/dashboard/my-appointments"
+          break
+        case "student":
+          redirectPath = "/dashboard/patients"
+          break
+        case "professor":
+          redirectPath = "/dashboard/specialty"
+          break
+        case "admin":
+          redirectPath = "/dashboard/users"
+          break
+      }
+      router.push(redirectPath)
+    }
+  }, [router])
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -39,15 +64,12 @@ export default function LoginPage() {
       if (user) {
         setRedirecting(true)
 
-        // Guardar información del usuario en localStorage
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            email: user.email,
-            role: user.role,
-            name: user.name,
-          }),
-        )
+        // Guardar información del usuario usando el sessionManager
+        sessionManager.setUser({
+          email: user.email,
+          role: user.role,
+          name: user.name,
+        })
 
         // Redirección basada en el rol
         let redirectPath = "/dashboard"

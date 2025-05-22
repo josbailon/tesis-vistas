@@ -18,6 +18,8 @@ import {
   LogOut,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { sessionManager } from "@/lib/session-manager"
+import { useRouter } from "next/navigation"
 
 interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string
@@ -25,25 +27,24 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function Sidebar({ className, ...props }: SidebarProps) {
   const pathname = usePathname()
-
-  // Obtener el usuario del localStorage
+  const router = useRouter()
   const [user, setUser] = React.useState<any>(null)
 
   React.useEffect(() => {
     // Solo ejecutar en el cliente
     if (typeof window !== "undefined") {
-      const storedUser = localStorage.getItem("user")
-      if (storedUser) {
-        setUser(JSON.parse(storedUser))
+      const currentUser = sessionManager.getUser()
+      if (currentUser) {
+        setUser(currentUser)
+      } else {
+        router.push("/login")
       }
     }
-  }, [])
+  }, [router])
 
   const handleLogout = () => {
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("user")
-      window.location.href = "/login"
-    }
+    sessionManager.logout()
+    router.push("/login")
   }
 
   if (!user) {

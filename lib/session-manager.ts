@@ -1,64 +1,80 @@
-interface AuthUser {
+export interface AuthUser {
   email: string
-  role: string
   name: string
+  role: string
 }
 
-const SESSION_KEY = "user"
-const EXPIRATION_KEY = "expiration"
+class SessionManager {
+  private readonly SESSION_KEY = "user"
+  private readonly SESSION_EXPIRY_KEY = "session_expiry"
+  private readonly SESSION_DURATION = 24 * 60 * 60 * 1000 // 24 horas en milisegundos
 
-const sessionManager = {
-  login: (user: AuthUser) => {
-    try {
-      const expiration = new Date()
-      expiration.setDate(expiration.getDate() + 1) // Expira en 24 horas
-
-      localStorage.setItem(SESSION_KEY, JSON.stringify(user))
-      localStorage.setItem(EXPIRATION_KEY, expiration.toISOString())
-
-      console.log("Sesión establecida:", user)
-    } catch (e) {
-      console.error("Error al establecer la sesión:", e)
+  constructor() {
+    // Inicializar si estamos en el cliente
+    if (typeof window !== "undefined") {
+      this.checkAndRenewSession()
     }
-  },
+  }
 
-  logout: () => {
+  // Obtener usuario de la sesión
+  getUser(): AuthUser | null {
+    if (typeof window === "undefined") return null
+
     try {
-      localStorage.removeItem(SESSION_KEY)
-      localStorage.removeItem(EXPIRATION_KEY)
-      console.log("Sesión cerrada")
-    } catch (e) {
-      console.error("Error al cerrar la sesión:", e)
-    }
-  },
-
-  getUser: (): AuthUser | null => {
-    try {
-      const storedUser = localStorage.getItem(SESSION_KEY)
-      const storedExpiration = localStorage.getItem(EXPIRATION_KEY)
-
-      if (!storedUser || !storedExpiration) {
+      // Verificar si la sesión ha expirado
+      const expiryTime = localStorage.getItem(this.SESSION_EXPIRY_KEY)
+      if (!expiryTime || new Date().getTime() > Number.parseInt(expiryTime)) {
+        this.logout()
         return null
       }
 
-      const expiration = new Date(storedExpiration)
-      if (expiration <= new Date()) {
-        // Sesión expirada, cerrar sesión
-        sessionManager.logout()
-        return null
-      }
+      const userJson = localStorage.getItem(this.SESSION_KEY)
+      if (!userJson) return null
 
-      // Renovar la expiración
-      const user = JSON.parse(storedUser) as AuthUser
-      sessionManager.login(user) // Renovar la sesión
-
-      return user
-    } catch (e) {
-      console.error("Error al obtener el usuario de la sesión:", e)
+      return JSON.parse(userJson) as AuthUser
+    } catch (error) {
+      console.error("Error al obtener usuario:", error)
       return null
     }
-  },
+  }
+
+  // Establecer usuario en la sesión
+  setUser(user: AuthUser): void {
+    if (typeof window === "undefined") return
+
+    try {
+      localStorage.setItem(this.SESSION_KEY, JSON.stringify(user))
+      this.renewSession()
+    } catch (error) {
+      console.error("Error al establecer usuario:", error)
+    }
+  }
+
+  // Renovar la sesión
+  renewSession(): void {
+    if (typeof window === "undefined") return
+
+    const expiryTime = new Date().getTime() + this.SESSION_DURATION
+    localStorage.setItem(this.SESSION_EXPIRY_KEY, expiryTime.toString())
+  }
+
+  // Verificar y renovar la sesión si es necesario
+  checkAndRenewSession(): void {
+    if (typeof window === "undefined") return
+
+    const user = this.getUser()
+    if (user) {
+      this.renewSession()
+    }
+  }
+
+  // Cerrar sesión
+  logout(): void {
+    if (typeof window === "undefined") return
+
+    localStorage.removeItem(this.SESSION_KEY)
+    localStorage.removeItem(this.SESSION_EXPIRY_KEY)
+  }
 }
 
-export { sessionManager }
-export type { AuthUser }
+export const sessionManager = new SessionManager()
