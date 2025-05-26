@@ -27,7 +27,7 @@ export default function DashboardLayout({
   // Show loading during initialization
   if (!isInitialized || isLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-primary-50 to-medical-light">
+      <div className="flex h-screen items-center justify-center bg-soft-gradient">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mx-auto mb-4"></div>
           <p className="text-primary-800 font-medium">Cargando dashboard...</p>
@@ -39,7 +39,7 @@ export default function DashboardLayout({
   // Show loading if no user (redirecting)
   if (!user) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-primary-50 to-medical-light">
+      <div className="flex h-screen items-center justify-center bg-soft-gradient">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mx-auto mb-4"></div>
           <p className="text-primary-800 font-medium">Verificando acceso...</p>
@@ -49,11 +49,11 @@ export default function DashboardLayout({
   }
 
   return (
-    <div className="flex h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-medical-light/50">
+    <div className="flex h-screen bg-soft-gradient">
       <Sidebar />
       <div className="flex-grow overflow-y-auto">
         <main className="p-6">
-          <div className="bg-white rounded-xl shadow-medical-lg border border-neutral-200/50 min-h-full p-6 backdrop-blur-sm">
+          <div className="bg-white rounded-xl shadow-soft-lg border border-primary-200/50 min-h-full p-6 backdrop-blur-sm">
             {children}
           </div>
         </main>

@@ -304,31 +304,31 @@ export function Sidebar() {
   const getRoleColor = (role: string) => {
     switch (role) {
       case "patient":
-        return "bg-info-100 text-info-600 border-info-200"
+        return "bg-info-100 text-info-600 border-info-300"
       case "student":
-        return "bg-success-100 text-success-600 border-success-200"
+        return "bg-success-100 text-success-600 border-success-300"
       case "professor":
-        return "bg-specialty-endodoncia-light text-specialty-endodoncia border-specialty-endodoncia/20"
+        return "bg-specialty-endodoncia-light text-specialty-endodoncia border-specialty-endodoncia/30"
       case "admin":
-        return "bg-error-100 text-error-600 border-error-200"
+        return "bg-error-100 text-error-600 border-error-300"
       default:
-        return "bg-neutral-100 text-neutral-600 border-neutral-200"
+        return "bg-neutral-100 text-neutral-600 border-neutral-300"
     }
   }
 
   return (
     <div
-      className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 bg-white border-r border-neutral-200 flex flex-col h-full shadow-medical`}
+      className={`${collapsed ? "w-16" : "w-72"} transition-all duration-300 bg-white border-r border-primary-200 flex flex-col h-full shadow-soft-lg`}
     >
       {/* Header */}
-      <div className="p-4 border-b border-neutral-200 bg-gradient-to-r from-primary-50 to-medical-light">
+      <div className="p-4 border-b border-primary-200 bg-gradient-to-r from-primary-50 to-medical-light">
         <div className="flex items-center justify-between">
           {!collapsed && (
             <div className="flex items-center space-x-3">
               <UleamBranding variant="logo-only" />
               <div>
-                <h2 className="text-lg font-bold text-primary-600">ULEAM</h2>
-                <p className="text-xs text-primary-500">Clínica Dental</p>
+                <h2 className="text-lg font-bold text-primary-700">ULEAM</h2>
+                <p className="text-xs text-primary-600">Clínica Dental</p>
               </div>
             </div>
           )}
@@ -336,7 +336,7 @@ export function Sidebar() {
             variant="ghost"
             size="sm"
             onClick={() => setCollapsed(!collapsed)}
-            className="text-primary-600 hover:text-primary-700 hover:bg-primary-100"
+            className="text-primary-600 hover:text-primary-700 hover:bg-primary-100 transition-colors"
           >
             {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
           </Button>
@@ -345,15 +345,15 @@ export function Sidebar() {
 
       {/* User Info */}
       {user && (
-        <div className="p-4 border-b border-neutral-200 bg-gradient-to-r from-neutral-50 to-primary-50/30">
+        <div className="p-4 border-b border-primary-200 bg-gradient-to-r from-neutral-50 to-primary-50/30">
           <div className={`${collapsed ? "text-center" : "flex items-center space-x-3"}`}>
-            <div className="w-10 h-10 bg-medical-gradient rounded-full flex items-center justify-center text-white font-semibold shadow-medical">
+            <div className="w-10 h-10 bg-medical-gradient rounded-full flex items-center justify-center text-white font-semibold shadow-soft">
               {user.name.charAt(0).toUpperCase()}
             </div>
             {!collapsed && (
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-neutral-800 truncate">{user.name}</p>
-                <p className="text-xs text-neutral-600 truncate">{user.email}</p>
+                <p className="text-sm font-medium text-primary-800 truncate">{user.name}</p>
+                <p className="text-xs text-primary-600 truncate">{user.email}</p>
                 <Badge className={`text-xs mt-1 border ${getRoleColor(user.role)}`}>
                   {getRoleDisplayName(user.role)}
                 </Badge>
@@ -369,7 +369,7 @@ export function Sidebar() {
           {navigation.map((section, sectionIndex) => (
             <div key={sectionIndex} className="px-4">
               {!collapsed && (
-                <h3 className="text-xs font-semibold text-neutral-600 uppercase tracking-wider mb-3">
+                <h3 className="text-xs font-semibold text-primary-700 uppercase tracking-wider mb-3">
                   {section.title}
                 </h3>
               )}
@@ -386,8 +386,8 @@ export function Sidebar() {
                         w-full justify-start h-auto py-3 px-3 transition-all duration-200
                         ${
                           isActive
-                            ? "bg-medical-gradient text-white shadow-medical hover:shadow-medical-lg"
-                            : "text-neutral-700 hover:text-primary-700 hover:bg-primary-50"
+                            ? "bg-medical-gradient text-white shadow-soft hover:shadow-soft-lg"
+                            : "text-primary-700 hover:text-primary-800 hover:bg-primary-50"
                         }
                         ${collapsed ? "px-2" : ""}
                       `}
@@ -409,14 +409,14 @@ export function Sidebar() {
                   )
                 })}
               </div>
-              {sectionIndex < navigation.length - 1 && !collapsed && <Separator className="mt-4 bg-neutral-200" />}
+              {sectionIndex < navigation.length - 1 && !collapsed && <Separator className="mt-4 bg-primary-200" />}
             </div>
           ))}
         </nav>
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-neutral-200 bg-gradient-to-r from-neutral-50 to-error-50/30">
+      <div className="p-4 border-t border-primary-200 bg-gradient-to-r from-neutral-50 to-error-50/30">
         <Button
           variant="ghost"
           className="w-full justify-start text-error-600 hover:text-error-700 hover:bg-error-50 transition-colors duration-200"

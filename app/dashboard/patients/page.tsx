@@ -89,9 +89,9 @@ export default function PatientsPage() {
     return (
       <div className="flex items-center justify-center h-96">
         <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-red-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-gray-800 mb-2">Acceso Denegado</h2>
-          <p className="text-gray-600">Solo los estudiantes pueden acceder a esta página.</p>
+          <AlertCircle className="h-12 w-12 text-error-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-primary-800 mb-2">Acceso Denegado</h2>
+          <p className="text-primary-600">Solo los estudiantes pueden acceder a esta página.</p>
         </div>
       </div>
     )
@@ -107,11 +107,11 @@ export default function PatientsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800"
+        return "bg-success-100 text-success-700 border-success-300"
       case "inactive":
-        return "bg-gray-100 text-gray-800"
+        return "bg-neutral-100 text-neutral-700 border-neutral-300"
       default:
-        return "bg-blue-100 text-blue-800"
+        return "bg-info-100 text-info-700 border-info-300"
     }
   }
 
@@ -131,10 +131,10 @@ export default function PatientsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-green-800">Gestión de Pacientes</h1>
-          <p className="text-green-600">Estudiante: {user.name}</p>
+          <h1 className="text-3xl font-bold text-primary-800">Gestión de Pacientes</h1>
+          <p className="text-primary-600">Estudiante: {user.name}</p>
         </div>
-        <Button className="bg-green-600 hover:bg-green-700 text-white">
+        <Button className="bg-primary-600 hover:bg-primary-700 text-white shadow-soft">
           <Plus className="h-4 w-4 mr-2" />
           Nuevo Paciente
         </Button>
@@ -142,81 +142,83 @@ export default function PatientsPage() {
 
       {/* Stats Cards */}
       <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-green-200">
+        <Card className="border-primary-200 hover:shadow-soft transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">Total Pacientes</CardTitle>
-            <Users className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-primary-800">Total Pacientes</CardTitle>
+            <Users className="h-4 w-4 text-primary-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">{mockPatients.length}</div>
-            <p className="text-xs text-green-600">Pacientes asignados</p>
+            <div className="text-2xl font-bold text-primary-700">{mockPatients.length}</div>
+            <p className="text-xs text-primary-600">Pacientes asignados</p>
           </CardContent>
         </Card>
 
-        <Card className="border-green-200">
+        <Card className="border-success-200 hover:shadow-soft transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">Pacientes Activos</CardTitle>
-            <CheckCircle className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-success-800">Pacientes Activos</CardTitle>
+            <CheckCircle className="h-4 w-4 text-success-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">
+            <div className="text-2xl font-bold text-success-700">
               {mockPatients.filter((p) => p.status === "active").length}
             </div>
-            <p className="text-xs text-green-600">En tratamiento</p>
+            <p className="text-xs text-success-600">En tratamiento</p>
           </CardContent>
         </Card>
 
-        <Card className="border-green-200">
+        <Card className="border-info-200 hover:shadow-soft transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">Citas Pendientes</CardTitle>
-            <Calendar className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-info-800">Citas Pendientes</CardTitle>
+            <Calendar className="h-4 w-4 text-info-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">
+            <div className="text-2xl font-bold text-info-700">
               {mockPatients.filter((p) => p.nextAppointment).length}
             </div>
-            <p className="text-xs text-green-600">Próximas citas</p>
+            <p className="text-xs text-info-600">Próximas citas</p>
           </CardContent>
         </Card>
 
-        <Card className="border-green-200">
+        <Card className="border-warning-200 hover:shadow-soft transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">Tratamientos</CardTitle>
-            <FileText className="h-4 w-4 text-green-600" />
+            <CardTitle className="text-sm font-medium text-warning-800">Tratamientos</CardTitle>
+            <FileText className="h-4 w-4 text-warning-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-green-700">
+            <div className="text-2xl font-bold text-warning-700">
               {mockPatients.reduce((acc, p) => acc + p.treatments.length, 0)}
             </div>
-            <p className="text-xs text-green-600">En progreso</p>
+            <p className="text-xs text-warning-600">En progreso</p>
           </CardContent>
         </Card>
       </div>
 
       {/* Search and Filters */}
-      <Card className="border-green-200">
+      <Card className="border-primary-200">
         <CardHeader>
-          <CardTitle className="text-green-800">Buscar Pacientes</CardTitle>
-          <CardDescription className="text-green-600">Encuentra pacientes por nombre, email o teléfono</CardDescription>
+          <CardTitle className="text-primary-800">Buscar Pacientes</CardTitle>
+          <CardDescription className="text-primary-600">
+            Encuentra pacientes por nombre, email o teléfono
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex items-center space-x-2">
-            <Search className="h-4 w-4 text-green-600" />
+            <Search className="h-4 w-4 text-primary-600" />
             <Input
               placeholder="Buscar pacientes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="border-green-200 focus:border-green-500 focus:ring-green-500"
+              className="border-primary-200 focus:border-primary-500 focus:ring-primary-500"
             />
           </div>
         </CardContent>
       </Card>
 
       {/* Patients Table */}
-      <Card className="border-green-200">
+      <Card className="border-primary-200">
         <CardHeader>
-          <CardTitle className="text-green-800">Lista de Pacientes</CardTitle>
-          <CardDescription className="text-green-600">
+          <CardTitle className="text-primary-800">Lista de Pacientes</CardTitle>
+          <CardDescription className="text-primary-600">
             {filteredPatients.length} paciente(s) encontrado(s)
           </CardDescription>
         </CardHeader>
@@ -224,35 +226,35 @@ export default function PatientsPage() {
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="text-green-800">Paciente</TableHead>
-                <TableHead className="text-green-800">Contacto</TableHead>
-                <TableHead className="text-green-800">Estado</TableHead>
-                <TableHead className="text-green-800">Última Visita</TableHead>
-                <TableHead className="text-green-800">Próxima Cita</TableHead>
-                <TableHead className="text-green-800">Acciones</TableHead>
+                <TableHead className="text-primary-800">Paciente</TableHead>
+                <TableHead className="text-primary-800">Contacto</TableHead>
+                <TableHead className="text-primary-800">Estado</TableHead>
+                <TableHead className="text-primary-800">Última Visita</TableHead>
+                <TableHead className="text-primary-800">Próxima Cita</TableHead>
+                <TableHead className="text-primary-800">Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {filteredPatients.map((patient) => (
-                <TableRow key={patient.id} className="hover:bg-green-50">
+                <TableRow key={patient.id} className="hover:bg-primary-50">
                   <TableCell>
                     <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-green-600" />
+                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-primary-600" />
                       </div>
                       <div>
-                        <div className="font-medium text-green-800">{patient.name}</div>
-                        <div className="text-sm text-green-600">{patient.age} años</div>
+                        <div className="font-medium text-primary-800">{patient.name}</div>
+                        <div className="text-sm text-primary-600">{patient.age} años</div>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1">
-                      <div className="flex items-center text-sm text-green-700">
+                      <div className="flex items-center text-sm text-primary-700">
                         <Mail className="h-3 w-3 mr-1" />
                         {patient.email}
                       </div>
-                      <div className="flex items-center text-sm text-green-700">
+                      <div className="flex items-center text-sm text-primary-700">
                         <Phone className="h-3 w-3 mr-1" />
                         {patient.phone}
                       </div>
@@ -262,19 +264,19 @@ export default function PatientsPage() {
                     <Badge className={getStatusColor(patient.status)}>{getStatusText(patient.status)}</Badge>
                   </TableCell>
                   <TableCell>
-                    <div className="flex items-center text-sm text-green-700">
+                    <div className="flex items-center text-sm text-primary-700">
                       <Clock className="h-3 w-3 mr-1" />
                       {patient.lastVisit}
                     </div>
                   </TableCell>
                   <TableCell>
                     {patient.nextAppointment ? (
-                      <div className="flex items-center text-sm text-green-700">
+                      <div className="flex items-center text-sm text-primary-700">
                         <Calendar className="h-3 w-3 mr-1" />
                         {patient.nextAppointment}
                       </div>
                     ) : (
-                      <span className="text-sm text-gray-500">Sin cita</span>
+                      <span className="text-sm text-neutral-500">Sin cita</span>
                     )}
                   </TableCell>
                   <TableCell>
@@ -283,11 +285,15 @@ export default function PatientsPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => setSelectedPatient(patient)}
-                        className="border-green-200 text-green-700 hover:bg-green-50"
+                        className="border-primary-200 text-primary-700 hover:bg-primary-50"
                       >
                         Ver Detalles
                       </Button>
-                      <Button variant="outline" size="sm" className="border-green-200 text-green-700 hover:bg-green-50">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-primary-200 text-primary-700 hover:bg-primary-50"
+                      >
                         <Calendar className="h-3 w-3 mr-1" />
                         Cita
                       </Button>
@@ -302,15 +308,15 @@ export default function PatientsPage() {
 
       {/* Patient Details Modal */}
       {selectedPatient && (
-        <Card className="border-green-200 bg-green-50">
+        <Card className="border-primary-200 bg-primary-50">
           <CardHeader>
             <div className="flex items-center justify-between">
-              <CardTitle className="text-green-800">Detalles del Paciente</CardTitle>
+              <CardTitle className="text-primary-800">Detalles del Paciente</CardTitle>
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setSelectedPatient(null)}
-                className="border-green-200 text-green-700 hover:bg-green-100"
+                className="border-primary-200 text-primary-700 hover:bg-primary-100"
               >
                 Cerrar
               </Button>
@@ -318,47 +324,59 @@ export default function PatientsPage() {
           </CardHeader>
           <CardContent>
             <Tabs defaultValue="info" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
-                <TabsTrigger value="info">Información</TabsTrigger>
-                <TabsTrigger value="treatments">Tratamientos</TabsTrigger>
-                <TabsTrigger value="history">Historial</TabsTrigger>
+              <TabsList className="grid w-full grid-cols-3 bg-primary-100">
+                <TabsTrigger value="info" className="data-[state=active]:bg-primary-600 data-[state=active]:text-white">
+                  Información
+                </TabsTrigger>
+                <TabsTrigger
+                  value="treatments"
+                  className="data-[state=active]:bg-primary-600 data-[state=active]:text-white"
+                >
+                  Tratamientos
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  className="data-[state=active]:bg-primary-600 data-[state=active]:text-white"
+                >
+                  Historial
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="info" className="space-y-4">
                 <div className="grid gap-4 md:grid-cols-2">
                   <div>
-                    <h4 className="font-semibold text-green-800 mb-2">Información Personal</h4>
+                    <h4 className="font-semibold text-primary-800 mb-2">Información Personal</h4>
                     <div className="space-y-2 text-sm">
                       <div className="flex items-center">
-                        <User className="h-4 w-4 mr-2 text-green-600" />
-                        <span className="text-green-700">{selectedPatient.name}</span>
+                        <User className="h-4 w-4 mr-2 text-primary-600" />
+                        <span className="text-primary-700">{selectedPatient.name}</span>
                       </div>
                       <div className="flex items-center">
-                        <Mail className="h-4 w-4 mr-2 text-green-600" />
-                        <span className="text-green-700">{selectedPatient.email}</span>
+                        <Mail className="h-4 w-4 mr-2 text-primary-600" />
+                        <span className="text-primary-700">{selectedPatient.email}</span>
                       </div>
                       <div className="flex items-center">
-                        <Phone className="h-4 w-4 mr-2 text-green-600" />
-                        <span className="text-green-700">{selectedPatient.phone}</span>
+                        <Phone className="h-4 w-4 mr-2 text-primary-600" />
+                        <span className="text-primary-700">{selectedPatient.phone}</span>
                       </div>
                       <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-2 text-green-600" />
-                        <span className="text-green-700">{selectedPatient.address}</span>
+                        <MapPin className="h-4 w-4 mr-2 text-primary-600" />
+                        <span className="text-primary-700">{selectedPatient.address}</span>
                       </div>
                     </div>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-green-800 mb-2">Contacto de Emergencia</h4>
-                    <div className="text-sm text-green-700">{selectedPatient.emergencyContact}</div>
+                    <h4 className="font-semibold text-primary-800 mb-2">Contacto de Emergencia</h4>
+                    <div className="text-sm text-primary-700">{selectedPatient.emergencyContact}</div>
                   </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="treatments" className="space-y-4">
-                <h4 className="font-semibold text-green-800">Tratamientos Actuales</h4>
+                <h4 className="font-semibold text-primary-800">Tratamientos Actuales</h4>
                 <div className="flex flex-wrap gap-2">
                   {selectedPatient.treatments.map((treatment: string, index: number) => (
-                    <Badge key={index} className="bg-green-100 text-green-800">
+                    <Badge key={index} className="bg-primary-100 text-primary-800 border-primary-300">
                       {treatment}
                     </Badge>
                   ))}
@@ -366,8 +384,8 @@ export default function PatientsPage() {
               </TabsContent>
 
               <TabsContent value="history" className="space-y-4">
-                <h4 className="font-semibold text-green-800">Historial de Visitas</h4>
-                <div className="text-sm text-green-700">
+                <h4 className="font-semibold text-primary-800">Historial de Visitas</h4>
+                <div className="text-sm text-primary-700">
                   <p>Última visita: {selectedPatient.lastVisit}</p>
                   {selectedPatient.nextAppointment && <p>Próxima cita: {selectedPatient.nextAppointment}</p>}
                 </div>

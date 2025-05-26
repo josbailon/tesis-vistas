@@ -12,7 +12,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { useAuth, TEST_USERS } from "@/contexts/auth-context"
 
-export default function LoginForm() {
+export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [error, setError] = useState("")
@@ -103,7 +103,7 @@ export default function LoginForm() {
   }
 
   return (
-    <Card className="w-full max-w-md mx-auto">
+    <Card className="border-primary-200 shadow-soft-lg bg-white">
       <CardHeader>
         <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
         <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
@@ -143,16 +143,16 @@ export default function LoginForm() {
         </form>
       </CardContent>
       <CardFooter className="flex flex-col space-y-4">
-        <p className="text-sm text-muted-foreground">
+        <p className="text-sm text-primary-600">
           ¿No tienes una cuenta?{" "}
-          <a href="/register" className="text-primary hover:underline">
+          <a href="/register" className="text-primary-600 hover:underline">
             Regístrate
           </a>
         </p>
 
-        <div className="w-full pt-4 border-t">
-          <p className="text-sm font-medium mb-2">Credenciales de prueba:</p>
-          <div className="text-xs text-muted-foreground space-y-1">
+        <div className="w-full pt-4 border-t border-primary-200">
+          <p className="text-sm font-medium mb-2 text-primary-800">Credenciales de prueba:</p>
+          <div className="text-xs text-primary-600 space-y-1">
             <p>
               <strong>Paciente:</strong> paciente@clinica.com / paciente
             </p>
