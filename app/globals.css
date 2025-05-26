@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 body {
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
 @layer utilities {
@@ -14,73 +14,108 @@ body {
 
 @layer base {
   :root {
+    /* Base Colors */
     --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
+    --foreground: 210 40% 15%;
+
+    /* Card Colors */
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
+    --card-foreground: 210 40% 15%;
+
+    /* Popover Colors */
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
+    --popover-foreground: 210 40% 15%;
+
+    /* Primary - Medical Teal */
+    --primary: 174 62% 47%;
     --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-    --sidebar-background: 0 0% 98%;
-    --sidebar-foreground: 240 5.3% 26.1%;
-    --sidebar-primary: 240 5.9% 10%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 240 4.8% 95.9%;
-    --sidebar-accent-foreground: 240 5.9% 10%;
-    --sidebar-border: 220 13% 91%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
-  }
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
+
+    /* Secondary - Soft Blue */
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 210 40% 15%;
+
+    /* Muted Colors */
+    --muted: 210 40% 96%;
+    --muted-foreground: 210 40% 45%;
+
+    /* Accent - Warm Teal */
+    --accent: 174 44% 51%;
     --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
+
+    /* Destructive - Medical Red */
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-    --sidebar-background: 240 5.9% 10%;
-    --sidebar-foreground: 240 4.8% 95.9%;
-    --sidebar-primary: 224.3 76.3% 48%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 240 3.7% 15.9%;
-    --sidebar-accent-foreground: 240 4.8% 95.9%;
-    --sidebar-border: 240 3.7% 15.9%;
-    --sidebar-ring: 217.2 91.2% 59.8%;
+
+    /* Border and Input */
+    --border: 210 40% 90%;
+    --input: 210 40% 90%;
+    --ring: 174 62% 47%;
+
+    /* Chart Colors - Medical Palette */
+    --chart-1: 174 62% 47%;
+    --chart-2: 142 76% 36%;
+    --chart-3: 217 91% 60%;
+    --chart-4: 262 83% 58%;
+    --chart-5: 43 96% 56%;
+
+    /* Radius */
+    --radius: 0.75rem;
+
+    /* Sidebar Colors */
+    --sidebar-background: 210 40% 98%;
+    --sidebar-foreground: 210 40% 15%;
+    --sidebar-primary: 174 62% 47%;
+    --sidebar-primary-foreground: 0 0% 98%;
+    --sidebar-accent: 210 40% 94%;
+    --sidebar-accent-foreground: 210 40% 15%;
+    --sidebar-border: 210 40% 88%;
+    --sidebar-ring: 174 62% 47%;
+
+    /* Status Colors */
+    --success: 142 76% 36%;
+    --success-foreground: 0 0% 98%;
+    --warning: 43 96% 56%;
+    --warning-foreground: 43 96% 15%;
+    --info: 217 91% 60%;
+    --info-foreground: 0 0% 98%;
+    --error: 0 84% 60%;
+    --error-foreground: 0 0% 98%;
+
+    /* Medical Specialty Colors */
+    --endodoncia: 262 83% 58%;
+    --ortodoncia: 217 91% 60%;
+    --cirugia: 0 84% 60%;
+    --odontopediatria: 43 96% 56%;
+  }
+
+  .dark {
+    --background: 210 40% 4%;
+    --foreground: 210 40% 95%;
+    --card: 210 40% 6%;
+    --card-foreground: 210 40% 95%;
+    --popover: 210 40% 6%;
+    --popover-foreground: 210 40% 95%;
+    --primary: 174 62% 47%;
+    --primary-foreground: 210 40% 4%;
+    --secondary: 210 40% 10%;
+    --secondary-foreground: 210 40% 95%;
+    --muted: 210 40% 10%;
+    --muted-foreground: 210 40% 60%;
+    --accent: 174 44% 51%;
+    --accent-foreground: 210 40% 4%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 210 40% 18%;
+    --input: 210 40% 18%;
+    --ring: 174 62% 47%;
+    --sidebar-background: 210 40% 6%;
+    --sidebar-foreground: 210 40% 95%;
+    --sidebar-primary: 174 62% 47%;
+    --sidebar-primary-foreground: 210 40% 4%;
+    --sidebar-accent: 210 40% 10%;
+    --sidebar-accent-foreground: 210 40% 95%;
+    --sidebar-border: 210 40% 18%;
+    --sidebar-ring: 174 62% 47%;
   }
 }
 
@@ -90,5 +125,48 @@ body {
   }
   body {
     @apply bg-background text-foreground;
+  }
+}
+
+/* Custom Medical Gradients */
+@layer utilities {
+  .bg-medical-gradient {
+    background: linear-gradient(135deg, hsl(174 62% 47%) 0%, hsl(142 76% 36%) 100%);
+  }
+
+  .bg-specialty-endodoncia {
+    background: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(262 83% 48%) 100%);
+  }
+
+  .bg-specialty-ortodoncia {
+    background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 50%) 100%);
+  }
+
+  .bg-specialty-cirugia {
+    background: linear-gradient(135deg, hsl(0 84% 60%) 0%, hsl(0 84% 50%) 100%);
+  }
+
+  .bg-specialty-odontopediatria {
+    background: linear-gradient(135deg, hsl(43 96% 56%) 0%, hsl(43 96% 46%) 100%);
+  }
+
+  .text-medical-primary {
+    color: hsl(174 62% 47%);
+  }
+
+  .text-medical-secondary {
+    color: hsl(142 76% 36%);
+  }
+
+  .border-medical {
+    border-color: hsl(174 62% 47%);
+  }
+
+  .shadow-medical {
+    box-shadow: 0 4px 6px -1px rgba(45, 212, 191, 0.1), 0 2px 4px -1px rgba(45, 212, 191, 0.06);
+  }
+
+  .shadow-medical-lg {
+    box-shadow: 0 10px 15px -3px rgba(45, 212, 191, 0.1), 0 4px 6px -2px rgba(45, 212, 191, 0.05);
   }
 }

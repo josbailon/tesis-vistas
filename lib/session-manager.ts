@@ -1,80 +1,90 @@
-export interface AuthUser {
-  email: string
-  name: string
-  role: string
+export interface SessionData {
+  user: {
+    id: string
+    email: string
+    name: string
+    role: string
+    specialty?: string
+  }
+  expiresAt: number
 }
 
 class SessionManager {
-  private readonly SESSION_KEY = "user"
-  private readonly SESSION_EXPIRY_KEY = "session_expiry"
-  private readonly SESSION_DURATION = 24 * 60 * 60 * 1000 // 24 horas en milisegundos
+  private readonly SESSION_KEY = "clinic_user"
+  private readonly EXPIRY_KEY = "clinic_expiry"
+  private readonly SESSION_DURATION = 24 * 60 * 60 * 1000 // 24 hours
 
-  constructor() {
-    // Inicializar si estamos en el cliente
-    if (typeof window !== "undefined") {
-      this.checkAndRenewSession()
+  setSession(userData: SessionData["user"]): void {
+    try {
+      const expiresAt = Date.now() + this.SESSION_DURATION
+
+      localStorage.setItem(this.SESSION_KEY, JSON.stringify(userData))
+      localStorage.setItem(this.EXPIRY_KEY, expiresAt.toString())
+
+      console.log("✅ Session saved:", userData.role)
+    } catch (error) {
+      console.error("❌ Failed to save session:", error)
     }
   }
 
-  // Obtener usuario de la sesión
-  getUser(): AuthUser | null {
-    if (typeof window === "undefined") return null
-
+  getSession(): SessionData["user"] | null {
     try {
-      // Verificar si la sesión ha expirado
-      const expiryTime = localStorage.getItem(this.SESSION_EXPIRY_KEY)
-      if (!expiryTime || new Date().getTime() > Number.parseInt(expiryTime)) {
-        this.logout()
+      const userData = localStorage.getItem(this.SESSION_KEY)
+      const expiry = localStorage.getItem(this.EXPIRY_KEY)
+
+      if (!userData || !expiry) {
         return null
       }
 
-      const userJson = localStorage.getItem(this.SESSION_KEY)
-      if (!userJson) return null
+      const expiresAt = Number.parseInt(expiry)
+      if (Date.now() > expiresAt) {
+        this.clearSession()
+        console.log("⚠️ Session expired")
+        return null
+      }
 
-      return JSON.parse(userJson) as AuthUser
+      return JSON.parse(userData)
     } catch (error) {
-      console.error("Error al obtener usuario:", error)
+      console.error("❌ Failed to get session:", error)
+      this.clearSession()
       return null
     }
   }
 
-  // Establecer usuario en la sesión
-  setUser(user: AuthUser): void {
-    if (typeof window === "undefined") return
-
+  clearSession(): void {
     try {
-      localStorage.setItem(this.SESSION_KEY, JSON.stringify(user))
-      this.renewSession()
+      localStorage.removeItem(this.SESSION_KEY)
+      localStorage.removeItem(this.EXPIRY_KEY)
+      console.log("✅ Session cleared")
     } catch (error) {
-      console.error("Error al establecer usuario:", error)
+      console.error("❌ Failed to clear session:", error)
     }
   }
 
-  // Renovar la sesión
-  renewSession(): void {
-    if (typeof window === "undefined") return
-
-    const expiryTime = new Date().getTime() + this.SESSION_DURATION
-    localStorage.setItem(this.SESSION_EXPIRY_KEY, expiryTime.toString())
+  isSessionValid(): boolean {
+    const session = this.getSession()
+    return session !== null
   }
 
-  // Verificar y renovar la sesión si es necesario
-  checkAndRenewSession(): void {
-    if (typeof window === "undefined") return
-
-    const user = this.getUser()
-    if (user) {
-      this.renewSession()
+  extendSession(): void {
+    const session = this.getSession()
+    if (session) {
+      this.setSession(session)
     }
   }
 
-  // Cerrar sesión
-  logout(): void {
-    if (typeof window === "undefined") return
-
-    localStorage.removeItem(this.SESSION_KEY)
-    localStorage.removeItem(this.SESSION_EXPIRY_KEY)
+  getSessionExpiry(): number | null {
+    try {
+      const expiry = localStorage.getItem(this.EXPIRY_KEY)
+      return expiry ? Number.parseInt(expiry) : null
+    } catch (error) {
+      return null
+    }
   }
 }
 
+// Export singleton instance
 export const sessionManager = new SessionManager()
+
+// Export class for testing
+export { SessionManager }

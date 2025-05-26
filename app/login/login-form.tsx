@@ -2,21 +2,15 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
-
-// Usuarios de prueba para autenticación directa en el cliente
-const TEST_USERS = [
-  { email: "paciente@clinica.com", password: "paciente", role: "patient", name: "Juan Paciente" },
-  { email: "estudiante@clinica.com", password: "estudiante", role: "student", name: "María Estudiante" },
-  { email: "profesor@clinica.com", password: "profesor", role: "professor", name: "Carlos Profesor" },
-  { email: "admin@clinica.com", password: "admin", role: "admin", name: "Ana Administradora" },
-]
+import { useAuth, TEST_USERS } from "@/contexts/auth-context"
 
 export default function LoginForm() {
   const [email, setEmail] = useState("")
@@ -24,6 +18,21 @@ export default function LoginForm() {
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
   const [redirecting, setRedirecting] = useState(false)
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { login, isAuthenticated } = useAuth()
+
+  // Verificar si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      const callbackUrl = searchParams.get("callbackUrl")
+      if (callbackUrl) {
+        router.push(decodeURIComponent(callbackUrl))
+      } else {
+        router.push("/dashboard")
+      }
+    }
+  }, [isAuthenticated, router, searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -37,44 +46,45 @@ export default function LoginForm() {
       if (user) {
         setRedirecting(true)
 
-        // Guardar información del usuario en localStorage
-        localStorage.setItem(
-          "user",
-          JSON.stringify({
-            email: user.email,
-            role: user.role,
-            name: user.name,
-          }),
-        )
+        // Usar el contexto de autenticación para iniciar sesión
+        login({
+          email: user.email,
+          role: user.role,
+          name: user.name,
+        })
 
-        // Redirección basada en el rol
-        let redirectPath = "/dashboard"
-        switch (user.role) {
-          case "patient":
-            redirectPath = "/dashboard/my-appointments"
-            break
-          case "student":
-            redirectPath = "/dashboard/patients"
-            break
-          case "professor":
-            redirectPath = "/dashboard/specialty"
-            break
-          case "admin":
-            redirectPath = "/dashboard/users"
-            break
+        // Verificar si hay una URL de callback
+        const callbackUrl = searchParams.get("callbackUrl")
+        if (callbackUrl) {
+          console.log("Redirigiendo a URL de callback:", callbackUrl)
+          router.push(decodeURIComponent(callbackUrl))
+        } else {
+          // Redirección basada en el rol
+          let redirectPath = "/dashboard"
+          switch (user.role) {
+            case "patient":
+              redirectPath = "/dashboard/my-appointments"
+              break
+            case "student":
+              redirectPath = "/dashboard/patients"
+              break
+            case "professor":
+              redirectPath = "/dashboard/specialty"
+              break
+            case "admin":
+              redirectPath = "/dashboard/users"
+              break
+          }
+          console.log("Redirigiendo a ruta basada en rol:", redirectPath)
+          router.push(redirectPath)
         }
-
-        // Redirección forzada con un pequeño retraso para asegurar que la sesión se establezca
-        setTimeout(() => {
-          window.location.href = redirectPath
-        }, 300)
       } else {
         setError("Credenciales incorrectas")
         setLoading(false)
       }
     } catch (err) {
-      setError("Error al iniciar sesión")
       console.error("Login error:", err)
+      setError("Error al iniciar sesión")
       setLoading(false)
     }
   }

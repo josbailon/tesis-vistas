@@ -1,83 +1,63 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useEffect, useRef } from "react"
 import { Sidebar } from "@/components/sidebar"
-import { sessionManager } from "@/lib/session-manager"
+import { useAuth } from "@/contexts/auth-context"
 
 export default function DashboardLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
-  const [loading, setLoading] = useState(true)
-  const [user, setUser] = useState<any>(null)
-  const router = useRouter()
+  const { user, isLoading, isInitialized } = useAuth()
+  const redirectHandled = useRef(false)
 
   useEffect(() => {
-    // Verificar si hay un usuario en la sesión
-    const checkAuth = () => {
-      try {
-        const currentUser = sessionManager.getUser()
-        if (currentUser) {
-          setUser(currentUser)
-          // Renovar la sesión
-          sessionManager.renewSession()
-        } else {
-          router.push("/login")
-        }
-      } catch (e) {
-        console.error("Error al verificar autenticación:", e)
-        router.push("/login")
-      } finally {
-        setLoading(false)
-      }
+    if (isInitialized && !isLoading && !user && !redirectHandled.current) {
+      redirectHandled.current = true
+      console.log("🔄 Dashboard: No user found, redirecting to login")
+
+      setTimeout(() => {
+        window.location.href = "/login"
+      }, 500)
     }
+  }, [user, isLoading, isInitialized])
 
-    // Solo ejecutar en el cliente
-    if (typeof window !== "undefined") {
-      checkAuth()
-    }
-
-    // Verificar la sesión periódicamente
-    const intervalId = setInterval(() => {
-      if (typeof window !== "undefined") {
-        const currentUser = sessionManager.getUser()
-        if (currentUser) {
-          // Renovar la sesión
-          sessionManager.renewSession()
-        } else {
-          router.push("/login")
-        }
-      }
-    }, 30000) // Verificar cada 30 segundos
-
-    return () => clearInterval(intervalId)
-  }, [router])
-
-  if (loading) {
+  // Show loading during initialization
+  if (!isInitialized || isLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center">
-        <div className="flex flex-col items-center space-y-4">
-          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary"></div>
-          <p className="text-lg font-medium">Cargando...</p>
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-primary-50 to-medical-light">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mx-auto mb-4"></div>
+          <p className="text-primary-800 font-medium">Cargando dashboard...</p>
         </div>
       </div>
     )
   }
 
+  // Show loading if no user (redirecting)
   if (!user) {
-    return null
+    return (
+      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-primary-50 to-medical-light">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mx-auto mb-4"></div>
+          <p className="text-primary-800 font-medium">Verificando acceso...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
-    <div className="flex min-h-screen">
-      {/* Sidebar */}
+    <div className="flex h-screen bg-gradient-to-br from-neutral-50 via-primary-50/30 to-medical-light/50">
       <Sidebar />
-
-      {/* Main content */}
-      <div className="flex-1 p-8 overflow-auto">{children}</div>
+      <div className="flex-grow overflow-y-auto">
+        <main className="p-6">
+          <div className="bg-white rounded-xl shadow-medical-lg border border-neutral-200/50 min-h-full p-6 backdrop-blur-sm">
+            {children}
+          </div>
+        </main>
+      </div>
     </div>
   )
 }

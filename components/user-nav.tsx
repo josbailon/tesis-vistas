@@ -1,44 +1,45 @@
 "use client"
 
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { useAuth } from "./auth-provider"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+import { useAuth } from "@/contexts/auth-context"
+import { LogoutButton } from "@/components/logout-button"
 
 export function UserNav() {
-  const { user } = useAuth()
-
-  if (!user) return null
-
-  // Obtener las iniciales del correo electrónico
-  const getInitials = () => {
-    if (!user.email) return "U"
-    return user.email.charAt(0).toUpperCase()
-  }
-
-  // Obtener el nombre para mostrar basado en el rol
-  const getDisplayRole = () => {
-    switch (user.role) {
-      case "patient":
-        return "Paciente"
-      case "student":
-        return "Estudiante"
-      case "professor":
-        return "Profesor"
-      case "admin":
-        return "Administrador"
-      default:
-        return "Usuario"
-    }
-  }
+  const { session } = useAuth()
 
   return (
-    <div className="flex items-center gap-2">
-      <div className="flex flex-col space-y-0.5 text-right">
-        <p className="text-sm font-medium">{user.email}</p>
-        <p className="text-xs text-muted-foreground">{getDisplayRole()}</p>
-      </div>
-      <Avatar className="h-8 w-8">
-        <AvatarFallback>{getInitials()}</AvatarFallback>
-      </Avatar>
-    </div>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+          <Avatar className="h-8 w-8">
+            <AvatarImage src={session?.user?.image || ""} alt={session?.user?.name || "Avatar"} />
+            <AvatarFallback>{session?.user?.name?.charAt(0).toUpperCase() || "U"}</AvatarFallback>
+          </Avatar>
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="w-56" align="end" forceMount>
+        <DropdownMenuLabel>My Account</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        <DropdownMenuGroup>
+          <DropdownMenuItem>Profile</DropdownMenuItem>
+          <DropdownMenuItem>Billing</DropdownMenuItem>
+          <DropdownMenuItem>Settings</DropdownMenuItem>
+        </DropdownMenuGroup>
+        <DropdownMenuSeparator />
+        <DropdownMenuItem>
+          <LogoutButton>Log out</LogoutButton>
+        </DropdownMenuItem>
+      </DropdownMenuContent>
+    </DropdownMenu>
   )
 }

@@ -1115,6 +1115,123 @@ export const clinicalCases: ClinicalCase[] = [
   },
 ]
 
+// Datos de especialidades
+export const specialties = [
+  {
+    id: "cirugia-oral",
+    name: "Cirugía Oral y Maxilofacial",
+    description: "Extracciones, cirugías orales y procedimientos maxilofaciales especializados",
+    icon: "🔪",
+    color: "red",
+    studentCount: 3,
+    treatments: [
+      "Extracciones simples",
+      "Extracciones complejas",
+      "Cirugía de terceros molares",
+      "Biopsias orales",
+      "Cirugía preprotésica",
+    ],
+  },
+  {
+    id: "endodoncia",
+    name: "Endodoncia",
+    description: "Tratamientos de conducto y terapia pulpar para salvar dientes naturales",
+    icon: "🦷",
+    color: "blue",
+    studentCount: 3,
+    treatments: [
+      "Tratamiento de conducto",
+      "Retratamientos endodónticos",
+      "Pulpotomías",
+      "Terapia pulpar",
+      "Apexificación",
+    ],
+  },
+  {
+    id: "ortodoncia",
+    name: "Ortodoncia",
+    description: "Corrección de la posición dental y maloclusiones para una sonrisa perfecta",
+    icon: "😁",
+    color: "green",
+    studentCount: 3,
+    treatments: [
+      "Brackets metálicos",
+      "Aparatos removibles",
+      "Retenedores",
+      "Ajustes ortodónticos",
+      "Expansores palatinos",
+    ],
+  },
+  {
+    id: "odontopediatria",
+    name: "Odontopediatría",
+    description: "Atención dental especializada para niños y adolescentes en un ambiente amigable",
+    icon: "👶",
+    color: "purple",
+    studentCount: 3,
+    treatments: [
+      "Revisiones pediátricas",
+      "Sellantes de fosas y fisuras",
+      "Fluorización",
+      "Restauraciones infantiles",
+      "Pulpotomías en dientes temporales",
+    ],
+  },
+]
+
+// Datos mock actualizados para pacientes
+export const mockPatientData = {
+  upcomingAppointments: [
+    {
+      id: "1",
+      type: "Limpieza Dental",
+      student: "Dr. Pedro Gómez",
+      specialty: "Endodoncia",
+      date: new Date(2024, 11, 28, 10, 0),
+      status: "confirmed",
+      location: "Consultorio 3 - Clínica ULEAM",
+      duration: 60,
+    },
+    {
+      id: "2",
+      type: "Revisión de Ortodoncia",
+      student: "Dra. Laura Torres",
+      specialty: "Ortodoncia",
+      date: new Date(2024, 11, 30, 14, 30),
+      status: "pending",
+      location: "Consultorio 5 - Clínica ULEAM",
+      duration: 45,
+    },
+  ],
+  recentTreatments: [
+    {
+      id: "1",
+      treatment: "Tratamiento de Conducto",
+      date: new Date(2024, 10, 15),
+      student: "Dr. Miguel Sánchez",
+      specialty: "Endodoncia",
+      status: "completed",
+      progress: 100,
+    },
+    {
+      id: "2",
+      treatment: "Ortodoncia con Brackets",
+      date: new Date(2024, 10, 1),
+      student: "Dra. Laura Torres",
+      specialty: "Ortodoncia",
+      status: "in_progress",
+      progress: 65,
+    },
+  ],
+  healthMetrics: {
+    oralHealthScore: 85,
+    treatmentsCompleted: 12,
+    appointmentsThisYear: 8,
+    nextCheckup: new Date(2025, 0, 15),
+    lastVisit: new Date(2024, 10, 20),
+  },
+}
+
 // Exportar todos los datos
 export const mockData = {
   users,
@@ -1129,6 +1246,8 @@ export const mockData = {
   academicTasks,
   evaluations,
   clinicalCases,
+  specialties,
+  mockPatientData,
 }
 
 export default mockData

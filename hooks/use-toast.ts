@@ -2,21 +2,24 @@
 
 // Inspired by react-hot-toast library
 import * as React from "react"
+import { useState, useCallback } from "react"
 
-import type {
-  ToastActionElement,
-  ToastProps,
-} from "@/components/ui/toast"
+interface Toast {
+  id: string
+  title: string
+  description?: string
+  variant?: "default" | "destructive"
+  duration?: number
+}
+
+interface ToastState {
+  toasts: Toast[]
+}
+
+let toastCount = 0
 
 const TOAST_LIMIT = 1
 const TOAST_REMOVE_DELAY = 1000000
-
-type ToasterToast = ToastProps & {
-  id: string
-  title?: React.ReactNode
-  description?: React.ReactNode
-  action?: ToastActionElement
-}
 
 const actionTypes = {
   ADD_TOAST: "ADD_TOAST",
@@ -25,11 +28,9 @@ const actionTypes = {
   REMOVE_TOAST: "REMOVE_TOAST",
 } as const
 
-let count = 0
-
 function genId() {
-  count = (count + 1) % Number.MAX_SAFE_INTEGER
-  return count.toString()
+  toastCount = (toastCount + 1) % Number.MAX_SAFE_INTEGER
+  return toastCount.toString()
 }
 
 type ActionType = typeof actionTypes
@@ -37,23 +38,23 @@ type ActionType = typeof actionTypes
 type Action =
   | {
       type: ActionType["ADD_TOAST"]
-      toast: ToasterToast
+      toast: Toast
     }
   | {
       type: ActionType["UPDATE_TOAST"]
-      toast: Partial<ToasterToast>
+      toast: Partial<Toast>
     }
   | {
       type: ActionType["DISMISS_TOAST"]
-      toastId?: ToasterToast["id"]
+      toastId?: Toast["id"]
     }
   | {
       type: ActionType["REMOVE_TOAST"]
-      toastId?: ToasterToast["id"]
+      toastId?: Toast["id"]
     }
 
 interface State {
-  toasts: ToasterToast[]
+  toasts: Toast[]
 }
 
 const toastTimeouts = new Map<string, ReturnType<typeof setTimeout>>()
@@ -85,9 +86,7 @@ export const reducer = (state: State, action: Action): State => {
     case "UPDATE_TOAST":
       return {
         ...state,
-        toasts: state.toasts.map((t) =>
-          t.id === action.toast.id ? { ...t, ...action.toast } : t
-        ),
+        toasts: state.toasts.map((t) => (t.id === action.toast.id ? { ...t, ...action.toast } : t)),
       }
 
     case "DISMISS_TOAST": {
@@ -111,7 +110,7 @@ export const reducer = (state: State, action: Action): State => {
                 ...t,
                 open: false,
               }
-            : t
+            : t,
         ),
       }
     }
@@ -140,39 +139,32 @@ function dispatch(action: Action) {
   })
 }
 
-type Toast = Omit<ToasterToast, "id">
+export function useToast() {
+  const [state, setState] = useState<ToastState>({ toasts: [] })
 
-function toast({ ...props }: Toast) {
-  const id = genId()
+  const toast = useCallback(({ title, description, variant = "default", duration = 5000 }: Omit<Toast, "id">) => {
+    const id = genId()
+    const newToast: Toast = { id, title, description, variant, duration }
 
-  const update = (props: ToasterToast) =>
-    dispatch({
-      type: "UPDATE_TOAST",
-      toast: { ...props, id },
-    })
-  const dismiss = () => dispatch({ type: "DISMISS_TOAST", toastId: id })
+    setState((prevState) => ({
+      toasts: [...prevState.toasts, newToast],
+    }))
 
-  dispatch({
-    type: "ADD_TOAST",
-    toast: {
-      ...props,
-      id,
-      open: true,
-      onOpenChange: (open) => {
-        if (!open) dismiss()
-      },
-    },
-  })
+    // Auto-dismiss after duration
+    setTimeout(() => {
+      setState((prevState) => ({
+        toasts: prevState.toasts.filter((t) => t.id !== id),
+      }))
+    }, duration)
 
-  return {
-    id: id,
-    dismiss,
-    update,
-  }
-}
+    return id
+  }, [])
 
-function useToast() {
-  const [state, setState] = React.useState<State>(memoryState)
+  const dismiss = useCallback((toastId: string) => {
+    setState((prevState) => ({
+      toasts: prevState.toasts.filter((t) => t.id !== toastId),
+    }))
+  }, [])
 
   React.useEffect(() => {
     listeners.push(setState)
@@ -185,10 +177,8 @@ function useToast() {
   }, [state])
 
   return {
-    ...state,
     toast,
-    dismiss: (toastId?: string) => dispatch({ type: "DISMISS_TOAST", toastId }),
+    dismiss,
+    toasts: state.toasts,
   }
 }
-
-export { useToast, toast }

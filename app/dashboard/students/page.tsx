@@ -19,6 +19,7 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
+import { useAuth } from "@/contexts/auth-context"
 
 // Datos de ejemplo para los estudiantes
 const students = [
@@ -181,6 +182,7 @@ const evaluations = [
 ]
 
 export default function StudentsPage() {
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
   const [specialtyFilter, setSpecialtyFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
@@ -188,6 +190,20 @@ export default function StudentsPage() {
   const [isStudentDialogOpen, setIsStudentDialogOpen] = useState(false)
   const [isEvaluationDialogOpen, setIsEvaluationDialogOpen] = useState(false)
   const [sortConfig, setSortConfig] = useState<{ key: string; direction: "ascending" | "descending" } | null>(null)
+
+  console.log("🎓 Students Page - Usuario actual:", user)
+
+  // Verificar que el usuario tenga permisos para ver esta página
+  if (!user || (user.role !== "professor" && user.role !== "admin")) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <h2 className="text-xl font-semibold text-red-800 mb-2">Acceso Denegado</h2>
+          <p className="text-red-600">No tienes permisos para ver esta página.</p>
+        </div>
+      </div>
+    )
+  }
 
   // Filtrar estudiantes según los criterios de búsqueda y filtros
   const filteredStudents = students.filter((student) => {
@@ -230,24 +246,24 @@ export default function StudentsPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Estudiantes</h1>
-        <p className="text-muted-foreground">Gestiona y evalúa a tus estudiantes</p>
+        <h1 className="text-3xl font-bold tracking-tight text-green-800">Estudiantes</h1>
+        <p className="text-green-600">Gestiona y evalúa a tus estudiantes</p>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
         <div className="flex items-center space-x-2">
-          <Search className="h-4 w-4 text-muted-foreground" />
+          <Search className="h-4 w-4 text-green-600" />
           <Input
             placeholder="Buscar estudiantes..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-[200px] md:w-[300px]"
+            className="w-[200px] md:w-[300px] border-green-200 focus:border-green-500"
           />
         </div>
         <div className="flex flex-col md:flex-row gap-2">
           <div className="flex items-center space-x-2">
             <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] border-green-200">
                 <SelectValue placeholder="Filtrar por especialidad" />
               </SelectTrigger>
               <SelectContent>
@@ -262,7 +278,7 @@ export default function StudentsPage() {
           </div>
           <div className="flex items-center space-x-2">
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[180px]">
+              <SelectTrigger className="w-[180px] border-green-200">
                 <SelectValue placeholder="Filtrar por estado" />
               </SelectTrigger>
               <SelectContent>
@@ -276,233 +292,273 @@ export default function StudentsPage() {
       </div>
 
       <Tabs defaultValue="list">
-        <TabsList>
-          <TabsTrigger value="list">Lista de Estudiantes</TabsTrigger>
-          <TabsTrigger value="evaluations">Evaluaciones</TabsTrigger>
-          <TabsTrigger value="cases">Casos Clínicos</TabsTrigger>
+        <TabsList className="bg-green-100">
+          <TabsTrigger value="list" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+            Lista de Estudiantes
+          </TabsTrigger>
+          <TabsTrigger value="evaluations" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+            Evaluaciones
+          </TabsTrigger>
+          <TabsTrigger value="cases" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
+            Casos Clínicos
+          </TabsTrigger>
         </TabsList>
         <TabsContent value="list" className="space-y-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>
-                  <Button variant="ghost" className="p-0 h-8 font-medium" onClick={() => requestSort("name")}>
-                    Estudiante
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead>ID</TableHead>
-                <TableHead>Especialidad</TableHead>
-                <TableHead>
-                  <Button variant="ghost" className="p-0 h-8 font-medium" onClick={() => requestSort("progress")}>
-                    Progreso
-                    <ArrowUpDown className="ml-2 h-4 w-4" />
-                  </Button>
-                </TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedStudents.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Avatar className="h-8 w-8">
-                        <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                      </Avatar>
-                      <div>
-                        <div className="font-medium">{student.name}</div>
-                        <div className="text-sm text-muted-foreground">{student.email}</div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{student.studentId}</TableCell>
-                  <TableCell>{student.specialty}</TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Progress value={student.progress} className="h-2 w-[100px]" />
-                      <span className="text-sm text-muted-foreground">{student.progress}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        student.status === "active"
-                          ? "bg-green-100 text-green-800 hover:bg-green-100"
-                          : "bg-gray-100 text-gray-800 hover:bg-gray-100"
-                      }
-                    >
-                      {student.status === "active" ? "Activo" : "Inactivo"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
+          <div className="border border-green-200 rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-green-50">
+                  <TableHead>
                     <Button
                       variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedStudent(student)
-                        setIsStudentDialogOpen(true)
-                      }}
+                      className="p-0 h-8 font-medium text-green-800"
+                      onClick={() => requestSort("name")}
                     >
-                      Ver Detalles
+                      Estudiante
+                      <ArrowUpDown className="ml-2 h-4 w-4" />
                     </Button>
-                  </TableCell>
+                  </TableHead>
+                  <TableHead className="text-green-800">ID</TableHead>
+                  <TableHead className="text-green-800">Especialidad</TableHead>
+                  <TableHead>
+                    <Button
+                      variant="ghost"
+                      className="p-0 h-8 font-medium text-green-800"
+                      onClick={() => requestSort("progress")}
+                    >
+                      Progreso
+                      <ArrowUpDown className="ml-2 h-4 w-4" />
+                    </Button>
+                  </TableHead>
+                  <TableHead className="text-green-800">Estado</TableHead>
+                  <TableHead className="text-right text-green-800">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {sortedStudents.map((student) => (
+                  <TableRow key={student.id} className="hover:bg-green-50">
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Avatar className="h-8 w-8">
+                          <AvatarFallback className="bg-green-100 text-green-800">
+                            {student.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium text-green-800">{student.name}</div>
+                          <div className="text-sm text-green-600">{student.email}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-green-700">{student.studentId}</TableCell>
+                    <TableCell className="text-green-700">{student.specialty}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Progress value={student.progress} className="h-2 w-[100px]" />
+                        <span className="text-sm text-green-600">{student.progress}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          student.status === "active"
+                            ? "bg-green-100 text-green-800 border-green-300"
+                            : "bg-gray-100 text-gray-800 border-gray-300"
+                        }
+                      >
+                        {student.status === "active" ? "Activo" : "Inactivo"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-green-600 hover:text-green-800 hover:bg-green-100"
+                        onClick={() => {
+                          setSelectedStudent(student)
+                          setIsStudentDialogOpen(true)
+                        }}
+                      >
+                        Ver Detalles
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </TabsContent>
         <TabsContent value="evaluations" className="space-y-4">
           <div className="flex justify-end">
-            <Button onClick={() => setIsEvaluationDialogOpen(true)}>Nueva Evaluación</Button>
+            <Button
+              onClick={() => setIsEvaluationDialogOpen(true)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
+              Nueva Evaluación
+            </Button>
           </div>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Estudiante</TableHead>
-                <TableHead>Evaluación</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Calificación</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {evaluations.map((evaluation) => (
-                <TableRow key={evaluation.id}>
-                  <TableCell className="font-medium">{evaluation.studentName}</TableCell>
-                  <TableCell>{evaluation.title}</TableCell>
-                  <TableCell>{evaluation.date}</TableCell>
-                  <TableCell>
-                    {evaluation.score !== null ? (
-                      <span>
-                        {evaluation.score}/{evaluation.maxScore} (
-                        {Math.round((evaluation.score / evaluation.maxScore) * 100)}%)
-                      </span>
-                    ) : (
-                      <span className="text-muted-foreground">Pendiente</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        evaluation.status === "completed"
-                          ? "bg-green-100 text-green-800 hover:bg-green-100"
-                          : "bg-yellow-100 text-yellow-800 hover:bg-yellow-100"
-                      }
-                    >
-                      {evaluation.status === "completed" ? "Completada" : "Pendiente"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      {evaluation.status === "completed" ? "Ver Detalles" : "Evaluar"}
-                    </Button>
-                  </TableCell>
+          <div className="border border-green-200 rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-green-50">
+                  <TableHead className="text-green-800">Estudiante</TableHead>
+                  <TableHead className="text-green-800">Evaluación</TableHead>
+                  <TableHead className="text-green-800">Fecha</TableHead>
+                  <TableHead className="text-green-800">Calificación</TableHead>
+                  <TableHead className="text-green-800">Estado</TableHead>
+                  <TableHead className="text-right text-green-800">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {evaluations.map((evaluation) => (
+                  <TableRow key={evaluation.id} className="hover:bg-green-50">
+                    <TableCell className="font-medium text-green-800">{evaluation.studentName}</TableCell>
+                    <TableCell className="text-green-700">{evaluation.title}</TableCell>
+                    <TableCell className="text-green-700">{evaluation.date}</TableCell>
+                    <TableCell>
+                      {evaluation.score !== null ? (
+                        <span className="text-green-700">
+                          {evaluation.score}/{evaluation.maxScore} (
+                          {Math.round((evaluation.score / evaluation.maxScore) * 100)}%)
+                        </span>
+                      ) : (
+                        <span className="text-green-500">Pendiente</span>
+                      )}
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          evaluation.status === "completed"
+                            ? "bg-green-100 text-green-800 border-green-300"
+                            : "bg-yellow-100 text-yellow-800 border-yellow-300"
+                        }
+                      >
+                        {evaluation.status === "completed" ? "Completada" : "Pendiente"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-green-600 hover:text-green-800 hover:bg-green-100"
+                      >
+                        {evaluation.status === "completed" ? "Ver Detalles" : "Evaluar"}
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </TabsContent>
         <TabsContent value="cases" className="space-y-4">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Paciente</TableHead>
-                <TableHead>Estudiante</TableHead>
-                <TableHead>Tratamiento</TableHead>
-                <TableHead>Inicio</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Progreso</TableHead>
-                <TableHead className="text-right">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {clinicalCases.map((clinicalCase) => (
-                <TableRow key={clinicalCase.id}>
-                  <TableCell className="font-medium">{clinicalCase.patientName}</TableCell>
-                  <TableCell>{clinicalCase.studentName}</TableCell>
-                  <TableCell>{clinicalCase.treatment}</TableCell>
-                  <TableCell>{clinicalCase.startDate}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={
-                        clinicalCase.status === "completed"
-                          ? "bg-green-100 text-green-800 hover:bg-green-100"
-                          : "bg-blue-100 text-blue-800 hover:bg-blue-100"
-                      }
-                    >
-                      {clinicalCase.status === "completed" ? "Completado" : "En Progreso"}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center space-x-2">
-                      <Progress value={clinicalCase.progress} className="h-2 w-[100px]" />
-                      <span className="text-sm text-muted-foreground">{clinicalCase.progress}%</span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <Button variant="ghost" size="sm">
-                      Ver Expediente
-                    </Button>
-                  </TableCell>
+          <div className="border border-green-200 rounded-lg">
+            <Table>
+              <TableHeader>
+                <TableRow className="bg-green-50">
+                  <TableHead className="text-green-800">Paciente</TableHead>
+                  <TableHead className="text-green-800">Estudiante</TableHead>
+                  <TableHead className="text-green-800">Tratamiento</TableHead>
+                  <TableHead className="text-green-800">Inicio</TableHead>
+                  <TableHead className="text-green-800">Estado</TableHead>
+                  <TableHead className="text-green-800">Progreso</TableHead>
+                  <TableHead className="text-right text-green-800">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {clinicalCases.map((clinicalCase) => (
+                  <TableRow key={clinicalCase.id} className="hover:bg-green-50">
+                    <TableCell className="font-medium text-green-800">{clinicalCase.patientName}</TableCell>
+                    <TableCell className="text-green-700">{clinicalCase.studentName}</TableCell>
+                    <TableCell className="text-green-700">{clinicalCase.treatment}</TableCell>
+                    <TableCell className="text-green-700">{clinicalCase.startDate}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant="outline"
+                        className={
+                          clinicalCase.status === "completed"
+                            ? "bg-green-100 text-green-800 border-green-300"
+                            : "bg-blue-100 text-blue-800 border-blue-300"
+                        }
+                      >
+                        {clinicalCase.status === "completed" ? "Completado" : "En Progreso"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center space-x-2">
+                        <Progress value={clinicalCase.progress} className="h-2 w-[100px]" />
+                        <span className="text-sm text-green-600">{clinicalCase.progress}%</span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="text-green-600 hover:text-green-800 hover:bg-green-100"
+                      >
+                        Ver Expediente
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </TabsContent>
       </Tabs>
 
       {/* Diálogo para ver detalles del estudiante */}
       {selectedStudent && (
         <Dialog open={isStudentDialogOpen} onOpenChange={setIsStudentDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] border-green-200">
             <DialogHeader>
-              <DialogTitle>Detalles del Estudiante</DialogTitle>
-              <DialogDescription>Información detallada y progreso académico</DialogDescription>
+              <DialogTitle className="text-green-800">Detalles del Estudiante</DialogTitle>
+              <DialogDescription className="text-green-600">
+                Información detallada y progreso académico
+              </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
               <div className="flex items-center space-x-4">
                 <Avatar className="h-16 w-16">
-                  <AvatarFallback className="text-2xl">{selectedStudent.name.charAt(0)}</AvatarFallback>
+                  <AvatarFallback className="text-2xl bg-green-100 text-green-800">
+                    {selectedStudent.name.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <div>
-                  <h3 className="text-xl font-bold">{selectedStudent.name}</h3>
-                  <p className="text-muted-foreground">ID: {selectedStudent.studentId}</p>
+                  <h3 className="text-xl font-bold text-green-800">{selectedStudent.name}</h3>
+                  <p className="text-green-600">ID: {selectedStudent.studentId}</p>
                 </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Email</p>
+                  <p className="text-sm font-medium text-green-800">Email</p>
                   <div className="flex items-center">
-                    <Mail className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm">{selectedStudent.email}</p>
+                    <Mail className="mr-2 h-4 w-4 text-green-600" />
+                    <p className="text-sm text-green-700">{selectedStudent.email}</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Teléfono</p>
+                  <p className="text-sm font-medium text-green-800">Teléfono</p>
                   <div className="flex items-center">
-                    <Phone className="mr-2 h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm">{selectedStudent.phone}</p>
+                    <Phone className="mr-2 h-4 w-4 text-green-600" />
+                    <p className="text-sm text-green-700">{selectedStudent.phone}</p>
                   </div>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Especialidad</p>
-                  <p className="text-sm">{selectedStudent.specialty}</p>
+                  <p className="text-sm font-medium text-green-800">Especialidad</p>
+                  <p className="text-sm text-green-700">{selectedStudent.specialty}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Estado</p>
+                  <p className="text-sm font-medium text-green-800">Estado</p>
                   <Badge
                     variant="outline"
                     className={
                       selectedStudent.status === "active"
-                        ? "bg-green-100 text-green-800 hover:bg-green-100"
-                        : "bg-gray-100 text-gray-800 hover:bg-gray-100"
+                        ? "bg-green-100 text-green-800 border-green-300"
+                        : "bg-gray-100 text-gray-800 border-gray-300"
                     }
                   >
                     {selectedStudent.status === "active" ? "Activo" : "Inactivo"}
@@ -511,11 +567,11 @@ export default function StudentsPage() {
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-medium">Progreso Académico</h4>
+                <h4 className="font-medium text-green-800">Progreso Académico</h4>
                 <div className="space-y-1">
                   <div className="flex justify-between text-sm">
-                    <span>Progreso General</span>
-                    <span>{selectedStudent.progress}%</span>
+                    <span className="text-green-700">Progreso General</span>
+                    <span className="text-green-700">{selectedStudent.progress}%</span>
                   </div>
                   <Progress value={selectedStudent.progress} className="h-2" />
                 </div>
@@ -523,67 +579,69 @@ export default function StudentsPage() {
 
               <div className="grid grid-cols-3 gap-4">
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Aprobaciones Pendientes</p>
-                  <p className="text-2xl font-bold">{selectedStudent.pendingApprovals}</p>
+                  <p className="text-sm font-medium text-green-800">Aprobaciones Pendientes</p>
+                  <p className="text-2xl font-bold text-green-700">{selectedStudent.pendingApprovals}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Tratamientos Activos</p>
-                  <p className="text-2xl font-bold">{selectedStudent.activeTreatments}</p>
+                  <p className="text-sm font-medium text-green-800">Tratamientos Activos</p>
+                  <p className="text-2xl font-bold text-green-700">{selectedStudent.activeTreatments}</p>
                 </div>
                 <div className="space-y-1">
-                  <p className="text-sm font-medium">Tratamientos Completados</p>
-                  <p className="text-2xl font-bold">{selectedStudent.completedTreatments}</p>
+                  <p className="text-sm font-medium text-green-800">Tratamientos Completados</p>
+                  <p className="text-2xl font-bold text-green-700">{selectedStudent.completedTreatments}</p>
                 </div>
               </div>
 
               <div className="space-y-2">
-                <h4 className="font-medium">Pacientes Asignados</h4>
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Paciente</TableHead>
-                      <TableHead>Tratamiento</TableHead>
-                      <TableHead>Estado</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {clinicalCases
-                      .filter((c) => c.studentName === selectedStudent.name)
-                      .map((clinicalCase) => (
-                        <TableRow key={clinicalCase.id}>
-                          <TableCell className="font-medium">{clinicalCase.patientName}</TableCell>
-                          <TableCell>{clinicalCase.treatment}</TableCell>
-                          <TableCell>
-                            <Badge
-                              variant="outline"
-                              className={
-                                clinicalCase.status === "completed"
-                                  ? "bg-green-100 text-green-800 hover:bg-green-100"
-                                  : "bg-blue-100 text-blue-800 hover:bg-blue-100"
-                              }
-                            >
-                              {clinicalCase.status === "completed" ? "Completado" : "En Progreso"}
-                            </Badge>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
+                <h4 className="font-medium text-green-800">Pacientes Asignados</h4>
+                <div className="border border-green-200 rounded-lg">
+                  <Table>
+                    <TableHeader>
+                      <TableRow className="bg-green-50">
+                        <TableHead className="text-green-800">Paciente</TableHead>
+                        <TableHead className="text-green-800">Tratamiento</TableHead>
+                        <TableHead className="text-green-800">Estado</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {clinicalCases
+                        .filter((c) => c.studentName === selectedStudent.name)
+                        .map((clinicalCase) => (
+                          <TableRow key={clinicalCase.id}>
+                            <TableCell className="font-medium text-green-800">{clinicalCase.patientName}</TableCell>
+                            <TableCell className="text-green-700">{clinicalCase.treatment}</TableCell>
+                            <TableCell>
+                              <Badge
+                                variant="outline"
+                                className={
+                                  clinicalCase.status === "completed"
+                                    ? "bg-green-100 text-green-800 border-green-300"
+                                    : "bg-blue-100 text-blue-800 border-blue-300"
+                                }
+                              >
+                                {clinicalCase.status === "completed" ? "Completado" : "En Progreso"}
+                              </Badge>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
             </div>
             <DialogFooter className="flex justify-between">
               <div className="flex space-x-2">
-                <Button variant="outline">
+                <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-100">
                   <FileText className="mr-2 h-4 w-4" />
                   Ver Expediente
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" className="border-green-300 text-green-700 hover:bg-green-100">
                   <Calendar className="mr-2 h-4 w-4" />
                   Ver Horario
                 </Button>
               </div>
               <div className="flex space-x-2">
-                <Button>
+                <Button className="bg-green-600 hover:bg-green-700 text-white">
                   <CheckSquare className="mr-2 h-4 w-4" />
                   Evaluar Estudiante
                 </Button>
@@ -595,18 +653,20 @@ export default function StudentsPage() {
 
       {/* Diálogo para crear nueva evaluación */}
       <Dialog open={isEvaluationDialogOpen} onOpenChange={setIsEvaluationDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+        <DialogContent className="sm:max-w-[600px] border-green-200">
           <DialogHeader>
-            <DialogTitle>Nueva Evaluación</DialogTitle>
-            <DialogDescription>Crea una nueva evaluación para un estudiante</DialogDescription>
+            <DialogTitle className="text-green-800">Nueva Evaluación</DialogTitle>
+            <DialogDescription className="text-green-600">
+              Crea una nueva evaluación para un estudiante
+            </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
             <div className="space-y-2">
-              <label htmlFor="student" className="text-sm font-medium">
+              <label htmlFor="student" className="text-sm font-medium text-green-800">
                 Estudiante
               </label>
               <Select>
-                <SelectTrigger id="student">
+                <SelectTrigger id="student" className="border-green-200">
                   <SelectValue placeholder="Seleccionar estudiante" />
                 </SelectTrigger>
                 <SelectContent>
@@ -619,48 +679,63 @@ export default function StudentsPage() {
               </Select>
             </div>
             <div className="space-y-2">
-              <label htmlFor="evaluation-title" className="text-sm font-medium">
+              <label htmlFor="evaluation-title" className="text-sm font-medium text-green-800">
                 Título de la Evaluación
               </label>
-              <Input id="evaluation-title" placeholder="Ej: Evaluación de Competencias Clínicas" />
+              <Input
+                id="evaluation-title"
+                placeholder="Ej: Evaluación de Competencias Clínicas"
+                className="border-green-200 focus:border-green-500"
+              />
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <label htmlFor="evaluation-date" className="text-sm font-medium">
+                <label htmlFor="evaluation-date" className="text-sm font-medium text-green-800">
                   Fecha
                 </label>
-                <Input id="evaluation-date" type="date" />
+                <Input id="evaluation-date" type="date" className="border-green-200 focus:border-green-500" />
               </div>
               <div className="space-y-2">
-                <label htmlFor="evaluation-max-score" className="text-sm font-medium">
+                <label htmlFor="evaluation-max-score" className="text-sm font-medium text-green-800">
                   Puntuación Máxima
                 </label>
-                <Input id="evaluation-max-score" type="number" defaultValue="100" />
+                <Input
+                  id="evaluation-max-score"
+                  type="number"
+                  defaultValue="100"
+                  className="border-green-200 focus:border-green-500"
+                />
               </div>
             </div>
             <div className="space-y-2">
-              <label htmlFor="evaluation-description" className="text-sm font-medium">
+              <label htmlFor="evaluation-description" className="text-sm font-medium text-green-800">
                 Descripción
               </label>
               <Textarea
                 id="evaluation-description"
                 placeholder="Describe los objetivos y criterios de la evaluación"
                 rows={3}
+                className="border-green-200 focus:border-green-500"
               />
             </div>
             <div className="space-y-2">
-              <label htmlFor="evaluation-criteria" className="text-sm font-medium">
+              <label htmlFor="evaluation-criteria" className="text-sm font-medium text-green-800">
                 Criterios de Evaluación
               </label>
               <Textarea
                 id="evaluation-criteria"
                 placeholder="Lista los criterios específicos que se evaluarán"
                 rows={4}
+                className="border-green-200 focus:border-green-500"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit" onClick={() => setIsEvaluationDialogOpen(false)}>
+            <Button
+              type="submit"
+              onClick={() => setIsEvaluationDialogOpen(false)}
+              className="bg-green-600 hover:bg-green-700 text-white"
+            >
               Crear Evaluación
             </Button>
           </DialogFooter>
