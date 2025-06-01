@@ -12,7 +12,7 @@ interface Appointment {
   type: string
   notes: string
   priority: string
-  status: "scheduled" | "confirmed" | "completed" | "cancelled" | "no-show"
+  status: "programada" | "confirmada" | "completada" | "cancelada" | "no-asistio"
   createdAt: string
 }
 
@@ -31,41 +31,41 @@ const AppointmentContext = createContext<AppointmentContextType | undefined>(und
 const initialAppointments: Appointment[] = [
   {
     id: "1",
-    title: "Regular Checkup",
-    patientName: "John Doe",
+    title: "Consulta General",
+    patientName: "Juan Pérez",
     date: "2024-12-28",
     time: "09:00",
     duration: "30",
     type: "checkup",
-    notes: "Annual health checkup",
+    notes: "Revisión anual de salud",
     priority: "medium",
-    status: "scheduled",
+    status: "programada",
     createdAt: "2024-12-27T10:00:00Z",
   },
   {
     id: "2",
-    title: "Emergency Consultation",
-    patientName: "Jane Smith",
+    title: "Consulta de Emergencia",
+    patientName: "María García",
     date: "2024-12-28",
     time: "14:30",
     duration: "45",
     type: "emergency",
-    notes: "Urgent chest pain evaluation",
+    notes: "Evaluación urgente de dolor en el pecho",
     priority: "urgent",
-    status: "confirmed",
+    status: "confirmada",
     createdAt: "2024-12-27T11:30:00Z",
   },
   {
     id: "3",
-    title: "Follow-up Visit",
-    patientName: "Bob Johnson",
+    title: "Visita de Seguimiento",
+    patientName: "Carlos López",
     date: "2024-12-29",
     time: "10:15",
     duration: "30",
     type: "followup",
-    notes: "Post-surgery follow-up",
+    notes: "Seguimiento post-cirugía",
     priority: "high",
-    status: "scheduled",
+    status: "programada",
     createdAt: "2024-12-27T09:15:00Z",
   },
 ]
@@ -98,7 +98,7 @@ export function AppointmentProvider({ children }: { children: ReactNode }) {
 
     // Check for urgent appointments
     const urgentAppointments = todayAppointments.filter(
-      (apt) => apt.priority === "urgent" && apt.status !== "completed" && apt.status !== "cancelled",
+      (apt) => apt.priority === "urgent" && apt.status !== "completada" && apt.status !== "cancelada",
     )
 
     if (urgentAppointments.length > 0) return "unavailable"

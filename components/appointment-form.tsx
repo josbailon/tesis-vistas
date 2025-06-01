@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { X, Calendar, Clock, User, FileText } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -39,27 +38,27 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.title.trim()) newErrors.title = "Title is required"
-    if (!formData.patientName.trim()) newErrors.patientName = "Patient name is required"
-    if (!formData.date) newErrors.date = "Date is required"
-    if (!formData.time) newErrors.time = "Time is required"
+    if (!formData.title.trim()) newErrors.title = "El título es requerido"
+    if (!formData.patientName.trim()) newErrors.patientName = "El nombre del paciente es requerido"
+    if (!formData.date) newErrors.date = "La fecha es requerida"
+    if (!formData.time) newErrors.time = "La hora es requerida"
 
     // Check if date is in the past
     const selectedDate = new Date(`${formData.date}T${formData.time}`)
     if (selectedDate < new Date()) {
-      newErrors.date = "Cannot schedule appointments in the past"
+      newErrors.date = "No se pueden programar citas en el pasado"
     }
 
-    // Check for weekend restrictions (optional)
+    // Check for weekend restrictions
     const dayOfWeek = selectedDate.getDay()
     if (dayOfWeek === 0 || dayOfWeek === 6) {
-      newErrors.date = "Appointments cannot be scheduled on weekends"
+      newErrors.date = "No se pueden programar citas los fines de semana"
     }
 
-    // Check business hours (9 AM to 6 PM)
+    // Check business hours (8 AM to 6 PM)
     const hour = selectedDate.getHours()
-    if (hour < 9 || hour >= 18) {
-      newErrors.time = "Appointments must be between 9:00 AM and 6:00 PM"
+    if (hour < 8 || hour >= 18) {
+      newErrors.time = "Las citas deben ser entre 8:00 AM y 6:00 PM"
     }
 
     setErrors(newErrors)
@@ -74,7 +73,7 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
     const appointmentData = {
       ...formData,
       id: editingAppointment?.id || Date.now().toString(),
-      status: editingAppointment?.status || "scheduled",
+      status: editingAppointment?.status || "programada",
       createdAt: editingAppointment?.createdAt || new Date().toISOString(),
     }
 
@@ -82,21 +81,21 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
       if (editingAppointment) {
         updateAppointment(appointmentData)
         toast({
-          title: "Appointment Updated",
-          description: "The appointment has been successfully updated.",
+          title: "Cita Actualizada",
+          description: "La cita ha sido actualizada exitosamente.",
         })
       } else {
         addAppointment(appointmentData)
         toast({
-          title: "Appointment Created",
-          description: "The appointment has been successfully scheduled.",
+          title: "Cita Creada",
+          description: "La cita ha sido programada exitosamente.",
         })
       }
       onSuccess()
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to save appointment. Please try again.",
+        description: "Error al guardar la cita. Intenta nuevamente.",
         variant: "destructive",
       })
     }
@@ -115,9 +114,9 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>{editingAppointment ? "Edit Appointment" : "Schedule New Appointment"}</CardTitle>
+              <CardTitle>{editingAppointment ? "Editar Cita" : "Programar Nueva Cita"}</CardTitle>
               <CardDescription>
-                Fill in the details to {editingAppointment ? "update" : "create"} an appointment
+                Completa los detalles para {editingAppointment ? "actualizar" : "crear"} una cita
               </CardDescription>
             </div>
             <Button variant="ghost" size="sm" onClick={onClose}>
@@ -132,13 +131,13 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
               <div className="space-y-2">
                 <Label htmlFor="title">
                   <FileText className="inline h-4 w-4 mr-1" />
-                  Appointment Title
+                  Título de la Cita
                 </Label>
                 <Input
                   id="title"
                   value={formData.title}
                   onChange={(e) => handleChange("title", e.target.value)}
-                  placeholder="e.g., Regular Checkup"
+                  placeholder="ej. Consulta General"
                   className={errors.title ? "border-red-500" : ""}
                 />
                 {errors.title && <p className="text-sm text-red-500">{errors.title}</p>}
@@ -147,13 +146,13 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
               <div className="space-y-2">
                 <Label htmlFor="patientName">
                   <User className="inline h-4 w-4 mr-1" />
-                  Patient Name
+                  Nombre del Paciente
                 </Label>
                 <Input
                   id="patientName"
                   value={formData.patientName}
                   onChange={(e) => handleChange("patientName", e.target.value)}
-                  placeholder="Enter patient name"
+                  placeholder="Ingresa el nombre del paciente"
                   className={errors.patientName ? "border-red-500" : ""}
                 />
                 {errors.patientName && <p className="text-sm text-red-500">{errors.patientName}</p>}
@@ -165,7 +164,7 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
               <div className="space-y-2">
                 <Label htmlFor="date">
                   <Calendar className="inline h-4 w-4 mr-1" />
-                  Date
+                  Fecha
                 </Label>
                 <Input
                   id="date"
@@ -181,14 +180,14 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
               <div className="space-y-2">
                 <Label htmlFor="time">
                   <Clock className="inline h-4 w-4 mr-1" />
-                  Time
+                  Hora
                 </Label>
                 <Input
                   id="time"
                   type="time"
                   value={formData.time}
                   onChange={(e) => handleChange("time", e.target.value)}
-                  min="09:00"
+                  min="08:00"
                   max="18:00"
                   className={errors.time ? "border-red-500" : ""}
                 />
@@ -196,18 +195,18 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="duration">Duration (minutes)</Label>
+                <Label htmlFor="duration">Duración (minutos)</Label>
                 <Select value={formData.duration} onValueChange={(value) => handleChange("duration", value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="15">15 minutes</SelectItem>
-                    <SelectItem value="30">30 minutes</SelectItem>
-                    <SelectItem value="45">45 minutes</SelectItem>
-                    <SelectItem value="60">1 hour</SelectItem>
-                    <SelectItem value="90">1.5 hours</SelectItem>
-                    <SelectItem value="120">2 hours</SelectItem>
+                    <SelectItem value="15">15 minutos</SelectItem>
+                    <SelectItem value="30">30 minutos</SelectItem>
+                    <SelectItem value="45">45 minutos</SelectItem>
+                    <SelectItem value="60">1 hora</SelectItem>
+                    <SelectItem value="90">1.5 horas</SelectItem>
+                    <SelectItem value="120">2 horas</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -216,32 +215,32 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
             {/* Type and Priority */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="type">Appointment Type</Label>
+                <Label htmlFor="type">Tipo de Cita</Label>
                 <Select value={formData.type} onValueChange={(value) => handleChange("type", value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="consultation">Consultation</SelectItem>
-                    <SelectItem value="checkup">Regular Checkup</SelectItem>
-                    <SelectItem value="treatment">Treatment</SelectItem>
-                    <SelectItem value="followup">Follow-up</SelectItem>
-                    <SelectItem value="emergency">Emergency</SelectItem>
+                    <SelectItem value="consultation">Consulta</SelectItem>
+                    <SelectItem value="checkup">Revisión General</SelectItem>
+                    <SelectItem value="treatment">Tratamiento</SelectItem>
+                    <SelectItem value="followup">Seguimiento</SelectItem>
+                    <SelectItem value="emergency">Emergencia</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="priority">Priority</Label>
+                <Label htmlFor="priority">Prioridad</Label>
                 <Select value={formData.priority} onValueChange={(value) => handleChange("priority", value)}>
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="low">Low</SelectItem>
-                    <SelectItem value="medium">Medium</SelectItem>
-                    <SelectItem value="high">High</SelectItem>
-                    <SelectItem value="urgent">Urgent</SelectItem>
+                    <SelectItem value="low">Baja</SelectItem>
+                    <SelectItem value="medium">Media</SelectItem>
+                    <SelectItem value="high">Alta</SelectItem>
+                    <SelectItem value="urgent">Urgente</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -249,12 +248,12 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
 
             {/* Notes */}
             <div className="space-y-2">
-              <Label htmlFor="notes">Notes (Optional)</Label>
+              <Label htmlFor="notes">Notas (Opcional)</Label>
               <Textarea
                 id="notes"
                 value={formData.notes}
                 onChange={(e) => handleChange("notes", e.target.value)}
-                placeholder="Additional notes or special instructions..."
+                placeholder="Notas adicionales o instrucciones especiales..."
                 rows={3}
               />
             </div>
@@ -262,9 +261,9 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
             {/* Form Actions */}
             <div className="flex justify-end space-x-2 pt-4">
               <Button type="button" variant="outline" onClick={onClose}>
-                Cancel
+                Cancelar
               </Button>
-              <Button type="submit">{editingAppointment ? "Update Appointment" : "Schedule Appointment"}</Button>
+              <Button type="submit">{editingAppointment ? "Actualizar Cita" : "Programar Cita"}</Button>
             </div>
           </form>
         </CardContent>

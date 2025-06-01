@@ -26,14 +26,16 @@ export default function AppointmentsPage() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">Appointment Management</h1>
-            <p className="text-gray-600">Manage and track all appointments with real-time status updates</p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Gestión de Citas</h1>
+            <p className="text-gray-600">
+              Administra y rastrea todas las citas con actualizaciones de estado en tiempo real
+            </p>
           </div>
           <div className="flex items-center gap-4 mt-4 sm:mt-0">
             <TrafficLight status={systemStatus} />
             <Button onClick={() => setShowForm(true)}>
               <Plus className="mr-2 h-4 w-4" />
-              New Appointment
+              Nueva Cita
             </Button>
           </div>
         </div>
@@ -45,7 +47,7 @@ export default function AppointmentsPage() {
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Search appointments..."
+                  placeholder="Buscar citas..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
@@ -53,7 +55,7 @@ export default function AppointmentsPage() {
               </div>
               <Button variant="outline">
                 <Filter className="mr-2 h-4 w-4" />
-                Filter
+                Filtrar
               </Button>
             </div>
           </CardContent>
@@ -62,8 +64,8 @@ export default function AppointmentsPage() {
         {/* Main Content */}
         <Tabs defaultValue="agenda" className="space-y-6">
           <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="agenda">Daily Agenda</TabsTrigger>
-            <TabsTrigger value="list">All Appointments</TabsTrigger>
+            <TabsTrigger value="agenda">Agenda Diaria</TabsTrigger>
+            <TabsTrigger value="list">Todas las Citas</TabsTrigger>
           </TabsList>
 
           <TabsContent value="agenda">

@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { format } from "date-fns"
+import { es } from "date-fns/locale"
 import { Calendar, Clock, User, Edit, Trash2, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -34,15 +35,15 @@ export function AppointmentList({ searchTerm }: AppointmentListProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "scheduled":
+      case "programada":
         return "bg-blue-100 text-blue-800"
-      case "confirmed":
+      case "confirmada":
         return "bg-green-100 text-green-800"
-      case "completed":
+      case "completada":
         return "bg-gray-100 text-gray-800"
-      case "cancelled":
+      case "cancelada":
         return "bg-red-100 text-red-800"
-      case "no-show":
+      case "no-asistio":
         return "bg-orange-100 text-orange-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -65,10 +66,10 @@ export function AppointmentList({ searchTerm }: AppointmentListProps) {
   }
 
   const getTrafficLightStatus = (appointment: any) => {
-    if (appointment.status === "cancelled" || appointment.status === "no-show") {
+    if (appointment.status === "cancelada" || appointment.status === "no-asistio") {
       return "unavailable"
     }
-    if (appointment.status === "completed") {
+    if (appointment.status === "completada") {
       return "available"
     }
     if (appointment.priority === "urgent" || appointment.priority === "high") {
@@ -83,9 +84,9 @@ export function AppointmentList({ searchTerm }: AppointmentListProps) {
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
             <Calendar className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No appointments found</h3>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron citas</h3>
             <p className="text-gray-600 text-center">
-              {searchTerm ? "Try adjusting your search terms" : "No appointments have been scheduled yet"}
+              {searchTerm ? "Intenta ajustar los términos de búsqueda" : "No se han programado citas aún"}
             </p>
           </CardContent>
         </Card>
@@ -113,7 +114,7 @@ export function AppointmentList({ searchTerm }: AppointmentListProps) {
                       </div>
                       <div className="flex items-center space-x-1">
                         <Calendar className="h-4 w-4" />
-                        <span>{format(new Date(appointment.date), "MMM d, yyyy")}</span>
+                        <span>{format(new Date(appointment.date), "d 'de' MMM, yyyy", { locale: es })}</span>
                       </div>
                       <div className="flex items-center space-x-1">
                         <Clock className="h-4 w-4" />
@@ -139,18 +140,18 @@ export function AppointmentList({ searchTerm }: AppointmentListProps) {
                       </Button>
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "confirmed")}>
-                        Mark as Confirmed
+                      <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "confirmada")}>
+                        Marcar como Confirmada
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "completed")}>
-                        Mark as Completed
+                      <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "completada")}>
+                        Marcar como Completada
                       </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "cancelled")}>
-                        Cancel Appointment
+                      <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "cancelada")}>
+                        Cancelar Cita
                       </DropdownMenuItem>
                       <DropdownMenuItem onClick={() => deleteAppointment(appointment.id)} className="text-red-600">
                         <Trash2 className="h-4 w-4 mr-2" />
-                        Delete
+                        Eliminar
                       </DropdownMenuItem>
                     </DropdownMenuContent>
                   </DropdownMenu>

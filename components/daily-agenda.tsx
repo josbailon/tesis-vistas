@@ -1,5 +1,7 @@
 "use client"
+
 import { format, addDays, subDays, isSameDay } from "date-fns"
+import { es } from "date-fns/locale"
 import { ChevronLeft, ChevronRight, Calendar, Clock, User, MoreVertical } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,15 +24,15 @@ export function DailyAgenda({ selectedDate, onDateChange }: DailyAgendaProps) {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "scheduled":
+      case "programada":
         return "bg-blue-100 text-blue-800"
-      case "confirmed":
+      case "confirmada":
         return "bg-green-100 text-green-800"
-      case "completed":
+      case "completada":
         return "bg-gray-100 text-gray-800"
-      case "cancelled":
+      case "cancelada":
         return "bg-red-100 text-red-800"
-      case "no-show":
+      case "no-asistio":
         return "bg-orange-100 text-orange-800"
       default:
         return "bg-gray-100 text-gray-800"
@@ -43,10 +45,10 @@ export function DailyAgenda({ selectedDate, onDateChange }: DailyAgendaProps) {
     const timeDiff = appointmentTime.getTime() - now.getTime()
     const minutesDiff = timeDiff / (1000 * 60)
 
-    if (appointment.status === "cancelled" || appointment.status === "no-show") {
+    if (appointment.status === "cancelada" || appointment.status === "no-asistio") {
       return "unavailable"
     }
-    if (appointment.status === "completed") {
+    if (appointment.status === "completada") {
       return "available"
     }
     if (minutesDiff <= 15 && minutesDiff >= -15) {
@@ -55,8 +57,8 @@ export function DailyAgenda({ selectedDate, onDateChange }: DailyAgendaProps) {
     return "available"
   }
 
-  const timeSlots = Array.from({ length: 18 }, (_, i) => {
-    const hour = 9 + Math.floor(i / 2)
+  const timeSlots = Array.from({ length: 20 }, (_, i) => {
+    const hour = 8 + Math.floor(i / 2)
     const minute = i % 2 === 0 ? "00" : "30"
     return `${hour.toString().padStart(2, "0")}:${minute}`
   })
@@ -70,16 +72,16 @@ export function DailyAgenda({ selectedDate, onDateChange }: DailyAgendaProps) {
             <div>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
-                Daily Agenda
+                Agenda Diaria
               </CardTitle>
-              <CardDescription>{format(selectedDate, "EEEE, MMMM d, yyyy")}</CardDescription>
+              <CardDescription>{format(selectedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}</CardDescription>
             </div>
             <div className="flex items-center space-x-2">
               <Button variant="outline" size="sm" onClick={() => onDateChange(subDays(selectedDate, 1))}>
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <Button variant="outline" size="sm" onClick={() => onDateChange(new Date())}>
-                Today
+                Hoy
               </Button>
               <Button variant="outline" size="sm" onClick={() => onDateChange(addDays(selectedDate, 1))}>
                 <ChevronRight className="h-4 w-4" />
@@ -89,19 +91,19 @@ export function DailyAgenda({ selectedDate, onDateChange }: DailyAgendaProps) {
         </CardHeader>
         <CardContent>
           <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>{dayAppointments.length} appointments scheduled</span>
+            <span>{dayAppointments.length} citas programadas</span>
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
                 <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span>Scheduled</span>
+                <span>Programada</span>
               </div>
               <div className="flex items-center space-x-1">
                 <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span>Confirmed</span>
+                <span>Confirmada</span>
               </div>
               <div className="flex items-center space-x-1">
                 <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                <span>Completed</span>
+                <span>Completada</span>
               </div>
             </div>
           </div>
@@ -145,24 +147,24 @@ export function DailyAgenda({ selectedDate, onDateChange }: DailyAgendaProps) {
                             </Button>
                           </DropdownMenuTrigger>
                           <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "confirmed")}>
-                              Mark as Confirmed
+                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "confirmada")}>
+                              Marcar como Confirmada
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "completed")}>
-                              Mark as Completed
+                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "completada")}>
+                              Marcar como Completada
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "cancelled")}>
-                              Cancel Appointment
+                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "cancelada")}>
+                              Cancelar Cita
                             </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "no-show")}>
-                              Mark as No-Show
+                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "no-asistio")}>
+                              Marcar como No Asistió
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </div>
                     </div>
                   ) : (
-                    <div className="flex-1 text-gray-400 text-sm">Available</div>
+                    <div className="flex-1 text-gray-400 text-sm">Disponible</div>
                   )}
                 </div>
               )

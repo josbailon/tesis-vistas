@@ -14,18 +14,18 @@ interface TrafficLightProps {
 const statusConfig = {
   available: {
     color: "bg-green-500",
-    label: "Available",
-    description: "System is running smoothly",
+    label: "Disponible",
+    description: "Sistema funcionando correctamente",
   },
   pending: {
     color: "bg-yellow-500",
-    label: "Pending",
-    description: "Requires attention",
+    label: "Pendiente",
+    description: "Requiere atención",
   },
   unavailable: {
     color: "bg-red-500",
-    label: "Unavailable",
-    description: "System is down or busy",
+    label: "No disponible",
+    description: "Sistema ocupado o con problemas",
   },
 }
 
