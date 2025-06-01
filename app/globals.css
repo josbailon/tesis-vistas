@@ -16,40 +16,40 @@ body {
   :root {
     /* Base Colors - Medical Teal Theme */
     --background: 0 0% 100%;
-    --foreground: 174 45% 25%;
+    --foreground: 222.2 84% 4.9%;
 
     /* Card Colors */
     --card: 0 0% 100%;
-    --card-foreground: 174 45% 25%;
+    --card-foreground: 222.2 84% 4.9%;
 
     /* Popover Colors */
     --popover: 0 0% 100%;
-    --popover-foreground: 174 45% 25%;
+    --popover-foreground: 222.2 84% 4.9%;
 
     /* Primary - Medical Teal */
-    --primary: 174 62% 47%;
-    --primary-foreground: 0 0% 98%;
+    --primary: 221.2 83.2% 53.3%;
+    --primary-foreground: 210 40% 98%;
 
     /* Secondary - Soft Teal */
-    --secondary: 174 30% 95%;
-    --secondary-foreground: 174 45% 25%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222.2 84% 4.9%;
 
     /* Muted Colors */
-    --muted: 174 20% 96%;
-    --muted-foreground: 174 25% 45%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
     /* Accent - Warm Teal */
-    --accent: 174 30% 92%;
-    --accent-foreground: 174 45% 25%;
+    --accent: 210 40% 96%;
+    --accent-foreground: 222.2 84% 4.9%;
 
     /* Destructive - Medical Red */
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
     /* Border and Input */
-    --border: 174 20% 89%;
-    --input: 174 20% 89%;
-    --ring: 174 62% 47%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 221.2 83.2% 53.3%;
 
     /* Chart Colors - Medical Palette */
     --chart-1: 174 76% 61%;
@@ -89,33 +89,25 @@ body {
   }
 
   .dark {
-    --background: 174 30% 98%;
-    --foreground: 174 45% 25%;
-    --card: 174 20% 96%;
-    --card-foreground: 174 45% 25%;
-    --popover: 174 20% 96%;
-    --popover-foreground: 174 45% 25%;
-    --primary: 174 62% 47%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 174 20% 92%;
-    --secondary-foreground: 174 45% 25%;
-    --muted: 174 15% 90%;
-    --muted-foreground: 174 25% 40%;
-    --accent: 174 20% 88%;
-    --accent-foreground: 174 45% 25%;
-    --destructive: 0 84% 60%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 174 20% 85%;
-    --input: 174 20% 85%;
-    --ring: 174 62% 47%;
-    --sidebar-background: 174 25% 95%;
-    --sidebar-foreground: 174 35% 30%;
-    --sidebar-primary: 174 62% 47%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 174 15% 88%;
-    --sidebar-accent-foreground: 174 45% 25%;
-    --sidebar-border: 174 20% 85%;
-    --sidebar-ring: 174 62% 47%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
   }
 }
 
@@ -128,10 +120,20 @@ body {
   }
 }
 
-/* Custom Medical Gradients */
+@layer components {
+  .traffic-light-glow {
+    box-shadow: 0 0 10px currentColor;
+  }
+}
+
 @layer utilities {
+  .animate-pulse-slow {
+    animation: pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  /* Custom Medical Gradients */
   .bg-medical-gradient {
-    background: linear-gradient(135deg, hsl(174 62% 47%) 0%, hsl(142 76% 36%) 100%);
+    background: linear-gradient(135deg, hsl(221.2 83.2% 53.3%) 0%, hsl(142 76% 36%) 100%);
   }
 
   .bg-specialty-endodoncia {
@@ -151,7 +153,7 @@ body {
   }
 
   .text-medical-primary {
-    color: hsl(174 62% 47%);
+    color: hsl(221.2 83.2% 53.3%);
   }
 
   .text-medical-secondary {
@@ -159,7 +161,7 @@ body {
   }
 
   .border-medical {
-    border-color: hsl(174 62% 47%);
+    border-color: hsl(221.2 83.2% 53.3%);
   }
 
   .shadow-medical {
@@ -171,13 +173,13 @@ body {
   }
 
   .text-medical-gradient {
-    background: linear-gradient(135deg, hsl(174 62% 47%) 0%, hsl(142 76% 36%) 100%);
+    background: linear-gradient(135deg, hsl(221.2 83.2% 53.3%) 0%, hsl(142 76% 36%) 100%);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
   }
 
   .border-medical-gradient {
-    border-image: linear-gradient(135deg, hsl(174 62% 47%) 0%, hsl(142 76% 36%) 100%) 1;
+    border-image: linear-gradient(135deg, hsl(221.2 83.2% 53.3%) 0%, hsl(142 76% 36%) 100%) 1;
   }
 }
