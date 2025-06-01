@@ -1,62 +1,108 @@
 "use client"
 
+import { useState } from "react"
 import { Calendar, Clock, MapPin, User } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { TrafficLight } from "@/components/traffic-light"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
-interface StudentScheduleProps {
-  selectedStudent: string | null
+interface ScheduleItem {
+  id: string
+  subject: string
+  professor: string
+  time: string
+  duration: string
+  room: string
+  day: string
+  type: "lecture" | "practical" | "clinic" | "exam"
 }
 
-// Mock schedule data
-const scheduleData = [
+const mockSchedule: ScheduleItem[] = [
   {
     id: "1",
-    title: "Mathematics 101",
-    time: "09:00 - 10:30",
-    location: "Room A-101",
-    instructor: "Dr. Smith",
+    subject: "Anatomía Dental",
+    professor: "Dr. María González",
+    time: "08:00",
+    duration: "2h",
+    room: "Aula 101",
+    day: "Lunes",
     type: "lecture",
-    day: "Monday",
   },
   {
     id: "2",
-    title: "Physics Lab",
-    time: "14:00 - 16:00",
-    location: "Lab B-205",
-    instructor: "Prof. Johnson",
-    type: "lab",
-    day: "Monday",
+    subject: "Práctica Clínica",
+    professor: "Dr. Carlos Ramírez",
+    time: "10:30",
+    duration: "3h",
+    room: "Clínica A",
+    day: "Lunes",
+    type: "clinic",
   },
   {
     id: "3",
-    title: "Computer Science",
-    time: "10:00 - 11:30",
-    location: "Room C-301",
-    instructor: "Dr. Wilson",
-    type: "lecture",
-    day: "Tuesday",
+    subject: "Radiología Oral",
+    professor: "Dra. Ana Torres",
+    time: "14:00",
+    duration: "1.5h",
+    room: "Lab. Radiología",
+    day: "Martes",
+    type: "practical",
   },
   {
     id: "4",
-    title: "Study Group",
-    time: "15:00 - 17:00",
-    location: "Library",
-    instructor: "Self-study",
-    type: "study",
-    day: "Wednesday",
+    subject: "Cirugía Oral",
+    professor: "Dr. Luis Mendoza",
+    time: "09:00",
+    duration: "2h",
+    room: "Quirófano 1",
+    day: "Miércoles",
+    type: "clinic",
+  },
+  {
+    id: "5",
+    subject: "Endodoncia",
+    professor: "Dra. Patricia Vega",
+    time: "11:30",
+    duration: "2h",
+    room: "Aula 203",
+    day: "Miércoles",
+    type: "lecture",
+  },
+  {
+    id: "6",
+    subject: "Ortodoncia Práctica",
+    professor: "Dr. Roberto Silva",
+    time: "15:00",
+    duration: "3h",
+    room: "Clínica B",
+    day: "Jueves",
+    type: "practical",
+  },
+  {
+    id: "7",
+    subject: "Examen Parcial",
+    professor: "Dr. María González",
+    time: "08:00",
+    duration: "2h",
+    room: "Aula 105",
+    day: "Viernes",
+    type: "exam",
   },
 ]
 
-export function StudentSchedule({ selectedStudent }: StudentScheduleProps) {
+export function StudentSchedule() {
+  const [selectedWeek, setSelectedWeek] = useState("current")
+  const [selectedStudent, setSelectedStudent] = useState("all")
+
+  const days = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes"]
+
   const getTypeColor = (type: string) => {
     switch (type) {
       case "lecture":
         return "bg-blue-100 text-blue-800"
-      case "lab":
+      case "practical":
         return "bg-green-100 text-green-800"
-      case "study":
+      case "clinic":
         return "bg-purple-100 text-purple-800"
       case "exam":
         return "bg-red-100 text-red-800"
@@ -65,87 +111,108 @@ export function StudentSchedule({ selectedStudent }: StudentScheduleProps) {
     }
   }
 
-  const getTrafficLightStatus = (item: any) => {
-    const now = new Date()
-    const currentHour = now.getHours()
-    const itemHour = Number.parseInt(item.time.split(":")[0])
-
-    if (Math.abs(currentHour - itemHour) <= 1) return "pending"
-    if (item.type === "exam") return "unavailable"
-    return "available"
+  const getTypeLabel = (type: string) => {
+    switch (type) {
+      case "lecture":
+        return "Teoría"
+      case "practical":
+        return "Práctica"
+      case "clinic":
+        return "Clínica"
+      case "exam":
+        return "Examen"
+      default:
+        return "Otro"
+    }
   }
-
-  if (!selectedStudent) {
-    return (
-      <Card>
-        <CardContent className="flex flex-col items-center justify-center py-12">
-          <Calendar className="h-12 w-12 text-gray-400 mb-4" />
-          <h3 className="text-lg font-medium text-gray-900 mb-2">No Student Selected</h3>
-          <p className="text-gray-600 text-center">Select a student from the overview tab to view their schedule</p>
-        </CardContent>
-      </Card>
-    )
-  }
-
-  const daysOfWeek = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"]
 
   return (
     <div className="space-y-6">
+      {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Weekly Schedule</CardTitle>
-          <CardDescription>Class schedule and academic activities for the selected student</CardDescription>
+          <CardTitle>Horarios de Estudiantes</CardTitle>
+          <CardDescription>Visualiza y gestiona los horarios académicos</CardDescription>
         </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <div className="flex-1">
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Semana</label>
+              <Select value={selectedWeek} onValueChange={setSelectedWeek}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="current">Semana Actual</SelectItem>
+                  <SelectItem value="next">Próxima Semana</SelectItem>
+                  <SelectItem value="previous">Semana Anterior</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="flex-1">
+              <label className="text-sm font-medium text-gray-600 mb-2 block">Estudiante</label>
+              <Select value={selectedStudent} onValueChange={setSelectedStudent}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los Estudiantes</SelectItem>
+                  <SelectItem value="2021-001">Ana María González</SelectItem>
+                  <SelectItem value="2020-045">Carlos Eduardo Ramírez</SelectItem>
+                  <SelectItem value="2022-023">Sofía Alejandra Torres</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
       </Card>
 
-      <div className="grid gap-6">
-        {daysOfWeek.map((day) => {
-          const daySchedule = scheduleData.filter((item) => item.day === day)
+      {/* Weekly Schedule Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
+        {days.map((day) => (
+          <Card key={day} className="min-h-[400px]">
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg">{day}</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {mockSchedule
+                .filter((item) => item.day === day)
+                .sort((a, b) => a.time.localeCompare(b.time))
+                .map((item) => (
+                  <div key={item.id} className="p-3 border rounded-lg hover:shadow-sm transition-shadow">
+                    <div className="flex items-center justify-between mb-2">
+                      <Badge className={getTypeColor(item.type)}>{getTypeLabel(item.type)}</Badge>
+                      <span className="text-xs text-gray-500">{item.duration}</span>
+                    </div>
 
-          return (
-            <Card key={day}>
-              <CardHeader>
-                <CardTitle className="text-lg">{day}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                {daySchedule.length === 0 ? (
-                  <p className="text-gray-500 text-center py-4">No classes scheduled</p>
-                ) : (
-                  <div className="space-y-4">
-                    {daySchedule.map((item) => (
-                      <div
-                        key={item.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50"
-                      >
-                        <div className="flex items-center space-x-4">
-                          <TrafficLight status={getTrafficLightStatus(item)} size="sm" />
-                          <div>
-                            <h4 className="font-medium">{item.title}</h4>
-                            <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
-                              <div className="flex items-center space-x-1">
-                                <Clock className="h-3 w-3" />
-                                <span>{item.time}</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <MapPin className="h-3 w-3" />
-                                <span>{item.location}</span>
-                              </div>
-                              <div className="flex items-center space-x-1">
-                                <User className="h-3 w-3" />
-                                <span>{item.instructor}</span>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                        <Badge className={getTypeColor(item.type)}>{item.type}</Badge>
+                    <h4 className="font-medium text-sm mb-1">{item.subject}</h4>
+
+                    <div className="space-y-1 text-xs text-gray-600">
+                      <div className="flex items-center">
+                        <Clock className="h-3 w-3 mr-1" />
+                        <span>{item.time}</span>
                       </div>
-                    ))}
+                      <div className="flex items-center">
+                        <User className="h-3 w-3 mr-1" />
+                        <span>{item.professor}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <MapPin className="h-3 w-3 mr-1" />
+                        <span>{item.room}</span>
+                      </div>
+                    </div>
                   </div>
-                )}
-              </CardContent>
-            </Card>
-          )
-        })}
+                ))}
+
+              {mockSchedule.filter((item) => item.day === day).length === 0 && (
+                <div className="text-center text-gray-400 py-8">
+                  <Calendar className="h-8 w-8 mx-auto mb-2" />
+                  <p className="text-sm">No hay clases programadas</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   )

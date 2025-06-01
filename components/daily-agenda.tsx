@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { TrafficLight } from "@/components/traffic-light"
 import { useAppointments } from "@/contexts/appointment-context"
 
 interface DailyAgendaProps {
@@ -37,24 +36,6 @@ export function DailyAgenda({ selectedDate, onDateChange }: DailyAgendaProps) {
       default:
         return "bg-gray-100 text-gray-800"
     }
-  }
-
-  const getTrafficLightStatus = (appointment: any) => {
-    const appointmentTime = new Date(`${appointment.date}T${appointment.time}`)
-    const now = new Date()
-    const timeDiff = appointmentTime.getTime() - now.getTime()
-    const minutesDiff = timeDiff / (1000 * 60)
-
-    if (appointment.status === "cancelada" || appointment.status === "no-asistio") {
-      return "unavailable"
-    }
-    if (appointment.status === "completada") {
-      return "available"
-    }
-    if (minutesDiff <= 15 && minutesDiff >= -15) {
-      return "pending" // Current or upcoming soon
-    }
-    return "available"
   }
 
   const timeSlots = Array.from({ length: 20 }, (_, i) => {
@@ -124,7 +105,6 @@ export function DailyAgenda({ selectedDate, onDateChange }: DailyAgendaProps) {
                   {appointment ? (
                     <div className="flex-1 flex items-center justify-between">
                       <div className="flex items-center space-x-4">
-                        <TrafficLight status={getTrafficLightStatus(appointment)} size="sm" />
                         <div>
                           <h4 className="font-medium">{appointment.title}</h4>
                           <div className="flex items-center space-x-2 text-sm text-gray-600">

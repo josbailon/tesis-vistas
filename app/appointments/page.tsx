@@ -9,16 +9,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { AppointmentForm } from "@/components/appointment-form"
 import { DailyAgenda } from "@/components/daily-agenda"
 import { AppointmentList } from "@/components/appointment-list"
-import { TrafficLight } from "@/components/traffic-light"
-import { useAppointments } from "@/contexts/appointment-context"
 
 export default function AppointmentsPage() {
   const [showForm, setShowForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [selectedDate, setSelectedDate] = useState(new Date())
-  const { appointments, getSystemStatus } = useAppointments()
-
-  const systemStatus = getSystemStatus()
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -32,7 +27,6 @@ export default function AppointmentsPage() {
             </p>
           </div>
           <div className="flex items-center gap-4 mt-4 sm:mt-0">
-            <TrafficLight status={systemStatus} />
             <Button onClick={() => setShowForm(true)}>
               <Plus className="mr-2 h-4 w-4" />
               Nueva Cita

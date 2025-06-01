@@ -8,7 +8,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { TrafficLight } from "@/components/traffic-light"
 import { AppointmentForm } from "@/components/appointment-form"
 import { useAppointments } from "@/contexts/appointment-context"
 
@@ -65,19 +64,6 @@ export function AppointmentList({ searchTerm }: AppointmentListProps) {
     }
   }
 
-  const getTrafficLightStatus = (appointment: any) => {
-    if (appointment.status === "cancelada" || appointment.status === "no-asistio") {
-      return "unavailable"
-    }
-    if (appointment.status === "completada") {
-      return "available"
-    }
-    if (appointment.priority === "urgent" || appointment.priority === "high") {
-      return "pending"
-    }
-    return "available"
-  }
-
   return (
     <div className="space-y-4">
       {filteredAppointments.length === 0 ? (
@@ -96,8 +82,6 @@ export function AppointmentList({ searchTerm }: AppointmentListProps) {
             <CardContent className="p-6">
               <div className="flex items-center justify-between">
                 <div className="flex items-center space-x-4">
-                  <TrafficLight status={getTrafficLightStatus(appointment)} size="sm" />
-
                   <div className="flex-1">
                     <div className="flex items-center space-x-2 mb-2">
                       <h3 className="text-lg font-semibold">{appointment.title}</h3>
