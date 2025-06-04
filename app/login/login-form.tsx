@@ -2,172 +2,171 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { useState } from "react"
+import { useRouter } from "next/navigation"
+import { useAuth, TEST_USERS } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle } from "lucide-react"
-import { useAuth, TEST_USERS } from "@/contexts/auth-context"
+import { Eye, EyeOff, LogIn } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [showPassword, setShowPassword] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
-  const [loading, setLoading] = useState(false)
-  const [redirecting, setRedirecting] = useState(false)
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const { login, isAuthenticated } = useAuth()
 
-  // Verificar si ya está autenticado
-  useEffect(() => {
-    if (isAuthenticated) {
-      const callbackUrl = searchParams.get("callbackUrl")
-      if (callbackUrl) {
-        router.push(decodeURIComponent(callbackUrl))
-      } else {
-        router.push("/dashboard")
-      }
-    }
-  }, [isAuthenticated, router, searchParams])
+  const { login } = useAuth()
+  const router = useRouter()
+  const { toast } = useToast()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setLoading(true)
+    setIsLoading(true)
     setError("")
 
     try {
-      // Autenticación simple en el cliente
+      // Find user in TEST_USERS
       const user = TEST_USERS.find((u) => u.email === email && u.password === password)
 
       if (user) {
-        setRedirecting(true)
-
-        // Usar el contexto de autenticación para iniciar sesión
+        // Login successful
         login({
+          id: user.id,
           email: user.email,
-          role: user.role,
           name: user.name,
+          role: user.role,
+          specialty: user.specialty,
         })
 
-        // Verificar si hay una URL de callback
-        const callbackUrl = searchParams.get("callbackUrl")
-        if (callbackUrl) {
-          console.log("Redirigiendo a URL de callback:", callbackUrl)
-          router.push(decodeURIComponent(callbackUrl))
-        } else {
-          // Redirección basada en el rol
-          let redirectPath = "/dashboard"
-          switch (user.role) {
-            case "patient":
-              redirectPath = "/dashboard/my-appointments"
-              break
-            case "student":
-              redirectPath = "/dashboard/patients"
-              break
-            case "professor":
-              redirectPath = "/dashboard/specialty"
-              break
-            case "admin":
-              redirectPath = "/dashboard/users"
-              break
-          }
-          console.log("Redirigiendo a ruta basada en rol:", redirectPath)
-          router.push(redirectPath)
-        }
+        toast({
+          title: "Inicio de sesión exitoso",
+          description: `Bienvenido, ${user.name}`,
+        })
+
+        // Redirect to dashboard
+        router.push("/dashboard")
       } else {
-        setError("Credenciales incorrectas")
-        setLoading(false)
+        setError("Credenciales incorrectas. Verifica tu email y contraseña.")
       }
-    } catch (err) {
-      console.error("Login error:", err)
-      setError("Error al iniciar sesión")
-      setLoading(false)
+    } catch (error) {
+      console.error("Login error:", error)
+      setError("Error al iniciar sesión. Inténtalo de nuevo.")
+    } finally {
+      setIsLoading(false)
     }
   }
 
-  if (redirecting) {
-    return (
-      <Card className="w-full max-w-md mx-auto">
-        <CardContent className="flex flex-col items-center justify-center p-6">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-            <p className="text-lg font-medium">Redirigiendo al panel de control...</p>
-          </div>
-        </CardContent>
-      </Card>
-    )
+  const handleQuickLogin = (userEmail: string, userPassword: string) => {
+    setEmail(userEmail)
+    setPassword(userPassword)
   }
 
   return (
-    <Card className="border-primary-200 shadow-soft-lg bg-white">
-      <CardHeader>
-        <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
-        <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
-      </CardHeader>
-      <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {error && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{error}</AlertDescription>
-            </Alert>
-          )}
-          <div className="space-y-2">
-            <Label htmlFor="email">Correo electrónico</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="correo@ejemplo.com"
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="password">Contraseña</Label>
-            <Input
-              id="password"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </div>
-          <Button type="submit" className="w-full" disabled={loading}>
-            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-          </Button>
-        </form>
-      </CardContent>
-      <CardFooter className="flex flex-col space-y-4">
-        <p className="text-sm text-primary-600">
-          ¿No tienes una cuenta?{" "}
-          <a href="/register" className="text-primary-600 hover:underline">
-            Regístrate
-          </a>
-        </p>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
 
-        <div className="w-full pt-4 border-t border-primary-200">
-          <p className="text-sm font-medium mb-2 text-primary-800">Credenciales de prueba:</p>
-          <div className="text-xs text-primary-600 space-y-1">
-            <p>
-              <strong>Paciente:</strong> paciente@clinica.com / paciente
-            </p>
-            <p>
-              <strong>Estudiante:</strong> estudiante@clinica.com / estudiante
-            </p>
-            <p>
-              <strong>Profesor:</strong> profesor@clinica.com / profesor
-            </p>
-            <p>
-              <strong>Admin:</strong> admin@clinica.com / admin
-            </p>
-          </div>
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="tu@email.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          disabled={isLoading}
+        />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="password">Contraseña</Label>
+        <div className="relative">
+          <Input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            placeholder="Tu contraseña"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            disabled={isLoading}
+          />
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            onClick={() => setShowPassword(!showPassword)}
+            disabled={isLoading}
+          >
+            {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </Button>
         </div>
-      </CardFooter>
-    </Card>
+      </div>
+
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? (
+          <div className="flex items-center gap-2">
+            <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent" />
+            Iniciando sesión...
+          </div>
+        ) : (
+          <div className="flex items-center gap-2">
+            <LogIn className="h-4 w-4" />
+            Iniciar Sesión
+          </div>
+        )}
+      </Button>
+
+      {/* Quick login buttons for demo */}
+      <div className="pt-4 border-t">
+        <p className="text-xs text-gray-500 mb-2 text-center">Acceso rápido (demo):</p>
+        <div className="grid grid-cols-2 gap-2">
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickLogin("admin@clinica.com", "admin")}
+            disabled={isLoading}
+          >
+            Admin
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickLogin("secretaria@clinica.com", "secretaria")}
+            disabled={isLoading}
+          >
+            Secretaria
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickLogin("profesor@clinica.com", "profesor")}
+            disabled={isLoading}
+          >
+            Profesor
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => handleQuickLogin("estudiante@clinica.com", "estudiante")}
+            disabled={isLoading}
+          >
+            Estudiante
+          </Button>
+        </div>
+      </div>
+    </form>
   )
 }
