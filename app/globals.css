@@ -5,47 +5,25 @@
 @layer base {
   :root {
     --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    --foreground: 200 50% 25%;
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 200 50% 25%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
+    --popover-foreground: 200 50% 25%;
     --primary: 200 100% 50%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96%;
-    --secondary-foreground: 222.2 84% 4.9%;
+    --secondary-foreground: 200 50% 25%;
     --muted: 210 40% 96%;
     --muted-foreground: 215.4 16.3% 46.9%;
     --accent: 210 40% 96%;
-    --accent-foreground: 222.2 84% 4.9%;
+    --accent-foreground: 200 50% 25%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 214.3 31.8% 91.4%;
     --input: 214.3 31.8% 91.4%;
     --ring: 200 100% 50%;
     --radius: 0.75rem;
-
-    /* Bright Medical Color Scheme */
-    --medical-blue: 200 100% 50%;
-    --medical-green: 142 69% 58%;
-    --medical-purple: 262 52% 67%;
-    --medical-orange: 25 95% 63%;
-    --medical-red: 0 84% 70%;
-    --medical-teal: 173 58% 49%;
-    --medical-indigo: 231 48% 58%;
-    --medical-pink: 330 81% 70%;
-    --medical-yellow: 48 96% 66%;
-    --medical-cyan: 188 94% 63%;
-
-    /* Sidebar specific colors */
-    --sidebar-background: 200 30% 98%;
-    --sidebar-foreground: 200 50% 25%;
-    --sidebar-primary: 200 100% 50%;
-    --sidebar-primary-foreground: 0 0% 98%;
-    --sidebar-accent: 200 20% 95%;
-    --sidebar-accent-foreground: 200 45% 25%;
-    --sidebar-border: 200 20% 89%;
-    --sidebar-ring: 200 100% 50%;
   }
 
   .dark {
@@ -86,97 +64,141 @@
   }
 
   .medical-card {
-    @apply bg-white/80 backdrop-blur-sm border border-blue-100 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:-translate-y-1;
+    @apply bg-white/90 backdrop-blur-sm border border-blue-200 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-2;
   }
 
   .btn-medical {
-    @apply bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+    @apply bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105;
   }
 
   .btn-medical-secondary {
-    @apply bg-gradient-to-r from-green-500 to-emerald-500 text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+    @apply bg-gradient-to-r from-green-500 to-emerald-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105;
   }
 
   .btn-medical-accent {
-    @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white font-medium px-6 py-3 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105;
+    @apply bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 hover:scale-105;
   }
 
   .sidebar-item {
-    @apply flex items-center gap-3 rounded-lg px-4 py-3 text-gray-700 transition-all duration-200 hover:bg-blue-50 hover:text-blue-700 hover:shadow-md;
+    @apply flex items-center gap-3 rounded-xl px-4 py-3 text-blue-700 transition-all duration-200 hover:bg-gradient-to-r hover:from-blue-100 hover:to-cyan-100 hover:text-blue-800 hover:shadow-lg;
   }
 
   .sidebar-item-active {
-    @apply bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg;
+    @apply bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-xl;
   }
 
-  .glass-effect {
-    @apply backdrop-blur-md bg-white/10 border border-white/20;
+  .text-primary {
+    @apply text-blue-600;
   }
 
-  .card-hover {
-    @apply transition-all duration-300 hover:shadow-lg hover:-translate-y-1;
+  .text-secondary {
+    @apply text-green-600;
+  }
+
+  .text-accent {
+    @apply text-purple-600;
+  }
+
+  .text-heading {
+    @apply text-blue-700 font-bold;
+  }
+
+  .text-subheading {
+    @apply text-blue-600 font-semibold;
+  }
+
+  .text-body {
+    @apply text-blue-800;
+  }
+
+  .text-muted {
+    @apply text-blue-500;
   }
 }
 
 /* Tooth styles for odontogram */
 .tooth {
-  @apply w-10 h-10 border-2 rounded-lg cursor-pointer flex items-center justify-center text-xs font-bold transition-all duration-200 hover:scale-110 hover:shadow-lg;
+  @apply w-12 h-12 border-2 rounded-xl cursor-pointer flex items-center justify-center text-sm font-bold transition-all duration-200 hover:scale-110 hover:shadow-xl;
 }
 
 .tooth-healthy {
-  @apply bg-white border-gray-300 text-gray-700 hover:border-blue-400;
+  @apply bg-gradient-to-br from-green-100 to-green-200 border-green-400 text-green-700 hover:from-green-200 hover:to-green-300;
 }
 
 .tooth-caries {
-  @apply bg-red-100 border-red-400 text-red-800 hover:bg-red-200;
+  @apply bg-gradient-to-br from-red-100 to-red-200 border-red-400 text-red-700 hover:from-red-200 hover:to-red-300;
 }
 
 .tooth-filled {
-  @apply bg-blue-100 border-blue-400 text-blue-800 hover:bg-blue-200;
+  @apply bg-gradient-to-br from-blue-100 to-blue-200 border-blue-400 text-blue-700 hover:from-blue-200 hover:to-blue-300;
 }
 
 .tooth-crown {
-  @apply bg-yellow-100 border-yellow-400 text-yellow-800 hover:bg-yellow-200;
+  @apply bg-gradient-to-br from-yellow-100 to-yellow-200 border-yellow-400 text-yellow-700 hover:from-yellow-200 hover:to-yellow-300;
 }
 
 .tooth-missing {
-  @apply bg-gray-400 border-gray-500 text-white hover:bg-gray-500;
+  @apply bg-gradient-to-br from-gray-300 to-gray-400 border-gray-500 text-white hover:from-gray-400 hover:to-gray-500;
 }
 
 .tooth-root-canal {
-  @apply bg-purple-100 border-purple-400 text-purple-800 hover:bg-purple-200;
+  @apply bg-gradient-to-br from-purple-100 to-purple-200 border-purple-400 text-purple-700 hover:from-purple-200 hover:to-purple-300;
 }
 
 .tooth-implant {
-  @apply bg-green-100 border-green-400 text-green-800 hover:bg-green-200;
+  @apply bg-gradient-to-br from-emerald-100 to-emerald-200 border-emerald-400 text-emerald-700 hover:from-emerald-200 hover:to-emerald-300;
 }
 
 /* Animation classes */
 .fade-in {
-  animation: fadeIn 0.5s ease-in-out;
+  animation: fadeIn 0.6s ease-in-out;
 }
 
 .slide-up {
-  animation: slideUp 0.3s ease-out;
+  animation: slideUp 0.4s ease-out;
+}
+
+.bounce-in {
+  animation: bounceIn 0.6s ease-out;
 }
 
 @keyframes fadeIn {
   from {
     opacity: 0;
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
+    transform: translateY(0);
   }
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(30px);
   }
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
@@ -187,19 +209,19 @@
 
 /* Custom scrollbar */
 .custom-scrollbar::-webkit-scrollbar {
-  width: 6px;
+  width: 8px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
-  border-radius: 3px;
+  background: linear-gradient(to bottom, #f1f5f9, #e2e8f0);
+  border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
-  border-radius: 3px;
+  background: linear-gradient(to bottom, #3b82f6, #06b6d4);
+  border-radius: 4px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: linear-gradient(to bottom, #2563eb, #0891b2);
 }

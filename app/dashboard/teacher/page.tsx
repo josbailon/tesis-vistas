@@ -1,327 +1,262 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState } from "react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/contexts/auth-context"
-import { BookOpen, Users, ClipboardList, TrendingUp, Calendar, Bell } from "lucide-react"
+import { GraduationCap, BookOpen, Users, Plus } from "lucide-react"
+import { ProtectedRoute } from "@/components/protected-route"
 
-interface Course {
-  id: string
-  title: string
-  description: string
-  category: string
-  progress: number
-  students: number
-  assignments: number
-  completedAssignments: number
-}
+const mockStudents = [
+  {
+    id: 1,
+    name: "Carlos Pérez",
+    specialty: "Endodoncia",
+    progress: 85,
+    assignments: 12,
+    completed: 10,
+    pending: 2,
+  },
+  {
+    id: 2,
+    name: "Ana Martínez",
+    specialty: "Ortodoncia",
+    progress: 92,
+    assignments: 15,
+    completed: 14,
+    pending: 1,
+  },
+  {
+    id: 3,
+    name: "Diego López",
+    specialty: "Cirugía Oral",
+    progress: 78,
+    assignments: 10,
+    completed: 8,
+    pending: 2,
+  },
+]
 
-const TeacherDashboard = () => {
-  const { toast } = useToast()
-  const { user } = useAuth()
-  const [courses, setCourses] = useState<Course[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+const mockAssignments = [
+  {
+    id: 1,
+    title: "Caso Clínico: Tratamiento de Conducto",
+    specialty: "Endodoncia",
+    dueDate: "2024-02-15",
+    submissions: 8,
+    totalStudents: 12,
+    status: "active",
+  },
+  {
+    id: 2,
+    title: "Análisis Cefalométrico",
+    specialty: "Ortodoncia",
+    dueDate: "2024-02-20",
+    submissions: 5,
+    totalStudents: 10,
+    status: "active",
+  },
+]
 
-  useEffect(() => {
-    const fetchCourses = async () => {
-      setLoading(true)
-      setError(null)
-
-      try {
-        const response = await fetch("/api/courses")
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`)
-        }
-
-        const contentType = response.headers.get("content-type")
-        if (!contentType || !contentType.includes("application/json")) {
-          throw new Error("Response is not JSON")
-        }
-
-        const data = await response.json()
-        setCourses(data)
-      } catch (error) {
-        console.error("Could not fetch courses:", error)
-        setError("No se pudieron cargar los cursos. Usando datos de ejemplo.")
-
-        // Fallback to mock data
-        setCourses([
-          {
-            id: "1",
-            title: "Endodoncia Avanzada",
-            description: "Técnicas modernas de tratamiento endodóntico",
-            category: "Endodoncia",
-            progress: 85,
-            students: 12,
-            assignments: 8,
-            completedAssignments: 6,
-          },
-          {
-            id: "2",
-            title: "Ortodoncia Interceptiva",
-            description: "Tratamientos ortodónticos en pacientes jóvenes",
-            category: "Ortodoncia",
-            progress: 72,
-            students: 15,
-            assignments: 10,
-            completedAssignments: 7,
-          },
-        ])
-
-        toast({
-          title: "Advertencia",
-          description: "Usando datos de ejemplo. Verifique la conexión.",
-          variant: "default",
-        })
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchCourses()
-  }, [toast])
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
-          <p className="text-green-700">Cargando dashboard del profesor...</p>
-        </div>
-      </div>
-    )
-  }
+export default function TeacherPage() {
+  const [selectedTab, setSelectedTab] = useState("overview")
 
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-green-800">Dashboard del Profesor</h1>
-          <p className="text-green-600">Bienvenido, {user?.name}</p>
+    <ProtectedRoute allowedRoles={["professor"]}>
+      <div className="space-y-6 p-6">
+        <div className="fade-in">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Panel del Profesor
+          </h1>
+          <p className="text-blue-600 mt-2 text-lg">Gestión académica y seguimiento de estudiantes</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="border-green-200 text-green-700 hover:bg-green-50">
-            <Calendar className="h-4 w-4 mr-2" />
-            Horarios
-          </Button>
-          <Button variant="outline" size="sm" className="border-green-200 text-green-700 hover:bg-green-50">
-            <Bell className="h-4 w-4 mr-2" />
-            Notificaciones
-          </Button>
+
+        {/* Estadísticas generales */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <Card className="medical-card">
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-blue-600 mb-2">{mockStudents.length}</div>
+              <p className="text-blue-500">Estudiantes Asignados</p>
+            </CardContent>
+          </Card>
+          <Card className="medical-card">
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-green-600 mb-2">{mockAssignments.length}</div>
+              <p className="text-blue-500">Tareas Activas</p>
+            </CardContent>
+          </Card>
+          <Card className="medical-card">
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-purple-600 mb-2">
+                {mockAssignments.reduce((acc, curr) => acc + curr.submissions, 0)}
+              </div>
+              <p className="text-blue-500">Entregas Recibidas</p>
+            </CardContent>
+          </Card>
+          <Card className="medical-card">
+            <CardContent className="p-6 text-center">
+              <div className="text-3xl font-bold text-orange-600 mb-2">
+                {Math.round(mockStudents.reduce((acc, curr) => acc + curr.progress, 0) / mockStudents.length)}%
+              </div>
+              <p className="text-blue-500">Progreso Promedio</p>
+            </CardContent>
+          </Card>
         </div>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-700">Total Cursos</CardTitle>
-            <BookOpen className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-800">{courses.length}</div>
-            <p className="text-xs text-green-600">Cursos activos</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-700">Total Estudiantes</CardTitle>
-            <Users className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-800">
-              {courses.reduce((total, course) => total + course.students, 0)}
-            </div>
-            <p className="text-xs text-green-600">Estudiantes activos</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-700">Tareas Pendientes</CardTitle>
-            <ClipboardList className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-800">
-              {courses.reduce((total, course) => total + (course.assignments - course.completedAssignments), 0)}
-            </div>
-            <p className="text-xs text-green-600">Por revisar</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-700">Progreso Promedio</CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-800">
-              {Math.round(courses.reduce((total, course) => total + course.progress, 0) / courses.length)}%
-            </div>
-            <p className="text-xs text-green-600">De todos los cursos</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Courses Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {courses.map((course) => (
-          <Card key={course.id} className="border-green-200 hover:shadow-lg transition-shadow">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-green-800">{course.title}</CardTitle>
-                <Badge variant="secondary" className="bg-green-100 text-green-700">
-                  {course.category}
-                </Badge>
-              </div>
-              <CardDescription className="text-green-600">{course.description}</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between text-sm">
-                <span className="text-green-700">Progreso del curso</span>
-                <span className="font-medium text-green-800">{course.progress}%</span>
-              </div>
-              <Progress value={course.progress} className="h-2" />
-
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <p className="text-green-600">Estudiantes</p>
-                  <p className="font-semibold text-green-800">{course.students}</p>
-                </div>
-                <div>
-                  <p className="text-green-600">Tareas</p>
-                  <p className="font-semibold text-green-800">
-                    {course.completedAssignments}/{course.assignments}
-                  </p>
-                </div>
-              </div>
-
-              <Button className="w-full bg-green-600 hover:bg-green-700 text-white">Ver Curso</Button>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Tabs Section */}
-      <Tabs defaultValue="recent" className="w-full">
-        <TabsList className="grid w-full grid-cols-3 bg-green-50">
-          <TabsTrigger value="recent" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
-            Actividad Reciente
-          </TabsTrigger>
-          <TabsTrigger value="pending" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
-            Pendientes
-          </TabsTrigger>
-          <TabsTrigger value="settings" className="data-[state=active]:bg-green-600 data-[state=active]:text-white">
-            Configuración
-          </TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="recent" className="mt-6">
-          <Card className="border-green-200">
-            <CardHeader>
-              <CardTitle className="text-green-800">Actividad Reciente</CardTitle>
-              <CardDescription className="text-green-600">Últimas acciones en tus cursos</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center space-x-4">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium text-green-800">Nueva tarea enviada en Endodoncia Avanzada</p>
-                    <p className="text-xs text-green-600">Hace 2 horas</p>
-                  </div>
-                </div>
-                <div className="flex items-center space-x-4">
-                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                  <div>
-                    <p className="text-sm font-medium text-green-800">Estudiante completó evaluación en Ortodoncia</p>
-                    <p className="text-xs text-green-600">Hace 4 horas</p>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="pending" className="mt-6">
-          <Card className="border-green-200">
-            <CardHeader>
-              <CardTitle className="text-green-800">Tareas Pendientes</CardTitle>
-              <CardDescription className="text-green-600">Elementos que requieren tu atención</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-green-800">Revisar 3 tareas de Endodoncia</p>
-                    <p className="text-sm text-green-600">Vencimiento: Mañana</p>
-                  </div>
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                    Revisar
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between p-3 bg-green-50 rounded-lg">
-                  <div>
-                    <p className="font-medium text-green-800">Aprobar solicitudes de estudiantes</p>
-                    <p className="text-sm text-green-600">5 solicitudes pendientes</p>
-                  </div>
-                  <Button size="sm" className="bg-green-600 hover:bg-green-700">
-                    Ver
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        <TabsContent value="settings" className="mt-6">
-          <Card className="border-green-200">
-            <CardHeader>
-              <CardTitle className="text-green-800">Configuración del Profesor</CardTitle>
-              <CardDescription className="text-green-600">Personaliza tu experiencia de enseñanza</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-green-800">Notificaciones por email</p>
-                    <p className="text-sm text-green-600">Recibir alertas de nuevas tareas</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="border-green-200 text-green-700">
-                    Configurar
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium text-green-800">Horarios de disponibilidad</p>
-                    <p className="text-sm text-green-600">Establecer horarios de consulta</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="border-green-200 text-green-700">
-                    Editar
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {error && (
-        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <p className="text-yellow-800 text-sm">{error}</p>
+        {/* Navegación por pestañas */}
+        <div className="flex gap-2 border-b border-blue-200">
+          {[
+            { id: "overview", label: "Resumen", icon: GraduationCap },
+            { id: "students", label: "Estudiantes", icon: Users },
+            { id: "assignments", label: "Tareas", icon: BookOpen },
+          ].map((tab) => {
+            const Icon = tab.icon
+            return (
+              <button
+                key={tab.id}
+                onClick={() => setSelectedTab(tab.id)}
+                className={`flex items-center gap-2 px-4 py-2 rounded-t-lg transition-colors ${
+                  selectedTab === tab.id ? "bg-blue-500 text-white" : "text-blue-600 hover:bg-blue-50"
+                }`}
+              >
+                <Icon className="h-4 w-4" />
+                {tab.label}
+              </button>
+            )
+          })}
         </div>
-      )}
-    </div>
+
+        {/* Contenido de pestañas */}
+        {selectedTab === "overview" && (
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card className="medical-card">
+              <CardHeader>
+                <CardTitle className="text-blue-700">Progreso de Estudiantes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {mockStudents.map((student) => (
+                    <div key={student.id} className="space-y-2">
+                      <div className="flex justify-between">
+                        <span className="font-medium text-blue-700">{student.name}</span>
+                        <span className="text-blue-600">{student.progress}%</span>
+                      </div>
+                      <Progress value={student.progress} className="h-2" />
+                      <div className="text-sm text-blue-500">{student.specialty}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card className="medical-card">
+              <CardHeader>
+                <CardTitle className="text-blue-700">Tareas Recientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {mockAssignments.map((assignment) => (
+                    <div key={assignment.id} className="p-3 bg-blue-50 rounded-lg">
+                      <h4 className="font-medium text-blue-700">{assignment.title}</h4>
+                      <div className="text-sm text-blue-600 mt-1">
+                        {assignment.submissions}/{assignment.totalStudents} entregas
+                      </div>
+                      <div className="text-xs text-blue-500 mt-1">Vence: {assignment.dueDate}</div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {selectedTab === "students" && (
+          <div className="grid gap-4">
+            {mockStudents.map((student) => (
+              <Card key={student.id} className="medical-card">
+                <CardContent className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                      <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-full flex items-center justify-center">
+                        <GraduationCap className="h-6 w-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-blue-700">{student.name}</h3>
+                        <p className="text-blue-600">{student.specialty}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-blue-600">{student.progress}%</div>
+                      <div className="text-sm text-blue-500">Progreso</div>
+                    </div>
+                  </div>
+                  <div className="mt-4 grid grid-cols-3 gap-4 text-center">
+                    <div>
+                      <div className="text-lg font-semibold text-green-600">{student.completed}</div>
+                      <div className="text-xs text-blue-500">Completadas</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-semibold text-yellow-600">{student.pending}</div>
+                      <div className="text-xs text-blue-500">Pendientes</div>
+                    </div>
+                    <div>
+                      <div className="text-lg font-semibold text-blue-600">{student.assignments}</div>
+                      <div className="text-xs text-blue-500">Total</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
+
+        {selectedTab === "assignments" && (
+          <div className="space-y-4">
+            <div className="flex justify-between items-center">
+              <h2 className="text-xl font-semibold text-blue-700">Gestión de Tareas</h2>
+              <Button className="btn-medical">
+                <Plus className="h-4 w-4 mr-2" />
+                Nueva Tarea
+              </Button>
+            </div>
+            <div className="grid gap-4">
+              {mockAssignments.map((assignment) => (
+                <Card key={assignment.id} className="medical-card">
+                  <CardContent className="p-6">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-blue-700 mb-2">{assignment.title}</h3>
+                        <div className="flex items-center gap-4 text-sm text-blue-600">
+                          <Badge className="bg-blue-100 text-blue-700">{assignment.specialty}</Badge>
+                          <span>Vence: {assignment.dueDate}</span>
+                        </div>
+                        <div className="mt-3">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-blue-600">Entregas recibidas</span>
+                            <span className="text-blue-700">
+                              {assignment.submissions}/{assignment.totalStudents}
+                            </span>
+                          </div>
+                          <Progress value={(assignment.submissions / assignment.totalStudents) * 100} className="h-2" />
+                        </div>
+                      </div>
+                      <div className="flex gap-2 ml-4">
+                        <Button size="sm" variant="outline" className="border-blue-200 text-blue-600">
+                          Ver Entregas
+                        </Button>
+                        <Button size="sm" className="btn-medical">
+                          Editar
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+    </ProtectedRoute>
   )
 }
-
-export default TeacherDashboard

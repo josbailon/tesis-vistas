@@ -1,232 +1,269 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
-import { Users, GraduationCap, UserCheck, Activity, Database, Shield, Settings, BarChart3 } from "lucide-react"
+import {
+  Users,
+  GraduationCap,
+  Calendar,
+  Activity,
+  TrendingUp,
+  AlertTriangle,
+  Shield,
+  Settings,
+  BarChart3,
+} from "lucide-react"
+import { ProtectedRoute } from "@/components/protected-route"
 
-export default function AdminDashboard() {
-  const [systemStats, setSystemStats] = useState({
-    totalUsers: 245,
-    activeUsers: 198,
-    totalStudents: 85,
-    totalTeachers: 12,
-    totalPatients: 148,
-    pendingApprovals: 23,
-    systemUptime: "99.8%",
-    storageUsed: 68,
-    activeConnections: 42,
-    securityAlerts: 3,
-  })
+const systemStats = {
+  totalUsers: 156,
+  activeStudents: 45,
+  professors: 12,
+  patients: 89,
+  appointmentsToday: 23,
+  systemUptime: 99.8,
+  storageUsed: 67,
+  activeConnections: 34,
+}
 
-  const [recentActivity, setRecentActivity] = useState([
-    {
-      id: 1,
-      type: "user_created",
-      message: "Nuevo estudiante registrado: María González",
-      time: "hace 5 min",
-      severity: "info",
-    },
-    {
-      id: 2,
-      type: "security",
-      message: "Intento de acceso fallido detectado",
-      time: "hace 12 min",
-      severity: "warning",
-    },
-    {
-      id: 3,
-      type: "backup",
-      message: "Respaldo automático completado exitosamente",
-      time: "hace 1 hora",
-      severity: "success",
-    },
-    {
-      id: 4,
-      type: "system",
-      message: "Actualización del sistema programada para mañana",
-      time: "hace 2 horas",
-      severity: "info",
-    },
-    {
-      id: 5,
-      type: "approval",
-      message: "15 nuevas solicitudes de aprobación pendientes",
-      time: "hace 3 horas",
-      severity: "warning",
-    },
-  ])
+const recentActivities = [
+  {
+    id: 1,
+    type: "user_registration",
+    message: "Nuevo estudiante registrado: María González",
+    time: "Hace 5 minutos",
+    severity: "info",
+  },
+  {
+    id: 2,
+    type: "appointment_created",
+    message: "Nueva cita programada para mañana",
+    time: "Hace 15 minutos",
+    severity: "success",
+  },
+  {
+    id: 3,
+    type: "system_alert",
+    message: "Uso de almacenamiento al 67%",
+    time: "Hace 1 hora",
+    severity: "warning",
+  },
+  {
+    id: 4,
+    type: "backup_completed",
+    message: "Respaldo automático completado",
+    time: "Hace 2 horas",
+    severity: "success",
+  },
+]
+
+export default function AdminPage() {
+  const [selectedPeriod, setSelectedPeriod] = useState("today")
 
   const getSeverityColor = (severity: string) => {
     switch (severity) {
       case "success":
-        return "text-green-600 bg-green-50"
+        return "text-green-600 bg-green-100"
       case "warning":
-        return "text-yellow-600 bg-yellow-50"
+        return "text-yellow-600 bg-yellow-100"
       case "error":
-        return "text-red-600 bg-red-50"
+        return "text-red-600 bg-red-100"
       default:
-        return "text-blue-600 bg-blue-50"
+        return "text-blue-600 bg-blue-100"
+    }
+  }
+
+  const getSeverityIcon = (type: string) => {
+    switch (type) {
+      case "user_registration":
+        return <Users className="h-4 w-4" />
+      case "appointment_created":
+        return <Calendar className="h-4 w-4" />
+      case "system_alert":
+        return <AlertTriangle className="h-4 w-4" />
+      case "backup_completed":
+        return <Shield className="h-4 w-4" />
+      default:
+        return <Activity className="h-4 w-4" />
     }
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Panel de Administración</h1>
-        <p className="text-muted-foreground">Gestión integral del sistema de la clínica dental universitaria</p>
-      </div>
+    <ProtectedRoute allowedRoles={["admin"]}>
+      <div className="space-y-6 p-6">
+        <div className="fade-in">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Panel de Administración
+          </h1>
+          <p className="text-blue-600 mt-2 text-lg">Monitoreo y gestión del sistema</p>
+        </div>
 
-      {/* System Status Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Usuarios Totales</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{systemStats.totalUsers}</div>
-            <p className="text-xs text-muted-foreground">
-              {systemStats.activeUsers} activos ({Math.round((systemStats.activeUsers / systemStats.totalUsers) * 100)}
-              %)
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Estudiantes</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{systemStats.totalStudents}</div>
-            <p className="text-xs text-muted-foreground">Profesores: {systemStats.totalTeachers}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pacientes</CardTitle>
-            <UserCheck className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{systemStats.totalPatients}</div>
-            <p className="text-xs text-muted-foreground">Aprobaciones pendientes: {systemStats.pendingApprovals}</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Estado del Sistema</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-600">{systemStats.systemUptime}</div>
-            <p className="text-xs text-muted-foreground">Uptime del sistema</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      <div className="grid gap-6 md:grid-cols-2">
-        {/* System Resources */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Recursos del Sistema</CardTitle>
-            <CardDescription>Monitoreo en tiempo real de recursos</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Almacenamiento</span>
-                <span>{systemStats.storageUsed}%</span>
-              </div>
-              <Progress value={systemStats.storageUsed} className="h-2" />
-            </div>
-
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span>Conexiones Activas</span>
-                <span>{systemStats.activeConnections}/100</span>
-              </div>
-              <Progress value={(systemStats.activeConnections / 100) * 100} className="h-2" />
-            </div>
-
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center gap-2">
-                <Database className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Base de Datos</span>
-              </div>
-              <Badge variant="outline" className="text-green-600">
-                Operacional
-              </Badge>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Shield className="h-4 w-4 text-muted-foreground" />
-                <span className="text-sm">Seguridad</span>
-              </div>
-              <Badge variant="outline" className="text-yellow-600">
-                {systemStats.securityAlerts} Alertas
-              </Badge>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Recent Activity */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Actividad Reciente</CardTitle>
-            <CardDescription>Eventos y notificaciones del sistema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {recentActivity.map((activity) => (
-                <div key={activity.id} className="flex items-start gap-3 p-2 rounded-lg hover:bg-muted/50">
-                  <div className={`w-2 h-2 rounded-full mt-2 ${getSeverityColor(activity.severity)}`} />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium">{activity.message}</p>
-                    <p className="text-xs text-muted-foreground">{activity.time}</p>
-                  </div>
+        {/* Estadísticas principales */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="medical-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-500 text-sm font-medium">Total Usuarios</p>
+                  <p className="text-3xl font-bold text-blue-600">{systemStats.totalUsers}</p>
                 </div>
-              ))}
+                <div className="h-12 w-12 bg-gradient-to-r from-blue-500 to-cyan-500 rounded-xl flex items-center justify-center">
+                  <Users className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+                <span className="text-green-600">+12% este mes</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="medical-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-500 text-sm font-medium">Estudiantes Activos</p>
+                  <p className="text-3xl font-bold text-green-600">{systemStats.activeStudents}</p>
+                </div>
+                <div className="h-12 w-12 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center">
+                  <GraduationCap className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <TrendingUp className="h-4 w-4 text-green-500 mr-1" />
+                <span className="text-green-600">+8% este mes</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="medical-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-500 text-sm font-medium">Citas Hoy</p>
+                  <p className="text-3xl font-bold text-purple-600">{systemStats.appointmentsToday}</p>
+                </div>
+                <div className="h-12 w-12 bg-gradient-to-r from-purple-500 to-pink-500 rounded-xl flex items-center justify-center">
+                  <Calendar className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <Activity className="h-4 w-4 text-blue-500 mr-1" />
+                <span className="text-blue-600">Normal</span>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="medical-card">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-blue-500 text-sm font-medium">Uptime Sistema</p>
+                  <p className="text-3xl font-bold text-green-600">{systemStats.systemUptime}%</p>
+                </div>
+                <div className="h-12 w-12 bg-gradient-to-r from-green-500 to-teal-500 rounded-xl flex items-center justify-center">
+                  <Activity className="h-6 w-6 text-white" />
+                </div>
+              </div>
+              <div className="mt-4 flex items-center text-sm">
+                <Shield className="h-4 w-4 text-green-500 mr-1" />
+                <span className="text-green-600">Excelente</span>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Gráficos y métricas */}
+        <div className="grid gap-6 md:grid-cols-2">
+          <Card className="medical-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-700">
+                <BarChart3 className="h-5 w-5 text-blue-500" />
+                Uso de Recursos
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-blue-600">Almacenamiento</span>
+                  <span className="text-blue-700">{systemStats.storageUsed}%</span>
+                </div>
+                <Progress value={systemStats.storageUsed} className="h-3" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-blue-600">Conexiones Activas</span>
+                  <span className="text-blue-700">{systemStats.activeConnections}/100</span>
+                </div>
+                <Progress value={(systemStats.activeConnections / 100) * 100} className="h-3" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-blue-600">CPU</span>
+                  <span className="text-blue-700">23%</span>
+                </div>
+                <Progress value={23} className="h-3" />
+              </div>
+              <div>
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="text-blue-600">Memoria RAM</span>
+                  <span className="text-blue-700">45%</span>
+                </div>
+                <Progress value={45} className="h-3" />
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="medical-card">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-blue-700">
+                <Activity className="h-5 w-5 text-blue-500" />
+                Actividad Reciente
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 max-h-80 overflow-y-auto custom-scrollbar">
+                {recentActivities.map((activity) => (
+                  <div key={activity.id} className="flex items-start gap-3 p-3 bg-blue-50 rounded-lg">
+                    <div className={`p-2 rounded-lg ${getSeverityColor(activity.severity)}`}>
+                      {getSeverityIcon(activity.type)}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-blue-700 font-medium">{activity.message}</p>
+                      <p className="text-blue-500 text-sm">{activity.time}</p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Acciones rápidas */}
+        <Card className="medical-card">
+          <CardHeader>
+            <CardTitle className="text-blue-700">Acciones Rápidas</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <Button className="btn-medical h-16 flex-col">
+                <Users className="h-6 w-6 mb-2" />
+                Gestionar Usuarios
+              </Button>
+              <Button className="btn-medical-secondary h-16 flex-col">
+                <Settings className="h-6 w-6 mb-2" />
+                Configuración
+              </Button>
+              <Button className="btn-medical-accent h-16 flex-col">
+                <Shield className="h-6 w-6 mb-2" />
+                Seguridad
+              </Button>
             </div>
-            <Button variant="outline" className="w-full mt-4">
-              Ver Todos los Eventos
-            </Button>
           </CardContent>
         </Card>
       </div>
-
-      {/* Quick Actions */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Acciones Rápidas</CardTitle>
-          <CardDescription>Tareas administrativas frecuentes</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <Users className="h-6 w-6" />
-              <span>Gestionar Usuarios</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <Database className="h-6 w-6" />
-              <span>Respaldo Manual</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <BarChart3 className="h-6 w-6" />
-              <span>Generar Reportes</span>
-            </Button>
-            <Button variant="outline" className="h-20 flex flex-col gap-2">
-              <Settings className="h-6 w-6" />
-              <span>Configuración</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+    </ProtectedRoute>
   )
 }
