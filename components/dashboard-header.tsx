@@ -13,10 +13,31 @@ export function DashboardHeader() {
 
   const handleLogout = async () => {
     try {
+      // Show loading state
+      const button = document.querySelector("[data-logout-btn]") as HTMLButtonElement
+      if (button) {
+        button.disabled = true
+        button.innerHTML =
+          '<div class="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2"></div>Cerrando...'
+      }
+
+      // Call logout from auth context
       await logout()
+
+      // Clear any local storage
+      localStorage.clear()
+      sessionStorage.clear()
+
+      // Force redirect to login
       window.location.href = "/login"
     } catch (error) {
       console.error("Error al cerrar sesión:", error)
+      // Reset button state
+      const button = document.querySelector("[data-logout-btn]") as HTMLButtonElement
+      if (button) {
+        button.disabled = false
+        button.innerHTML = '<LogOut class="h-4 w-4 mr-2" />Cerrar Sesión'
+      }
     }
   }
 
@@ -91,6 +112,7 @@ export function DashboardHeader() {
         {/* Cerrar Sesión */}
         <Button
           onClick={handleLogout}
+          data-logout-btn
           variant="outline"
           size="sm"
           className="border-red-300 text-red-700 hover:bg-red-50 hover:scale-105 transition-all duration-200"

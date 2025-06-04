@@ -2,32 +2,30 @@
 
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { ArrowLeft, User, Calendar, FileText } from "lucide-react"
+import { ArrowLeft, User } from "lucide-react"
 import Link from "next/link"
 import { InteractiveOdontogram } from "@/components/interactive-odontogram"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/auth-context"
 
-// Mock patient data - in real app, this would come from API
+// Mock patient data
 const mockPatient = {
-  id: "p1",
-  name: "Ana García",
-  age: 28,
-  lastVisit: "2024-12-15",
-  dentitionType: "adult" as const,
+  id: "p5",
+  name: "Sofía Ramírez",
+  age: 5,
+  lastVisit: "2024-12-10",
+  dentitionType: "pediatric" as const,
 }
 
-export default function AdultOdontogramPage() {
+export default function PediatricOdontogramPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [odontogramData, setOdontogramData] = useState(null)
   const { user } = useAuth()
 
   useEffect(() => {
-    // Simulate loading patient data
     const loadData = async () => {
       setIsLoading(true)
-      // Simulate API call
       await new Promise((resolve) => setTimeout(resolve, 1000))
       setIsLoading(false)
     }
@@ -35,17 +33,15 @@ export default function AdultOdontogramPage() {
   }, [])
 
   const handleSaveOdontogram = async (data: any) => {
-    console.log("Saving odontogram:", data)
-    // Here you would make an API call to save the data
-    // await saveOdontogramToAPI(data)
+    console.log("Saving pediatric odontogram:", data)
   }
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-blue-700 font-medium">Cargando odontograma...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600 mx-auto mb-4"></div>
+          <p className="text-green-700 font-medium">Cargando odontograma pediátrico...</p>
         </div>
       </div>
     )
@@ -62,10 +58,10 @@ export default function AdultOdontogramPage() {
           </Button>
         </Link>
         <div>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-            Odontograma Adulto
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent">
+            Odontograma Pediátrico
           </h1>
-          <p className="text-gray-600 mt-1">Dentición permanente completa - Sistema FDI</p>
+          <p className="text-gray-600 mt-1">Dentición temporal (dientes de leche) - Sistema FDI</p>
         </div>
       </div>
 
@@ -73,7 +69,7 @@ export default function AdultOdontogramPage() {
       <Card className="medical-card">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-gray-800">
-            <User className="h-5 w-5 text-blue-500" />
+            <User className="h-5 w-5 text-green-500" />
             Información del Paciente
           </CardTitle>
         </CardHeader>
@@ -93,7 +89,7 @@ export default function AdultOdontogramPage() {
             </div>
             <div>
               <p className="text-sm text-gray-500">Tipo de Dentición</p>
-              <Badge className="bg-blue-100 text-blue-700">Adulto (32 dientes)</Badge>
+              <Badge className="bg-green-100 text-green-700">Pediátrico (20 dientes)</Badge>
             </div>
           </div>
         </CardContent>
@@ -103,46 +99,54 @@ export default function AdultOdontogramPage() {
       <InteractiveOdontogram
         patientId={mockPatient.id}
         patientName={mockPatient.name}
-        dentitionType="adult"
+        dentitionType="pediatric"
         initialData={odontogramData}
         onSave={handleSaveOdontogram}
         readOnly={user?.role === "patient"}
       />
 
-      {/* Quick Actions */}
+      {/* Pediatric Information */}
       <Card className="medical-card">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-gray-800">
-            <FileText className="h-5 w-5 text-green-500" />
-            Acciones Rápidas
-          </CardTitle>
+          <CardTitle className="text-gray-800">Información Pediátrica</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-            <Link href="/dashboard/my-records">
-              <Button variant="outline" className="w-full h-auto flex-col gap-2 p-4">
-                <FileText className="h-6 w-6" />
-                <span>Ver Historial</span>
-              </Button>
-            </Link>
-            <Link href="/dashboard/book-appointment">
-              <Button variant="outline" className="w-full h-auto flex-col gap-2 p-4">
-                <Calendar className="h-6 w-6" />
-                <span>Agendar Cita</span>
-              </Button>
-            </Link>
-            <Link href="/dashboard/patient/odontogram/pediatric">
-              <Button variant="outline" className="w-full h-auto flex-col gap-2 p-4">
-                <User className="h-6 w-6" />
-                <span>Odontograma Pediátrico</span>
-              </Button>
-            </Link>
-            <Link href="/dashboard/patient/odontogram/mixed">
-              <Button variant="outline" className="w-full h-auto flex-col gap-2 p-4">
-                <User className="h-6 w-6" />
-                <span>Odontograma Mixto</span>
-              </Button>
-            </Link>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <h4 className="font-medium text-gray-800 mb-2">Cronología de Erupción</h4>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span>Incisivos centrales:</span>
+                  <span className="text-gray-600">6-10 meses</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Incisivos laterales:</span>
+                  <span className="text-gray-600">10-16 meses</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Primeros molares:</span>
+                  <span className="text-gray-600">14-18 meses</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Caninos:</span>
+                  <span className="text-gray-600">18-22 meses</span>
+                </div>
+                <div className="flex justify-between">
+                  <span>Segundos molares:</span>
+                  <span className="text-gray-600">24-32 meses</span>
+                </div>
+              </div>
+            </div>
+            <div>
+              <h4 className="font-medium text-gray-800 mb-2">Cuidados Especiales</h4>
+              <ul className="space-y-1 text-sm text-gray-600">
+                <li>• Fluorización tópica cada 6 meses</li>
+                <li>• Sellantes de fosas y fisuras</li>
+                <li>• Control de hábitos (chupón, dedo)</li>
+                <li>• Educación en higiene oral</li>
+                <li>• Dieta baja en azúcares</li>
+              </ul>
+            </div>
           </div>
         </CardContent>
       </Card>

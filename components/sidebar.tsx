@@ -121,8 +121,8 @@ export function Sidebar() {
             description: "Seleccionar especialización",
           },
           {
-            title: "Mis Pacientes",
-            href: "/dashboard/student/patients",
+            title: "Gestión de Pacientes",
+            href: "/dashboard/patients",
             icon: Users,
             description: "Gestionar pacientes",
           },
@@ -131,6 +131,12 @@ export function Sidebar() {
             href: "/dashboard/student/odontograms",
             icon: Stethoscope,
             description: "Crear odontogramas",
+          },
+          {
+            title: "Mis Pacientes",
+            href: "/dashboard/student/patients",
+            icon: Users,
+            description: "Gestionar pacientes",
           },
           {
             title: "Historias Clínicas",
