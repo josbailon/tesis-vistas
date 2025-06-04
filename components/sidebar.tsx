@@ -48,6 +48,12 @@ export function Sidebar() {
         icon: LayoutDashboard,
         description: "Panel principal",
       },
+      {
+        title: "Test Interacciones",
+        href: "/dashboard/test-interactions",
+        icon: Activity,
+        description: "Probar elementos interactivos",
+      },
     ]
 
     switch (role) {
