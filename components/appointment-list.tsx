@@ -1,36 +1,48 @@
 "use client"
 
-import { useState } from "react"
-import { format } from "date-fns"
-import { es } from "date-fns/locale"
-import { Calendar, Clock, User, Edit, Trash2, MoreVertical } from "lucide-react"
+import { useState, useEffect } from "react"
+import { Calendar, Clock, User, Search } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { AppointmentForm } from "@/components/appointment-form"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useAppointments } from "@/contexts/appointment-context"
+import { LoadingSpinner } from "@/components/loading-spinner"
 
 interface AppointmentListProps {
   searchTerm: string
 }
 
 export function AppointmentList({ searchTerm }: AppointmentListProps) {
-  const { appointments, deleteAppointment, updateAppointmentStatus } = useAppointments()
-  const [editingAppointment, setEditingAppointment] = useState<any>(null)
+  const [isClient, setIsClient] = useState(false)
 
-  const filteredAppointments = appointments
-    .filter(
-      (appointment) =>
-        appointment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        appointment.type.toLowerCase().includes(searchTerm.toLowerCase()),
-    )
-    .sort((a, b) => {
-      const dateA = new Date(`${a.date}T${a.time}`)
-      const dateB = new Date(`${b.date}T${b.time}`)
-      return dateB.getTime() - dateA.getTime()
-    })
+  useEffect(() => {
+    setIsClient(true)
+  }, [])
+
+  if (!isClient) {
+    return <LoadingSpinner />
+  }
+
+  return <AppointmentListContent searchTerm={searchTerm} />
+}
+
+function AppointmentListContent({ searchTerm }: AppointmentListProps) {
+  const { appointments, updateAppointmentStatus, deleteAppointment } = useAppointments()
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [priorityFilter, setPriorityFilter] = useState<string>("all")
+
+  const filteredAppointments = appointments.filter((appointment) => {
+    const matchesSearch =
+      appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      appointment.notes.toLowerCase().includes(searchTerm.toLowerCase())
+
+    const matchesStatus = statusFilter === "all" || appointment.status === statusFilter
+    const matchesPriority = priorityFilter === "all" || appointment.priority === priorityFilter
+
+    return matchesSearch && matchesStatus && matchesPriority
+  })
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -52,108 +64,152 @@ export function AppointmentList({ searchTerm }: AppointmentListProps) {
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return "bg-red-100 text-red-800"
-      case "high":
-        return "bg-orange-100 text-orange-800"
+        return "border-l-red-500"
       case "medium":
-        return "bg-yellow-100 text-yellow-800"
+        return "border-l-yellow-500"
       case "low":
-        return "bg-green-100 text-green-800"
+        return "border-l-green-500"
       default:
-        return "bg-gray-100 text-gray-800"
+        return "border-l-gray-300"
     }
   }
 
   return (
-    <div className="space-y-4">
-      {filteredAppointments.length === 0 ? (
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center py-12">
-            <Calendar className="h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron citas</h3>
-            <p className="text-gray-600 text-center">
-              {searchTerm ? "Intenta ajustar los términos de búsqueda" : "No se han programado citas aún"}
-            </p>
-          </CardContent>
-        </Card>
-      ) : (
-        filteredAppointments.map((appointment) => (
-          <Card key={appointment.id} className="hover:shadow-md transition-shadow">
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-2 mb-2">
-                      <h3 className="text-lg font-semibold">{appointment.title}</h3>
-                      <Badge className={getStatusColor(appointment.status)}>{appointment.status}</Badge>
-                      <Badge variant="outline" className={getPriorityColor(appointment.priority)}>
-                        {appointment.priority}
-                      </Badge>
-                    </div>
+    <div className="space-y-6">
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Filtros</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="programada">Programada</SelectItem>
+                <SelectItem value="confirmada">Confirmada</SelectItem>
+                <SelectItem value="completada">Completada</SelectItem>
+                <SelectItem value="cancelada">Cancelada</SelectItem>
+                <SelectItem value="no-asistio">No asistió</SelectItem>
+              </SelectContent>
+            </Select>
 
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-600">
-                      <div className="flex items-center space-x-1">
-                        <User className="h-4 w-4" />
-                        <span>{appointment.patientName}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Calendar className="h-4 w-4" />
-                        <span>{format(new Date(appointment.date), "d 'de' MMM, yyyy", { locale: es })}</span>
-                      </div>
-                      <div className="flex items-center space-x-1">
-                        <Clock className="h-4 w-4" />
-                        <span>
-                          {appointment.time} ({appointment.duration} min)
-                        </span>
-                      </div>
-                    </div>
+            <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+              <SelectTrigger className="w-full sm:w-[200px]">
+                <SelectValue placeholder="Prioridad" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las prioridades</SelectItem>
+                <SelectItem value="urgent">Urgente</SelectItem>
+                <SelectItem value="medium">Media</SelectItem>
+                <SelectItem value="low">Baja</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
-                    {appointment.notes && <p className="text-sm text-gray-500 mt-2">{appointment.notes}</p>}
-                  </div>
-                </div>
+      {/* Results Summary */}
+      <div className="flex justify-between items-center">
+        <p className="text-sm text-gray-600">
+          Mostrando {filteredAppointments.length} de {appointments.length} citas
+        </p>
+      </div>
 
-                <div className="flex items-center space-x-2">
-                  <Button variant="outline" size="sm" onClick={() => setEditingAppointment(appointment)}>
-                    <Edit className="h-4 w-4" />
-                  </Button>
-
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" size="sm">
-                        <MoreVertical className="h-4 w-4" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "confirmada")}>
-                        Marcar como Confirmada
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "completada")}>
-                        Marcar como Completada
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "cancelada")}>
-                        Cancelar Cita
-                      </DropdownMenuItem>
-                      <DropdownMenuItem onClick={() => deleteAppointment(appointment.id)} className="text-red-600">
-                        <Trash2 className="h-4 w-4 mr-2" />
-                        Eliminar
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
+      {/* Appointments List */}
+      <div className="space-y-4">
+        {filteredAppointments.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center text-gray-500">
+                <Search className="mx-auto h-12 w-12 mb-4 opacity-50" />
+                <p>No se encontraron citas que coincidan con los filtros</p>
               </div>
             </CardContent>
           </Card>
-        ))
-      )}
+        ) : (
+          filteredAppointments
+            .sort((a, b) => new Date(a.date + " " + a.time).getTime() - new Date(b.date + " " + b.time).getTime())
+            .map((appointment) => (
+              <Card key={appointment.id} className={`border-l-4 ${getPriorityColor(appointment.priority)}`}>
+                <CardContent className="pt-6">
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-2">
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium">{new Date(appointment.date).toLocaleDateString("es-ES")}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-gray-500" />
+                          <span className="font-medium">{appointment.time}</span>
+                          <span className="text-gray-500">({appointment.duration} min)</span>
+                        </div>
+                      </div>
 
-      {/* Edit Appointment Modal */}
-      {editingAppointment && (
-        <AppointmentForm
-          editingAppointment={editingAppointment}
-          onClose={() => setEditingAppointment(null)}
-          onSuccess={() => setEditingAppointment(null)}
-        />
-      )}
+                      <h3 className="text-lg font-semibold mb-1">{appointment.title}</h3>
+
+                      <div className="flex items-center gap-2 text-gray-600 mb-2">
+                        <User className="h-4 w-4" />
+                        <span>{appointment.patientName}</span>
+                      </div>
+
+                      {appointment.notes && <p className="text-sm text-gray-600 mb-2">{appointment.notes}</p>}
+
+                      <p className="text-xs text-gray-500">
+                        Creada: {new Date(appointment.createdAt).toLocaleDateString("es-ES")}
+                      </p>
+                    </div>
+
+                    <div className="flex flex-col gap-2">
+                      <Badge className={getStatusColor(appointment.status)}>{appointment.status}</Badge>
+                      <Badge variant="outline">{appointment.priority}</Badge>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-2 flex-wrap">
+                    {appointment.status === "programada" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateAppointmentStatus(appointment.id, "confirmada")}
+                      >
+                        Confirmar
+                      </Button>
+                    )}
+                    {appointment.status === "confirmada" && (
+                      <Button size="sm" onClick={() => updateAppointmentStatus(appointment.id, "completada")}>
+                        Completar
+                      </Button>
+                    )}
+                    {(appointment.status === "programada" || appointment.status === "confirmada") && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => updateAppointmentStatus(appointment.id, "no-asistio")}
+                      >
+                        No asistió
+                      </Button>
+                    )}
+                    <Button
+                      size="sm"
+                      variant="destructive"
+                      onClick={() => updateAppointmentStatus(appointment.id, "cancelada")}
+                    >
+                      Cancelar
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => deleteAppointment(appointment.id)}>
+                      Eliminar
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+        )}
+      </div>
     </div>
   )
 }
