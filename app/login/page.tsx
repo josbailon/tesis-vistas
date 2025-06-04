@@ -81,28 +81,35 @@ export default function LoginPage() {
                     <Users className="h-4 w-4 text-info-600" />
                     <span className="text-sm font-medium text-primary-800">Paciente</span>
                   </div>
-                  <Badge className="bg-info-100 text-info-700 border-info-300">paciente@demo.com</Badge>
+                  <Badge className="bg-info-100 text-info-700 border-info-300">paciente@clinica.com</Badge>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-white rounded border border-success-200">
                   <div className="flex items-center gap-2">
                     <GraduationCap className="h-4 w-4 text-success-600" />
                     <span className="text-sm font-medium text-primary-800">Estudiante</span>
                   </div>
-                  <Badge className="bg-success-100 text-success-700 border-success-300">estudiante@demo.com</Badge>
+                  <Badge className="bg-success-100 text-success-700 border-success-300">estudiante@clinica.com</Badge>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-white rounded border border-warning-200">
                   <div className="flex items-center gap-2">
                     <Stethoscope className="h-4 w-4 text-warning-600" />
                     <span className="text-sm font-medium text-primary-800">Profesor</span>
                   </div>
-                  <Badge className="bg-warning-100 text-warning-700 border-warning-300">profesor@demo.com</Badge>
+                  <Badge className="bg-warning-100 text-warning-700 border-warning-300">profesor@clinica.com</Badge>
+                </div>
+                <div className="flex items-center justify-between p-2 bg-white rounded border border-purple-200">
+                  <div className="flex items-center gap-2">
+                    <Shield className="h-4 w-4 text-purple-600" />
+                    <span className="text-sm font-medium text-primary-800">Secretaria</span>
+                  </div>
+                  <Badge className="bg-purple-100 text-purple-700 border-purple-300">secretaria@clinica.com</Badge>
                 </div>
                 <div className="flex items-center justify-between p-2 bg-white rounded border border-error-200">
                   <div className="flex items-center gap-2">
                     <Shield className="h-4 w-4 text-error-600" />
                     <span className="text-sm font-medium text-primary-800">Admin</span>
                   </div>
-                  <Badge className="bg-error-100 text-error-700 border-error-300">admin@demo.com</Badge>
+                  <Badge className="bg-error-100 text-error-700 border-error-300">admin@clinica.com</Badge>
                 </div>
               </div>
               <p className="text-xs text-info-700 text-center">
