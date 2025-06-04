@@ -123,6 +123,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       try {
         console.log("🔄 Initializing authentication (single instance)...")
 
+        // Check if we're in the browser
+        if (typeof window === "undefined") {
+          globalAuthState.isLoading = false
+          globalAuthState.isInitialized = true
+          setIsLoading(false)
+          setIsInitialized(true)
+          return
+        }
+
         const savedUser = localStorage.getItem("clinic_user")
         const savedExpiry = localStorage.getItem("clinic_expiry")
 
@@ -147,8 +156,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
       } catch (error) {
         console.error("❌ Auth initialization error:", error)
-        localStorage.removeItem("clinic_user")
-        localStorage.removeItem("clinic_expiry")
+        if (typeof window !== "undefined") {
+          localStorage.removeItem("clinic_user")
+          localStorage.removeItem("clinic_expiry")
+        }
         globalAuthState.user = null
         setUser(null)
       } finally {
@@ -171,13 +182,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       globalAuthState.user = userData
       setUser(userData)
 
-      // Save to localStorage
-      localStorage.setItem("clinic_user", JSON.stringify(userData))
-      localStorage.setItem("clinic_expiry", (Date.now() + 24 * 60 * 60 * 1000).toString())
+      // Save to localStorage only if in browser
+      if (typeof window !== "undefined") {
+        localStorage.setItem("clinic_user", JSON.stringify(userData))
+        localStorage.setItem("clinic_expiry", (Date.now() + 24 * 60 * 60 * 1000).toString())
+      }
 
       console.log("✅ Login successful")
     } catch (error) {
       console.error("❌ Login error:", error)
+      throw error
     }
   }
 
@@ -188,9 +202,11 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     globalAuthState.user = null
     setUser(null)
 
-    // Clear localStorage
-    localStorage.removeItem("clinic_user")
-    localStorage.removeItem("clinic_expiry")
+    // Clear localStorage only if in browser
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("clinic_user")
+      localStorage.removeItem("clinic_expiry")
+    }
 
     console.log("✅ Logout complete")
   }
