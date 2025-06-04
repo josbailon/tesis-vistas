@@ -1,348 +1,270 @@
 "use client"
 
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useToast } from "@/hooks/use-toast"
-import { ArrowLeft, Save, Download, PrinterIcon as Print, RotateCcw, Info } from "lucide-react"
-import { ProtectedRoute } from "@/components/protected-route"
+import { Save, Download, RotateCcw, Info, ArrowLeft } from "lucide-react"
 import Link from "next/link"
 
-interface ToothCondition {
-  id: number
-  condition: "healthy" | "caries" | "filled" | "crown" | "missing" | "root_canal" | "implant"
-  notes?: string
-  date?: string
-  surfaces?: string[]
+// Definición de dientes permanentes según FDI
+const adultTeeth = {
+  maxillarRight: [18, 17, 16, 15, 14, 13, 12, 11],
+  maxillarLeft: [21, 22, 23, 24, 25, 26, 27, 28],
+  mandibularLeft: [31, 32, 33, 34, 35, 36, 37, 38],
+  mandibularRight: [48, 47, 46, 45, 44, 43, 42, 41],
 }
 
+const toothStates = [
+  { value: "healthy", label: "Sano", symbol: "S", className: "tooth-healthy" },
+  { value: "caries", label: "Caries", symbol: "C", className: "tooth-caries" },
+  { value: "filled", label: "Obturado", symbol: "O", className: "tooth-filled" },
+  { value: "crown", label: "Corona", symbol: "Co", className: "tooth-crown" },
+  { value: "missing", label: "Ausente", symbol: "X", className: "tooth-missing" },
+  { value: "root-canal", label: "Endodoncia", symbol: "E", className: "tooth-root-canal" },
+  { value: "implant", label: "Implante", symbol: "I", className: "tooth-implant" },
+]
+
 export default function AdultOdontogramPage() {
-  const { toast } = useToast()
+  const [toothConditions, setToothConditions] = useState<{ [key: number]: string }>({})
   const [selectedTooth, setSelectedTooth] = useState<number | null>(null)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [toothConditions, setToothConditions] = useState<Record<number, ToothCondition>>({
-    11: { id: 11, condition: "healthy" },
-    12: { id: 12, condition: "caries", notes: "Caries oclusal", surfaces: ["O"] },
-    13: { id: 13, condition: "filled", notes: "Restauración de amalgama" },
-    14: { id: 14, condition: "healthy" },
-    15: { id: 15, condition: "healthy" },
-    16: { id: 16, condition: "crown", notes: "Corona de porcelana" },
-    17: { id: 17, condition: "healthy" },
-    18: { id: 18, condition: "missing", notes: "Extracción previa" },
-    // Add more teeth as needed
-  })
-
-  // Adult teeth numbering (FDI system)
-  const upperTeeth = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28]
-  const lowerTeeth = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
-
-  const getToothClass = (condition: string) => {
-    switch (condition) {
-      case "healthy":
-        return "tooth tooth-healthy"
-      case "caries":
-        return "tooth tooth-caries"
-      case "filled":
-        return "tooth tooth-filled"
-      case "crown":
-        return "tooth tooth-crown"
-      case "missing":
-        return "tooth tooth-missing"
-      case "root_canal":
-        return "tooth tooth-root-canal"
-      case "implant":
-        return "tooth tooth-implant"
-      default:
-        return "tooth tooth-healthy"
-    }
-  }
-
-  const getConditionLabel = (condition: string) => {
-    switch (condition) {
-      case "healthy":
-        return "Sano"
-      case "caries":
-        return "Caries"
-      case "filled":
-        return "Obturado"
-      case "crown":
-        return "Corona"
-      case "missing":
-        return "Ausente"
-      case "root_canal":
-        return "Endodoncia"
-      case "implant":
-        return "Implante"
-      default:
-        return "Desconocido"
-    }
-  }
+  const [selectedState, setSelectedState] = useState("")
 
   const handleToothClick = (toothNumber: number) => {
     setSelectedTooth(toothNumber)
-    setIsEditDialogOpen(true)
+    setSelectedState(toothConditions[toothNumber] || "healthy")
   }
 
-  const updateToothCondition = (toothNumber: number, condition: string, notes?: string, surfaces?: string[]) => {
-    setToothConditions((prev) => ({
-      ...prev,
-      [toothNumber]: {
-        id: toothNumber,
-        condition: condition as any,
-        notes,
-        surfaces,
-        date: new Date().toISOString().split("T")[0],
-      },
-    }))
+  const handleStateChange = (state: string) => {
+    if (selectedTooth) {
+      setToothConditions((prev) => ({
+        ...prev,
+        [selectedTooth]: state,
+      }))
+      setSelectedState(state)
+    }
+  }
 
-    toast({
-      title: "Diente Actualizado",
-      description: `Diente ${toothNumber} marcado como ${getConditionLabel(condition)}`,
-    })
+  const getToothDisplay = (toothNumber: number) => {
+    const condition = toothConditions[toothNumber] || "healthy"
+    const stateInfo = toothStates.find((s) => s.value === condition)
+    return {
+      symbol: stateInfo?.symbol || "S",
+      className: stateInfo?.className || "tooth-healthy",
+    }
   }
 
   const resetOdontogram = () => {
-    const resetConditions: Record<number, ToothCondition> = {}
-    \
-    [...upperTeeth, ...lowerTeeth].forEach(tooth =>
-    \
-      resetConditions[tooth] =
-    id: tooth, condition
-    : "healthy"
-    \
-    )\
-    
-    setToothConditions(resetConditions)
-    
-    toast(
-    title: "Odontograma Reiniciado",\
-    description: "Todos los dientes han sido marcados como sanos",\
-    )\
+    setToothConditions({})
+    setSelectedTooth(null)
+    setSelectedState("")
   }
 
   const saveOdontogram = () => {
-    // Here you would typically save to your backend
-    toast({
-      title: "Odontograma Guardado",
-      description: "Los cambios han sido guardados exitosamente",
-    })
+    // Simular guardado
+    alert("Odontograma guardado exitosamente")
+  }
+
+  const exportOdontogram = () => {
+    // Simular exportación
+    alert("Odontograma exportado como PDF")
   }
 
   const ToothComponent = ({ number }: { number: number }) => {
-    const condition = toothConditions[number] || { id: number, condition: "healthy" }
+    const { symbol, className } = getToothDisplay(number)
+    const isSelected = selectedTooth === number
 
     return (
       <div
-        className={getToothClass(condition.condition)}
+        className={`tooth ${className} ${isSelected ? "ring-2 ring-blue-500 scale-110" : ""}`}
         onClick={() => handleToothClick(number)}
-        title={`Diente ${number} - ${getConditionLabel(condition.condition)}`}
+        title={`Diente ${number}`}
       >
-        {number}
+        {symbol}
       </div>
     )
   }
 
   return (
-    <ProtectedRoute allowedRoles={["student", "professor", "admin"]}>
-      <div className="space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Link href="/dashboard/patient/odontogram">
-              <Button variant="outline" size="sm">
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Volver
-              </Button>
-            </Link>
-            <div>
-              <h1 className="text-3xl font-bold">Odontograma Adulto</h1>
-              <p className="text-gray-600">Dentición permanente completa (32 dientes)</p>
-            </div>
-          </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={resetOdontogram}>
-              <RotateCcw className="h-4 w-4 mr-2" />
-              Reiniciar
-            </Button>
-            <Button variant="outline">
-              <Print className="h-4 w-4 mr-2" />
-              Imprimir
-            </Button>
-            <Button variant="outline">
-              <Download className="h-4 w-4 mr-2" />
-              Exportar
-            </Button>
-            <Button onClick={saveOdontogram} className="btn-medical">
-              <Save className="h-4 w-4 mr-2" />
-              Guardar
-            </Button>
-          </div>
+    <div className="space-y-6 p-6">
+      <div className="flex items-center gap-4 fade-in">
+        <Link href="/dashboard/patient/odontogram">
+          <Button variant="outline" size="sm">
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Volver
+          </Button>
+        </Link>
+        <div>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+            Odontograma Adulto
+          </h1>
+          <p className="text-gray-600 mt-1">Dentición permanente completa (32 dientes) - Sistema FDI</p>
         </div>
+      </div>
 
-        {/* Legend */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Leyenda</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-4 md:grid-cols-7 gap-4">
-              {[
-                { condition: "healthy", label: "Sano" },
-                { condition: "caries", label: "Caries" },
-                { condition: "filled", label: "Obturado" },
-                { condition: "crown", label: "Corona" },
-                { condition: "missing", label: "Ausente" },
-                { condition: "root_canal", label: "Endodoncia" },
-                { condition: "implant", label: "Implante" },
-              ].map(({ condition, label }) => (
-                <div key={condition} className="flex items-center gap-2">
-                  <div className={getToothClass(condition)}></div>
-                  <span className="text-sm">{label}</span>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Odontogram */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Odontograma Adulto</CardTitle>
-            <CardDescription>Haz clic en cualquier diente para editar su estado</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-8">
-            {/* Upper teeth */}
-            <div className="space-y-2">
-              <h4 className="text-sm font-medium text-center">Maxilar Superior</h4>
-              <div className="flex justify-center gap-1">
-                {upperTeeth.map((number) => (
-                  <ToothComponent key={number} number={number} />
-                ))}
-              </div>
-            </div>
-
-            {/* Divider */}
-            <div className="border-t border-gray-300"></div>
-
-            {/* Lower teeth */}
-            <div className="space-y-2">
-              <div className="flex justify-center gap-1">
-                {lowerTeeth.map((number) => (
-                  <ToothComponent key={number} number={number} />
-                ))}
-              </div>
-              <h4 className="text-sm font-medium text-center">Maxilar Inferior</h4>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Summary */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="text-lg">Resumen de Condiciones</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {Object.values(toothConditions)
-                .filter((tooth) => tooth.condition !== "healthy")
-                .map((tooth) => (
-                  <div key={tooth.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      <div className={getToothClass(tooth.condition)}>{tooth.id}</div>
-                      <div>
-                        <span className="font-medium">Diente {tooth.id}</span>
-                        <Badge variant="outline" className="ml-2">
-                          {getConditionLabel(tooth.condition)}
-                        </Badge>
-                      </div>
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Odontograma principal */}
+        <div className="lg:col-span-2">
+          <Card className="medical-card">
+            <CardHeader>
+              <CardTitle className="flex items-center justify-between text-gray-800">
+                <span>Odontograma Interactivo</span>
+                <Badge variant="outline">32 dientes</Badge>
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-6">
+                {/* Maxilar Superior */}
+                <div className="text-center">
+                  <h3 className="text-sm font-medium text-gray-600 mb-3">MAXILAR SUPERIOR</h3>
+                  <div className="flex justify-center gap-1 mb-2">
+                    <span className="text-xs text-gray-500 w-8">Der</span>
+                    <div className="flex gap-1">
+                      {adultTeeth.maxillarRight.map((number) => (
+                        <ToothComponent key={number} number={number} />
+                      ))}
                     </div>
-                    {tooth.notes && <span className="text-sm text-gray-600 max-w-xs truncate">{tooth.notes}</span>}
+                    <div className="w-4"></div>
+                    <div className="flex gap-1">
+                      {adultTeeth.maxillarLeft.map((number) => (
+                        <ToothComponent key={number} number={number} />
+                      ))}
+                    </div>
+                    <span className="text-xs text-gray-500 w-8">Izq</span>
                   </div>
-                ))}
-
-              {Object.values(toothConditions).filter((tooth) => tooth.condition !== "healthy").length === 0 && (
-                <div className="text-center py-8 text-gray-500">
-                  <Info className="h-8 w-8 mx-auto mb-2" />
-                  <p>No hay condiciones especiales registradas</p>
-                  <p className="text-sm">Todos los dientes están marcados como sanos</p>
-                </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Edit Dialog */}
-        {selectedTooth && (
-          <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-            <DialogContent className="sm:max-w-[500px]">
-              <DialogHeader>
-                <DialogTitle>Editar Diente {selectedTooth}</DialogTitle>
-                <DialogDescription>Actualiza el estado y las notas del diente seleccionado</DialogDescription>
-              </DialogHeader>
-
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="condition">Estado del Diente</Label>
-                  <Select
-                    defaultValue={toothConditions[selectedTooth]?.condition || "healthy"}
-                    onValueChange={(value) => {
-                      updateToothCondition(selectedTooth, value)
-                    }}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="healthy">Sano</SelectItem>
-                      <SelectItem value="caries">Caries</SelectItem>
-                      <SelectItem value="filled">Obturado</SelectItem>
-                      <SelectItem value="crown">Corona</SelectItem>
-                      <SelectItem value="missing">Ausente</SelectItem>
-                      <SelectItem value="root_canal">Endodoncia</SelectItem>
-                      <SelectItem value="implant">Implante</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="surfaces">Superficies Afectadas</Label>
-                  <div className="grid grid-cols-5 gap-2">
-                    {["O", "M", "D", "V", "L"].map((surface) => (
-                      <Button key={surface} variant="outline" size="sm" className="h-8">
-                        {surface}
-                      </Button>
+                  <div className="flex justify-center gap-1 text-xs text-gray-400">
+                    {adultTeeth.maxillarRight.map((number) => (
+                      <span key={number} className="w-10 text-center">
+                        {number}
+                      </span>
+                    ))}
+                    <span className="w-4"></span>
+                    {adultTeeth.maxillarLeft.map((number) => (
+                      <span key={number} className="w-10 text-center">
+                        {number}
+                      </span>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-500">O: Oclusal, M: Mesial, D: Distal, V: Vestibular, L: Lingual</p>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notas</Label>
-                  <Textarea
-                    id="notes"
-                    placeholder="Agregar notas sobre el estado del diente..."
-                    defaultValue={toothConditions[selectedTooth]?.notes || ""}
-                  />
+                {/* Línea divisoria */}
+                <div className="border-t-2 border-dashed border-gray-300 mx-8"></div>
+
+                {/* Maxilar Inferior */}
+                <div className="text-center">
+                  <div className="flex justify-center gap-1 text-xs text-gray-400 mb-1">
+                    {adultTeeth.mandibularRight.reverse().map((number) => (
+                      <span key={number} className="w-10 text-center">
+                        {number}
+                      </span>
+                    ))}
+                    <span className="w-4"></span>
+                    {adultTeeth.mandibularLeft.map((number) => (
+                      <span key={number} className="w-10 text-center">
+                        {number}
+                      </span>
+                    ))}
+                  </div>
+                  <div className="flex justify-center gap-1 mb-3">
+                    <span className="text-xs text-gray-500 w-8">Der</span>
+                    <div className="flex gap-1">
+                      {adultTeeth.mandibularRight.map((number) => (
+                        <ToothComponent key={number} number={number} />
+                      ))}
+                    </div>
+                    <div className="w-4"></div>
+                    <div className="flex gap-1">
+                      {adultTeeth.mandibularLeft.map((number) => (
+                        <ToothComponent key={number} number={number} />
+                      ))}
+                    </div>
+                    <span className="text-xs text-gray-500 w-8">Izq</span>
+                  </div>
+                  <h3 className="text-sm font-medium text-gray-600">MAXILAR INFERIOR</h3>
                 </div>
               </div>
+            </CardContent>
+          </Card>
+        </div>
 
-              <div className="flex justify-end gap-2 pt-4">
-                <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={() => setIsEditDialogOpen(false)} className="btn-medical">
-                  Guardar Cambios
-                </Button>
+        {/* Panel de control */}
+        <div className="space-y-6">
+          {/* Selector de estado */}
+          <Card className="medical-card">
+            <CardHeader>
+              <CardTitle className="text-gray-800">
+                {selectedTooth ? `Diente ${selectedTooth}` : "Seleccionar Diente"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {selectedTooth ? (
+                <>
+                  <div className="text-sm text-gray-600">Selecciona el estado del diente:</div>
+                  <Select value={selectedState} onValueChange={handleStateChange}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Estado del diente" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {toothStates.map((state) => (
+                        <SelectItem key={state.value} value={state.value}>
+                          <div className="flex items-center gap-2">
+                            <div className={`tooth ${state.className} scale-75`}>{state.symbol}</div>
+                            {state.label}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </>
+              ) : (
+                <div className="text-center py-4 text-gray-500">
+                  <Info className="h-8 w-8 mx-auto mb-2 text-gray-300" />
+                  <p className="text-sm">Haz clic en un diente para editarlo</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Leyenda */}
+          <Card className="medical-card">
+            <CardHeader>
+              <CardTitle className="text-gray-800">Leyenda</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 gap-2 text-sm">
+                {toothStates.map((state) => (
+                  <div key={state.value} className="flex items-center gap-2">
+                    <div className={`tooth ${state.className} scale-75`}>{state.symbol}</div>
+                    <span>{state.label}</span>
+                  </div>
+                ))}
               </div>
-            </DialogContent>
-          </Dialog>
-        )}
+            </CardContent>
+          </Card>
+
+          {/* Acciones */}
+          <Card className="medical-card">
+            <CardHeader>
+              <CardTitle className="text-gray-800">Acciones</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <Button onClick={saveOdontogram} className="w-full btn-medical">
+                <Save className="h-4 w-4 mr-2" />
+                Guardar
+              </Button>
+              <Button onClick={exportOdontogram} className="w-full btn-medical-secondary">
+                <Download className="h-4 w-4 mr-2" />
+                Exportar PDF
+              </Button>
+              <Button onClick={resetOdontogram} variant="outline" className="w-full">
+                <RotateCcw className="h-4 w-4 mr-2" />
+                Reiniciar
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
       </div>
-    </ProtectedRoute>
+    </div>
   )
 }

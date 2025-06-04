@@ -1,214 +1,167 @@
 "use client"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { User, Baby, Users, Stethoscope, FileText, AlertTriangle } from "lucide-react"
-import { ProtectedRoute } from "@/components/protected-route"
+import { SmileIcon as Tooth, Baby, Users, ArrowRight, Calendar, FileText } from "lucide-react"
 import Link from "next/link"
 
-export default function OdontogramSelectionPage() {
+const odontogramTypes = [
+  {
+    id: "adult",
+    title: "Odontograma Adulto",
+    description: "Dentición permanente completa (32 dientes)",
+    icon: Tooth,
+    color: "from-blue-500 to-blue-600",
+    teeth: 32,
+    ageRange: "18+ años",
+    href: "/dashboard/patient/odontogram/adult",
+  },
+  {
+    id: "pediatric",
+    title: "Odontograma Pediátrico",
+    description: "Dentición temporal (20 dientes de leche)",
+    icon: Baby,
+    color: "from-green-500 to-green-600",
+    teeth: 20,
+    ageRange: "2-6 años",
+    href: "/dashboard/patient/odontogram/pediatric",
+  },
+  {
+    id: "mixed",
+    title: "Odontograma Mixto",
+    description: "Dentición mixta (temporal y permanente)",
+    icon: Users,
+    color: "from-purple-500 to-purple-600",
+    teeth: "Variable",
+    ageRange: "6-12 años",
+    href: "/dashboard/patient/odontogram/mixed",
+  },
+]
+
+export default function OdontogramPage() {
   return (
-    <ProtectedRoute allowedRoles={["student", "professor", "admin"]}>
-      <div className="space-y-8">
-        {/* Header */}
-        <div className="medical-gradient rounded-xl p-8 text-white">
-          <div className="flex items-center gap-4">
-            <div className="h-12 w-12 bg-white/20 rounded-full flex items-center justify-center">
-              <Stethoscope className="h-6 w-6" />
-            </div>
-            <div>
-              <h1 className="text-3xl font-bold">Odontogramas</h1>
-              <p className="text-white/80">Selecciona el tipo de odontograma según el paciente</p>
-            </div>
-          </div>
-        </div>
+    <div className="space-y-6 p-6">
+      <div className="fade-in">
+        <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          Odontogramas
+        </h1>
+        <p className="text-gray-600 mt-2">Selecciona el tipo de odontograma según la edad y dentición del paciente</p>
+      </div>
 
-        {/* Odontogram Types */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Adult Odontogram */}
-          <Card className="card-hover group">
-            <CardHeader className="text-center">
-              <div className="mx-auto h-16 w-16 bg-blue-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-blue-200 transition-colors">
-                <User className="h-8 w-8 text-blue-600" />
-              </div>
-              <CardTitle className="text-xl">Odontograma Adulto</CardTitle>
-              <CardDescription>Para pacientes adultos con dentición permanente completa (32 dientes)</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Dientes:</span>
-                  <Badge variant="outline">32 permanentes</Badge>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        {odontogramTypes.map((type) => {
+          const Icon = type.icon
+          return (
+            <Card key={type.id} className="medical-card group hover:scale-105">
+              <CardHeader className="pb-3">
+                <div className={`p-4 rounded-lg bg-gradient-to-r ${type.color} w-fit`}>
+                  <Icon className="h-8 w-8 text-white" />
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Edad:</span>
-                  <Badge variant="outline">18+ años</Badge>
+                <CardTitle className="text-xl font-bold text-gray-800">{type.title}</CardTitle>
+                <p className="text-sm text-gray-600">{type.description}</p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="text-gray-500">Dientes:</span>
+                    <div className="font-medium text-gray-800">{type.teeth}</div>
+                  </div>
+                  <div>
+                    <span className="text-gray-500">Edad:</span>
+                    <div className="font-medium text-gray-800">{type.ageRange}</div>
+                  </div>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Numeración:</span>
-                  <Badge variant="outline">FDI</Badge>
-                </div>
-              </div>
-              <Link href="/dashboard/patient/odontogram/adult">
-                <Button className="w-full btn-medical">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Abrir Odontograma Adulto
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
 
-          {/* Pediatric Odontogram */}
-          <Card className="card-hover group">
-            <CardHeader className="text-center">
-              <div className="mx-auto h-16 w-16 bg-green-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-green-200 transition-colors">
-                <Baby className="h-8 w-8 text-green-600" />
-              </div>
-              <CardTitle className="text-xl">Odontograma Pediátrico</CardTitle>
-              <CardDescription>Para pacientes pediátricos con dentición temporal (20 dientes)</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Dientes:</span>
-                  <Badge variant="outline">20 temporales</Badge>
+                <div className="flex gap-2">
+                  <Badge variant="secondary" className="text-xs">
+                    Estándar FDI
+                  </Badge>
+                  <Badge variant="outline" className="text-xs">
+                    Interactivo
+                  </Badge>
                 </div>
-                <div className="flex justify-between text-sm">
-                  <span>Edad:</span>
-                  <Badge variant="outline">2-12 años</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Numeración:</span>
-                  <Badge variant="outline">FDI Temporal</Badge>
-                </div>
-              </div>
-              <Link href="/dashboard/patient/odontogram/pediatric">
-                <Button className="w-full btn-medical-secondary">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Abrir Odontograma Pediátrico
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
 
-          {/* Mixed Odontogram */}
-          <Card className="card-hover group">
-            <CardHeader className="text-center">
-              <div className="mx-auto h-16 w-16 bg-purple-100 rounded-full flex items-center justify-center mb-4 group-hover:bg-purple-200 transition-colors">
-                <Users className="h-8 w-8 text-purple-600" />
-              </div>
-              <CardTitle className="text-xl">Odontograma Mixto</CardTitle>
-              <CardDescription>Para pacientes en dentición mixta (temporales y permanentes)</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>Dientes:</span>
-                  <Badge variant="outline">Mixta</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Edad:</span>
-                  <Badge variant="outline">6-12 años</Badge>
-                </div>
-                <div className="flex justify-between text-sm">
-                  <span>Numeración:</span>
-                  <Badge variant="outline">FDI Mixta</Badge>
-                </div>
-              </div>
-              <Link href="/dashboard/patient/odontogram/mixed">
-                <Button className="w-full medical-gradient-accent text-white">
-                  <FileText className="h-4 w-4 mr-2" />
-                  Abrir Odontograma Mixto
-                </Button>
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
+                <Link href={type.href}>
+                  <Button className="w-full btn-medical group-hover:shadow-xl">
+                    Abrir Odontograma
+                    <ArrowRight className="h-4 w-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                  </Button>
+                </Link>
+              </CardContent>
+            </Card>
+          )
+        })}
+      </div>
 
-        {/* Information Panel */}
-        <Card>
+      {/* Información adicional */}
+      <div className="grid gap-6 md:grid-cols-2">
+        <Card className="medical-card">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <AlertTriangle className="h-5 w-5 text-orange-500" />
-              Información Importante
+            <CardTitle className="flex items-center gap-2 text-gray-800">
+              <FileText className="h-5 w-5 text-blue-500" />
+              Información del Sistema FDI
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <h4 className="font-semibold mb-2">Numeración FDI</h4>
-                <ul className="text-sm text-gray-600 space-y-1">
-                  <li>• Adultos: 11-18, 21-28, 31-38, 41-48</li>
-                  <li>• Temporales: 51-55, 61-65, 71-75, 81-85</li>
-                  <li>• Sistema internacional estándar</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-2">Estados Dentales</h4>
-                <div className="flex flex-wrap gap-2">
-                  <Badge className="tooth-healthy">Sano</Badge>
-                  <Badge className="tooth-caries">Caries</Badge>
-                  <Badge className="tooth-filled">Obturado</Badge>
-                  <Badge className="tooth-crown">Corona</Badge>
-                  <Badge className="tooth-missing">Ausente</Badge>
-                  <Badge className="tooth-root-canal">Endodoncia</Badge>
-                  <Badge className="tooth-implant">Implante</Badge>
-                </div>
-              </div>
-            </div>
+          <CardContent className="space-y-3 text-sm text-gray-600">
+            <p>
+              El sistema de numeración FDI (Fédération Dentaire Internationale) es el estándar internacional para
+              identificar dientes humanos.
+            </p>
+            <ul className="space-y-1 list-disc list-inside">
+              <li>Cuadrante 1: Maxilar derecho permanente (11-18)</li>
+              <li>Cuadrante 2: Maxilar izquierdo permanente (21-28)</li>
+              <li>Cuadrante 3: Mandíbula izquierda permanente (31-38)</li>
+              <li>Cuadrante 4: Mandíbula derecha permanente (41-48)</li>
+              <li>Cuadrante 5: Maxilar derecho temporal (51-55)</li>
+              <li>Cuadrante 6: Maxilar izquierdo temporal (61-65)</li>
+              <li>Cuadrante 7: Mandíbula izquierda temporal (71-75)</li>
+              <li>Cuadrante 8: Mandíbula derecha temporal (81-85)</li>
+            </ul>
           </CardContent>
         </Card>
 
-        {/* Recent Records */}
-        <Card>
+        <Card className="medical-card">
           <CardHeader>
-            <CardTitle>Registros Recientes</CardTitle>
-            <CardDescription>Últimos odontogramas realizados</CardDescription>
+            <CardTitle className="flex items-center gap-2 text-gray-800">
+              <Calendar className="h-5 w-5 text-green-500" />
+              Estados Dentales
+            </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <User className="h-5 w-5 text-blue-600" />
-                  <div>
-                    <p className="font-medium">María González - Adulto</p>
-                    <p className="text-sm text-gray-600">Última actualización: 15/12/2024</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Ver
-                </Button>
+          <CardContent className="space-y-3 text-sm">
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex items-center gap-2">
+                <div className="tooth tooth-healthy">S</div>
+                <span>Sano</span>
               </div>
-
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Baby className="h-5 w-5 text-green-600" />
-                  <div>
-                    <p className="font-medium">Carlos Pérez - Pediátrico</p>
-                    <p className="text-sm text-gray-600">Última actualización: 12/12/2024</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Ver
-                </Button>
+              <div className="flex items-center gap-2">
+                <div className="tooth tooth-caries">C</div>
+                <span>Caries</span>
               </div>
-
-              <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <Users className="h-5 w-5 text-purple-600" />
-                  <div>
-                    <p className="font-medium">Ana Martínez - Mixto</p>
-                    <p className="text-sm text-gray-600">Última actualización: 10/12/2024</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm">
-                  Ver
-                </Button>
+              <div className="flex items-center gap-2">
+                <div className="tooth tooth-filled">O</div>
+                <span>Obturado</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="tooth tooth-crown">Co</div>
+                <span>Corona</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="tooth tooth-missing">X</div>
+                <span>Ausente</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="tooth tooth-root-canal">E</div>
+                <span>Endodoncia</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <div className="tooth tooth-implant">I</div>
+                <span>Implante</span>
               </div>
             </div>
           </CardContent>
         </Card>
       </div>
-    </ProtectedRoute>
+    </div>
   )
 }
