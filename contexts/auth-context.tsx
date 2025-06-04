@@ -51,6 +51,13 @@ export const TEST_USERS = [
   },
   {
     id: "5",
+    email: "secretaria@clinica.com",
+    name: "Carmen Rodríguez",
+    role: "secretary",
+    password: "secretaria",
+  },
+  {
+    id: "6",
     email: "endodoncia@clinica.com",
     name: "Dr. Carlos Ruiz",
     role: "professor",
@@ -58,7 +65,7 @@ export const TEST_USERS = [
     password: "endodoncia",
   },
   {
-    id: "6",
+    id: "7",
     email: "ortodoncia@clinica.com",
     name: "Dra. Laura Martín",
     role: "professor",
@@ -66,7 +73,7 @@ export const TEST_USERS = [
     password: "ortodoncia",
   },
   {
-    id: "7",
+    id: "8",
     email: "cirugia@clinica.com",
     name: "Dr. Roberto Silva",
     role: "professor",
@@ -74,26 +81,12 @@ export const TEST_USERS = [
     password: "cirugia",
   },
   {
-    id: "8",
+    id: "9",
     email: "pediatria@clinica.com",
     name: "Dra. Carmen Vega",
     role: "professor",
     specialty: "Odontopediatría",
     password: "pediatria",
-  },
-  {
-    id: "9",
-    email: "secretaria@clinica.com",
-    name: "María Secretaria",
-    role: "secretary",
-    password: "secretaria",
-  },
-  {
-    id: "10",
-    email: "recepcion@clinica.com",
-    name: "Carmen Recepción",
-    role: "secretary",
-    password: "recepcion",
   },
 ]
 

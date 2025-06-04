@@ -4,7 +4,7 @@ import { cookies } from "next/headers"
 import { redirect } from "next/navigation"
 import { users } from "./mock-data"
 
-export type UserRole = "patient" | "student" | "professor" | "admin"
+export type UserRole = "patient" | "student" | "professor" | "admin" | "secretary"
 
 export interface User {
   id: string

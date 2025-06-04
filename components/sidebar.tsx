@@ -147,19 +147,19 @@ export const dashboardConfig: DashboardConfig = {
           title: "Panel Secretaría",
           href: "/dashboard/secretary",
           icon: Calendar,
-          description: "Gestión de citas y estudiantes",
+          description: "Gestión de citas y horarios",
+        },
+        {
+          title: "Horarios Estudiantes",
+          href: "/students-info",
+          icon: GraduationCap,
+          description: "Consultar horarios",
         },
         {
           title: "Citas",
           href: "/appointments",
           icon: Calendar,
-          description: "Gestión de citas médicas",
-        },
-        {
-          title: "Estudiantes Info",
-          href: "/students-info",
-          icon: GraduationCap,
-          description: "Información de estudiantes",
+          description: "Gestionar todas las citas",
         },
       ]
     } else {
