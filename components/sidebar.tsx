@@ -19,6 +19,7 @@ import {
   UserCog,
   CalendarCheck,
   FileCheck,
+  Bell,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -49,6 +50,12 @@ export function Sidebar() {
         description: "Panel principal",
       },
       {
+        title: "Notificaciones",
+        href: "/dashboard/notifications",
+        icon: Bell,
+        description: "Ver notificaciones",
+      },
+      {
         title: "Test Interacciones",
         href: "/dashboard/test-interactions",
         icon: Activity,
@@ -65,6 +72,18 @@ export function Sidebar() {
             href: "/dashboard/admin/users",
             icon: UserCog,
             description: "CRUD de usuarios",
+          },
+          {
+            title: "Tratamientos",
+            href: "/dashboard/admin/treatments",
+            icon: Stethoscope,
+            description: "Catálogo de tratamientos",
+          },
+          {
+            title: "Horarios",
+            href: "/dashboard/admin/schedules",
+            icon: Calendar,
+            description: "Gestión de horarios",
           },
           {
             title: "Analíticas",
@@ -90,6 +109,12 @@ export function Sidebar() {
         return [
           ...baseItems,
           {
+            title: "Panel Principal",
+            href: "/dashboard/student",
+            icon: LayoutDashboard,
+            description: "Dashboard de estudiante",
+          },
+          {
             title: "Mi Especialización",
             href: "/dashboard/student/specialization",
             icon: Stethoscope,
@@ -97,9 +122,27 @@ export function Sidebar() {
           },
           {
             title: "Mis Pacientes",
-            href: "/dashboard/patients",
+            href: "/dashboard/student/patients",
             icon: Users,
             description: "Gestionar pacientes",
+          },
+          {
+            title: "Odontogramas",
+            href: "/dashboard/student/odontograms",
+            icon: Stethoscope,
+            description: "Crear odontogramas",
+          },
+          {
+            title: "Historias Clínicas",
+            href: "/dashboard/student/clinical-histories",
+            icon: FileText,
+            description: "Gestionar historias",
+          },
+          {
+            title: "Casos Clínicos",
+            href: "/dashboard/student/clinical-cases",
+            icon: Stethoscope,
+            description: "Administrar casos",
           },
           {
             title: "Programar Citas",
@@ -129,6 +172,12 @@ export function Sidebar() {
             href: "/dashboard/teacher/students",
             icon: GraduationCap,
             description: "Gestionar estudiantes",
+          },
+          {
+            title: "Evaluaciones",
+            href: "/dashboard/teacher/evaluations",
+            icon: ClipboardList,
+            description: "Evaluar estudiantes",
           },
           {
             title: "Crear Actividades",

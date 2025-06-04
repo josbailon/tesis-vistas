@@ -4,6 +4,7 @@ import type React from "react"
 import { useEffect, useRef } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { useAuth } from "@/contexts/auth-context"
+import { DashboardHeader } from "@/components/dashboard-header"
 
 export default function DashboardLayout({
   children,
@@ -52,8 +53,9 @@ export default function DashboardLayout({
   return (
     <div className="flex h-screen bg-soft-gradient">
       <Sidebar />
-      <div className="flex-grow overflow-y-auto">
-        <main className="p-6">
+      <div className="flex-grow overflow-y-auto flex flex-col">
+        <DashboardHeader />
+        <main className="flex-1 p-6">
           <div className="bg-white/95 rounded-xl shadow-xl border border-blue-200/50 min-h-full p-6 backdrop-blur-sm hover:shadow-2xl transition-shadow duration-300">
             {children}
           </div>
