@@ -96,10 +96,10 @@ export default function LoginPage() {
 
   if (!mounted || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center medical-gradient">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-white/30 border-t-white mx-auto mb-4"></div>
-          <p className="font-medium">Cargando...</p>
+          <p className="font-medium text-lg">Cargando...</p>
         </div>
       </div>
     )
@@ -107,41 +107,39 @@ export default function LoginPage() {
 
   if (user) {
     return (
-      <div className="min-h-screen flex items-center justify-center medical-gradient">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500">
         <div className="text-center text-white">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-white/30 border-t-white mx-auto mb-4"></div>
-          <p className="font-medium">Redirigiendo al dashboard...</p>
+          <p className="font-medium text-lg">Redirigiendo al dashboard...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen medical-gradient flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-400 via-purple-500 to-pink-500 flex">
       {/* Left side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8 fade-in">
           {/* Header */}
           <div className="text-center">
-            <div className="mx-auto h-16 w-16 bg-white/20 rounded-full flex items-center justify-center mb-6">
-              <Heart className="h-8 w-8 text-white" />
+            <div className="mx-auto h-20 w-20 bg-white/20 rounded-full flex items-center justify-center mb-6 backdrop-blur-sm">
+              <Heart className="h-10 w-10 text-white" />
             </div>
-            <h2 className="text-3xl font-bold text-white">Clínica Dental ULEAM</h2>
-            <p className="mt-2 text-white/80">Accede a la plataforma universitaria</p>
+            <h2 className="text-4xl font-bold text-white mb-2">Clínica Dental ULEAM</h2>
+            <p className="text-xl text-white/90">Accede a la plataforma universitaria</p>
           </div>
 
           {/* Login Form */}
-          <Card className="glass-effect border-white/20">
-            <CardHeader>
-              <CardTitle className="text-center text-white">Iniciar Sesión</CardTitle>
-              <CardDescription className="text-center text-white/70">
-                Ingresa tus credenciales para continuar
-              </CardDescription>
+          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
+            <CardHeader className="text-center">
+              <CardTitle className="text-2xl text-blue-700">Iniciar Sesión</CardTitle>
+              <CardDescription className="text-blue-600">Ingresa tus credenciales para continuar</CardDescription>
             </CardHeader>
             <CardContent>
-              <form onSubmit={handleLogin} className="space-y-4">
+              <form onSubmit={handleLogin} className="space-y-6">
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-white">
+                  <Label htmlFor="email" className="text-blue-700 font-semibold">
                     Email
                   </Label>
                   <Input
@@ -150,12 +148,12 @@ export default function LoginPage() {
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     placeholder="usuario@uleam.edu.ec"
-                    className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
+                    className="bg-blue-50 border-blue-200 text-blue-800 placeholder:text-blue-400 focus:border-blue-500 focus:ring-blue-500"
                     required
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password" className="text-white">
+                  <Label htmlFor="password" className="text-blue-700 font-semibold">
                     Contraseña
                   </Label>
                   <div className="relative">
@@ -165,29 +163,33 @@ export default function LoginPage() {
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}
                       placeholder="••••••••"
-                      className="bg-white/10 border-white/20 text-white placeholder:text-white/50 pr-10"
+                      className="bg-blue-50 border-blue-200 text-blue-800 placeholder:text-blue-400 focus:border-blue-500 focus:ring-blue-500 pr-10"
                       required
                     />
                     <Button
                       type="button"
                       variant="ghost"
                       size="sm"
-                      className="absolute right-0 top-0 h-full px-3 text-white/70 hover:text-white"
+                      className="absolute right-0 top-0 h-full px-3 text-blue-600 hover:text-blue-800 hover:bg-blue-100"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                 </div>
-                <Button type="submit" className="w-full btn-medical" disabled={isSubmitting}>
+                <Button
+                  type="submit"
+                  className="w-full bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold py-3 text-lg shadow-lg hover:shadow-xl transition-all duration-300"
+                  disabled={isSubmitting}
+                >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
-                      <div className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></div>
+                      <div className="animate-spin rounded-full h-5 w-5 border-2 border-white/30 border-t-white"></div>
                       Iniciando sesión...
                     </div>
                   ) : (
                     <div className="flex items-center gap-2">
-                      <LogIn className="h-4 w-4" />
+                      <LogIn className="h-5 w-5" />
                       Iniciar Sesión
                     </div>
                   )}
@@ -197,72 +199,70 @@ export default function LoginPage() {
           </Card>
 
           {/* Quick Access */}
-          <Card className="glass-effect border-white/20">
+          <Card className="bg-white/95 backdrop-blur-sm border-0 shadow-2xl">
             <CardHeader>
-              <CardTitle className="text-sm text-white">Acceso Rápido - Demo</CardTitle>
+              <CardTitle className="text-lg text-blue-700">Acceso Rápido - Demo</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="grid gap-2">
+              <div className="grid gap-3">
                 <Button
                   variant="ghost"
-                  className="flex items-center justify-between p-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-red-100 to-red-200 hover:from-red-200 hover:to-red-300 text-red-700 border border-red-300 rounded-xl transition-all duration-300 hover:scale-105"
                   onClick={() => handleQuickLogin("admin@clinica.com", "admin")}
                 >
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-red-400" />
-                    <span className="text-sm font-medium">Administrador</span>
+                  <div className="flex items-center gap-3">
+                    <Shield className="h-5 w-5 text-red-600" />
+                    <span className="font-semibold">Administrador</span>
                   </div>
-                  <Badge className="bg-red-500/20 text-red-200 border-red-400/30">admin@clinica.com</Badge>
+                  <Badge className="bg-red-500 text-white border-0">admin@clinica.com</Badge>
                 </Button>
 
                 <Button
                   variant="ghost"
-                  className="flex items-center justify-between p-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-purple-100 to-purple-200 hover:from-purple-200 hover:to-purple-300 text-purple-700 border border-purple-300 rounded-xl transition-all duration-300 hover:scale-105"
                   onClick={() => handleQuickLogin("secretaria@clinica.com", "secretaria")}
                 >
-                  <div className="flex items-center gap-2">
-                    <UserCheck className="h-4 w-4 text-purple-400" />
-                    <span className="text-sm font-medium">Secretaria</span>
+                  <div className="flex items-center gap-3">
+                    <UserCheck className="h-5 w-5 text-purple-600" />
+                    <span className="font-semibold">Secretaria</span>
                   </div>
-                  <Badge className="bg-purple-500/20 text-purple-200 border-purple-400/30">
-                    secretaria@clinica.com
-                  </Badge>
+                  <Badge className="bg-purple-500 text-white border-0">secretaria@clinica.com</Badge>
                 </Button>
 
                 <Button
                   variant="ghost"
-                  className="flex items-center justify-between p-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-orange-100 to-orange-200 hover:from-orange-200 hover:to-orange-300 text-orange-700 border border-orange-300 rounded-xl transition-all duration-300 hover:scale-105"
                   onClick={() => handleQuickLogin("profesor@clinica.com", "profesor")}
                 >
-                  <div className="flex items-center gap-2">
-                    <Stethoscope className="h-4 w-4 text-orange-400" />
-                    <span className="text-sm font-medium">Profesor</span>
+                  <div className="flex items-center gap-3">
+                    <Stethoscope className="h-5 w-5 text-orange-600" />
+                    <span className="font-semibold">Profesor</span>
                   </div>
-                  <Badge className="bg-orange-500/20 text-orange-200 border-orange-400/30">profesor@clinica.com</Badge>
+                  <Badge className="bg-orange-500 text-white border-0">profesor@clinica.com</Badge>
                 </Button>
 
                 <Button
                   variant="ghost"
-                  className="flex items-center justify-between p-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-green-100 to-green-200 hover:from-green-200 hover:to-green-300 text-green-700 border border-green-300 rounded-xl transition-all duration-300 hover:scale-105"
                   onClick={() => handleQuickLogin("estudiante@clinica.com", "estudiante")}
                 >
-                  <div className="flex items-center gap-2">
-                    <GraduationCap className="h-4 w-4 text-green-400" />
-                    <span className="text-sm font-medium">Estudiante</span>
+                  <div className="flex items-center gap-3">
+                    <GraduationCap className="h-5 w-5 text-green-600" />
+                    <span className="font-semibold">Estudiante</span>
                   </div>
-                  <Badge className="bg-green-500/20 text-green-200 border-green-400/30">estudiante@clinica.com</Badge>
+                  <Badge className="bg-green-500 text-white border-0">estudiante@clinica.com</Badge>
                 </Button>
 
                 <Button
                   variant="ghost"
-                  className="flex items-center justify-between p-3 bg-white/10 hover:bg-white/20 text-white border border-white/20 rounded-lg"
+                  className="flex items-center justify-between p-4 bg-gradient-to-r from-blue-100 to-blue-200 hover:from-blue-200 hover:to-blue-300 text-blue-700 border border-blue-300 rounded-xl transition-all duration-300 hover:scale-105"
                   onClick={() => handleQuickLogin("paciente@clinica.com", "paciente")}
                 >
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-blue-400" />
-                    <span className="text-sm font-medium">Paciente</span>
+                  <div className="flex items-center gap-3">
+                    <Users className="h-5 w-5 text-blue-600" />
+                    <span className="font-semibold">Paciente</span>
                   </div>
-                  <Badge className="bg-blue-500/20 text-blue-200 border-blue-400/30">paciente@clinica.com</Badge>
+                  <Badge className="bg-blue-500 text-white border-0">paciente@clinica.com</Badge>
                 </Button>
               </div>
             </CardContent>
@@ -274,41 +274,41 @@ export default function LoginPage() {
       <div className="hidden lg:flex flex-1 bg-white/10 backdrop-blur-md p-8 items-center justify-center">
         <div className="max-w-lg space-y-8 text-white">
           <div className="text-center">
-            <Heart className="h-20 w-20 mx-auto mb-6 text-white" />
-            <h3 className="text-3xl font-bold mb-4">Sistema Integral</h3>
-            <p className="text-white/80 leading-relaxed text-lg">
+            <Heart className="h-24 w-24 mx-auto mb-6 text-white drop-shadow-lg" />
+            <h3 className="text-4xl font-bold mb-4">Sistema Integral</h3>
+            <p className="text-white/90 leading-relaxed text-xl">
               Plataforma completa para la gestión de la clínica dental universitaria, conectando estudiantes,
               profesores, pacientes y personal administrativo.
             </p>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-6 w-6 text-green-400" />
-              <span className="text-white/90">Servicios odontológicos gratuitos</span>
+          <div className="space-y-6">
+            <div className="flex items-center gap-4">
+              <CheckCircle className="h-8 w-8 text-green-300" />
+              <span className="text-white/95 text-lg">Servicios odontológicos gratuitos</span>
             </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-6 w-6 text-green-400" />
-              <span className="text-white/90">Atención supervisada por especialistas</span>
+            <div className="flex items-center gap-4">
+              <CheckCircle className="h-8 w-8 text-green-300" />
+              <span className="text-white/95 text-lg">Atención supervisada por especialistas</span>
             </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-6 w-6 text-green-400" />
-              <span className="text-white/90">Tecnología de última generación</span>
+            <div className="flex items-center gap-4">
+              <CheckCircle className="h-8 w-8 text-green-300" />
+              <span className="text-white/95 text-lg">Tecnología de última generación</span>
             </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-6 w-6 text-green-400" />
-              <span className="text-white/90">Formación práctica de excelencia</span>
+            <div className="flex items-center gap-4">
+              <CheckCircle className="h-8 w-8 text-green-300" />
+              <span className="text-white/95 text-lg">Formación práctica de excelencia</span>
             </div>
           </div>
 
-          <div className="grid grid-cols-2 gap-6 pt-8">
+          <div className="grid grid-cols-2 gap-8 pt-8">
             <div className="text-center">
-              <div className="text-4xl font-bold text-white">5</div>
-              <div className="text-white/70">Roles de Usuario</div>
+              <div className="text-5xl font-bold text-white">5</div>
+              <div className="text-white/80 text-lg">Roles de Usuario</div>
             </div>
             <div className="text-center">
-              <div className="text-4xl font-bold text-white">100%</div>
-              <div className="text-white/70">Gratuito</div>
+              <div className="text-5xl font-bold text-white">100%</div>
+              <div className="text-white/80 text-lg">Gratuito</div>
             </div>
           </div>
         </div>
