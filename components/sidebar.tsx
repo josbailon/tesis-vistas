@@ -217,7 +217,12 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={cn("sidebar-item", isActive && "sidebar-item-active")}
+                className={cn(
+                  "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 hover:scale-105 hover:shadow-md",
+                  isActive
+                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
+                    : "text-blue-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-800",
+                )}
                 onClick={() => setOpen(false)}
               >
                 <Icon className="h-5 w-5 flex-shrink-0" />
@@ -244,7 +249,7 @@ export function Sidebar() {
           <Button
             variant="outline"
             size="icon"
-            className="shrink-0 md:hidden fixed top-4 left-4 z-50 bg-white/80 backdrop-blur-sm border-blue-200 hover:bg-blue-50"
+            className="shrink-0 md:hidden fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm border-blue-200 hover:bg-blue-50 hover:scale-110 transition-all duration-200 shadow-lg"
           >
             <Menu className="h-5 w-5 text-blue-600" />
             <span className="sr-only">Toggle navigation menu</span>

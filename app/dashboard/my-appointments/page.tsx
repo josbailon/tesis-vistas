@@ -223,12 +223,15 @@ export default function MyAppointmentsPage() {
             <CardContent>
               <div className="space-y-4">
                 {pastAppointments.map((appointment) => (
-                  <div key={appointment.id} className="p-4 bg-gray-50 rounded-xl border border-gray-200">
+                  <div
+                    key={appointment.id}
+                    className="p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-200 hover:shadow-md transition-all duration-300"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="flex items-center gap-3 mb-3">
-                          <div className="p-2 rounded-lg bg-gray-300">
-                            <Calendar className="h-5 w-5 text-gray-600" />
+                          <div className="p-2 rounded-lg bg-gradient-to-r from-indigo-400 to-purple-500">
+                            <Calendar className="h-5 w-5 text-white" />
                           </div>
                           <div>
                             <h3 className="font-semibold text-blue-700">{appointment.specialty}</h3>
@@ -251,8 +254,8 @@ export default function MyAppointmentsPage() {
                           </div>
                         </div>
                         {appointment.notes && (
-                          <div className="mt-3 p-3 bg-white/60 rounded-lg">
-                            <p className="text-sm text-blue-700">{appointment.notes}</p>
+                          <div className="mt-3 p-3 bg-gradient-to-r from-white to-blue-50 rounded-lg border border-blue-100">
+                            <p className="text-sm text-blue-700 font-medium">{appointment.notes}</p>
                           </div>
                         )}
                       </div>
