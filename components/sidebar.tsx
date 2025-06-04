@@ -1,4 +1,16 @@
+"use client"
+
+import { useState } from "react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
 import { LayoutDashboard, Users, FileText, Settings, Calendar, GraduationCap } from "lucide-react"
+import { cn } from "@/lib/utils"
+import { Button } from "@/components/ui/button"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
+import { Menu } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
+import { UleamBranding } from "@/components/uleam-branding"
 
 import type { MainNavItem, SidebarNavItem } from "@/types"
 
@@ -181,18 +193,6 @@ export const dashboardConfig: DashboardConfig = {
     return navigationItems
   },
 }
-;("use client")
-
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
-import { UleamBranding } from "@/components/uleam-branding"
 
 export function Sidebar() {
   const [open, setOpen] = useState(false)
