@@ -81,6 +81,20 @@ export const TEST_USERS = [
     specialty: "Odontopediatría",
     password: "pediatria",
   },
+  {
+    id: "9",
+    email: "secretaria@clinica.com",
+    name: "María Secretaria",
+    role: "secretary",
+    password: "secretaria",
+  },
+  {
+    id: "10",
+    email: "recepcion@clinica.com",
+    name: "Carmen Recepción",
+    role: "secretary",
+    password: "recepcion",
+  },
 ]
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)

@@ -1,374 +1,396 @@
 "use client"
 
 import { useState } from "react"
-import { useAuth } from "@/contexts/auth-context"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Search, Filter, Plus, GraduationCap, BookOpen, Calendar, Award } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
 import { StudentForm } from "@/components/student-form"
 import { StudentSchedule } from "@/components/student-schedule"
-import { Search, Plus, BookOpen, Calendar } from "lucide-react"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ProtectedRoute } from "@/components/protected-route"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
 
-// Datos de ejemplo para estudiantes
-const mockStudents = [
+interface Student {
+  id: string
+  name: string
+  email: string
+  studentId: string
+  semester: number
+  specialty: string
+  gpa: number
+  attendanceRate: number
+  completedCredits: number
+  totalCredits: number
+  status: "active" | "inactive" | "graduated" | "suspended"
+  enrollmentDate: string
+  avatar?: string
+}
+
+const mockStudents: Student[] = [
   {
     id: "1",
-    name: "Ana María López",
-    email: "ana.lopez@estudiante.edu.ec",
+    name: "Ana María González",
+    email: "ana.gonzalez@uleam.edu.ec",
+    studentId: "2021-001",
     semester: 8,
-    specialty: "Endodoncia",
+    specialty: "Odontología General",
+    gpa: 8.5,
+    attendanceRate: 95,
+    completedCredits: 180,
+    totalCredits: 200,
     status: "active",
-    professor: "Dr. Carlos Ruiz",
-    gpa: 9.2,
-    creditsCompleted: 180,
-    totalCredits: 240,
+    enrollmentDate: "2021-03-15",
   },
   {
     id: "2",
-    name: "Juan Carlos Mendoza",
-    email: "juan.mendoza@estudiante.edu.ec",
-    semester: 7,
-    specialty: "Ortodoncia",
+    name: "Carlos Eduardo Ramírez",
+    email: "carlos.ramirez@uleam.edu.ec",
+    studentId: "2020-045",
+    semester: 10,
+    specialty: "Cirugía Oral",
+    gpa: 9.2,
+    attendanceRate: 98,
+    completedCredits: 195,
+    totalCredits: 200,
     status: "active",
-    professor: "Dra. Laura Martín",
-    gpa: 8.7,
-    creditsCompleted: 160,
-    totalCredits: 240,
+    enrollmentDate: "2020-09-01",
   },
   {
     id: "3",
-    name: "María Fernanda Torres",
-    email: "maria.torres@estudiante.edu.ec",
-    semester: 9,
-    specialty: "Cirugía Oral",
+    name: "Sofía Alejandra Torres",
+    email: "sofia.torres@uleam.edu.ec",
+    studentId: "2022-023",
+    semester: 4,
+    specialty: "Ortodoncia",
+    gpa: 8.8,
+    attendanceRate: 92,
+    completedCredits: 80,
+    totalCredits: 200,
     status: "active",
-    professor: "Dr. Roberto Silva",
-    gpa: 9.5,
-    creditsCompleted: 210,
-    totalCredits: 240,
-  },
-  {
-    id: "4",
-    name: "Pedro Andrés Suárez",
-    email: "pedro.suarez@estudiante.edu.ec",
-    semester: 6,
-    specialty: "Odontopediatría",
-    status: "active",
-    professor: "Dra. Carmen Vega",
-    gpa: 8.3,
-    creditsCompleted: 140,
-    totalCredits: 240,
-  },
-  {
-    id: "5",
-    name: "Lucía Valentina Mora",
-    email: "lucia.mora@estudiante.edu.ec",
-    semester: 10,
-    specialty: "Endodoncia",
-    status: "graduated",
-    professor: "Dr. Carlos Ruiz",
-    gpa: 9.8,
-    creditsCompleted: 240,
-    totalCredits: 240,
+    enrollmentDate: "2022-03-15",
   },
 ]
 
 export default function StudentsInfoPage() {
-  const { user } = useAuth()
-  const [showNewStudentForm, setShowNewStudentForm] = useState(false)
+  const [students] = useState<Student[]>(mockStudents)
   const [searchTerm, setSearchTerm] = useState("")
-  const [semesterFilter, setSemesterFilter] = useState("all")
-  const [specialtyFilter, setSpecialtyFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [students] = useState(mockStudents)
+  const [showForm, setShowForm] = useState(false)
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
 
-  // Filtrar estudiantes según los criterios
-  const filteredStudents = students.filter((student) => {
-    const matchesSearch =
+  const filteredStudents = students.filter(
+    (student) =>
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      student.email.toLowerCase().includes(searchTerm.toLowerCase())
+      student.studentId.includes(searchTerm) ||
+      student.specialty.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
-    const matchesSemester = semesterFilter === "all" || student.semester.toString() === semesterFilter
-    const matchesSpecialty = specialtyFilter === "all" || student.specialty === specialtyFilter
-    const matchesStatus = statusFilter === "all" || student.status === statusFilter
-
-    return matchesSearch && matchesSemester && matchesSpecialty && matchesStatus
-  })
-
-  // Calcular estadísticas
-  const totalStudents = students.length
-  const activeStudents = students.filter((s) => s.status === "active").length
-  const averageGPA = students.reduce((sum, student) => sum + student.gpa, 0) / totalStudents
-  const completionRate =
-    (students.reduce((sum, student) => sum + student.creditsCompleted / student.totalCredits, 0) / totalStudents) * 100
-
-  // Función para obtener el color de la insignia según el estado
-  const getStatusBadgeColor = (status: string) => {
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return "bg-green-100 text-green-800 border-green-200"
-      case "graduated":
-        return "bg-blue-100 text-blue-800 border-blue-200"
+        return "bg-green-100 text-green-800"
       case "inactive":
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-gray-100 text-gray-800"
+      case "graduated":
+        return "bg-blue-100 text-blue-800"
       case "suspended":
-        return "bg-red-100 text-red-800 border-red-200"
+        return "bg-red-100 text-red-800"
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200"
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  // Función para obtener el texto del estado en español
-  const getStatusText = (status: string) => {
+  const getStatusLabel = (status: string) => {
     switch (status) {
       case "active":
         return "Activo"
-      case "graduated":
-        return "Graduado"
       case "inactive":
         return "Inactivo"
+      case "graduated":
+        return "Graduado"
       case "suspended":
         return "Suspendido"
       default:
-        return status
+        return "Desconocido"
     }
   }
 
   return (
-    <ProtectedRoute>
-      <div className="container mx-auto py-6 space-y-6">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+    <div className="min-h-screen bg-gray-50">
+      <div className="container mx-auto px-4 py-8">
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Información de Estudiantes</h1>
-            <p className="text-muted-foreground">
-              Gestiona la información académica de los estudiantes de odontología.
-            </p>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Información de Estudiantes</h1>
+            <p className="text-gray-600">Gestiona y supervisa el progreso académico de los estudiantes</p>
           </div>
-          <Button onClick={() => setShowNewStudentForm(!showNewStudentForm)}>
-            <Plus className="mr-2 h-4 w-4" />
-            {showNewStudentForm ? "Cancelar" : "Nuevo Estudiante"}
-          </Button>
+          <div className="flex items-center gap-4 mt-4 sm:mt-0">
+            <Button onClick={() => setShowForm(true)}>
+              <Plus className="mr-2 h-4 w-4" />
+              Nuevo Estudiante
+            </Button>
+          </div>
         </div>
 
-        {showNewStudentForm && (
-          <Card>
-            <CardHeader>
-              <CardTitle>Registrar Nuevo Estudiante</CardTitle>
-              <CardDescription>Complete el formulario para registrar un nuevo estudiante</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <StudentForm
-                onSuccess={() => setShowNewStudentForm(false)}
-                onCancel={() => setShowNewStudentForm(false)}
-              />
-            </CardContent>
-          </Card>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{totalStudents}</div>
-              <p className="text-xs text-muted-foreground">Estudiantes registrados</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Estudiantes Activos</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{activeStudents}</div>
-              <p className="text-xs text-muted-foreground">
-                {((activeStudents / totalStudents) * 100).toFixed(1)}% del total
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Promedio GPA</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{averageGPA.toFixed(2)}</div>
-              <p className="text-xs text-muted-foreground">Sobre 10.0</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium">Progreso Promedio</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{completionRate.toFixed(1)}%</div>
-              <Progress value={completionRate} className="h-2" />
-            </CardContent>
-          </Card>
-        </div>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Filtros y Búsqueda</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative">
-                <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+        {/* Search and Filter */}
+        <Card className="mb-6">
+          <CardContent className="pt-6">
+            <div className="flex flex-col sm:flex-row gap-4">
+              <div className="relative flex-1">
+                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 <Input
-                  type="search"
-                  placeholder="Buscar estudiantes..."
-                  className="pl-8"
+                  placeholder="Buscar estudiantes por nombre, ID o especialidad..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  className="pl-10"
                 />
               </div>
-              <div>
-                <Label htmlFor="semester-filter" className="mb-1 block text-sm">
-                  Semestre
-                </Label>
-                <Select value={semesterFilter} onValueChange={setSemesterFilter}>
-                  <SelectTrigger id="semester-filter">
-                    <SelectValue placeholder="Todos los semestres" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los semestres</SelectItem>
-                    {[6, 7, 8, 9, 10].map((semester) => (
-                      <SelectItem key={semester} value={semester.toString()}>
-                        Semestre {semester}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="specialty-filter" className="mb-1 block text-sm">
-                  Especialidad
-                </Label>
-                <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
-                  <SelectTrigger id="specialty-filter">
-                    <SelectValue placeholder="Todas las especialidades" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas las especialidades</SelectItem>
-                    <SelectItem value="Endodoncia">Endodoncia</SelectItem>
-                    <SelectItem value="Ortodoncia">Ortodoncia</SelectItem>
-                    <SelectItem value="Cirugía Oral">Cirugía Oral</SelectItem>
-                    <SelectItem value="Odontopediatría">Odontopediatría</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div>
-                <Label htmlFor="status-filter" className="mb-1 block text-sm">
-                  Estado
-                </Label>
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger id="status-filter">
-                    <SelectValue placeholder="Todos los estados" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos los estados</SelectItem>
-                    <SelectItem value="active">Activo</SelectItem>
-                    <SelectItem value="graduated">Graduado</SelectItem>
-                    <SelectItem value="inactive">Inactivo</SelectItem>
-                    <SelectItem value="suspended">Suspendido</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
+              <Button variant="outline">
+                <Filter className="mr-2 h-4 w-4" />
+                Filtrar
+              </Button>
             </div>
           </CardContent>
         </Card>
 
-        <Tabs defaultValue="list">
-          <TabsList>
-            <TabsTrigger value="list">
-              <BookOpen className="mr-2 h-4 w-4" />
-              Lista de Estudiantes
-            </TabsTrigger>
-            <TabsTrigger value="schedule">
-              <Calendar className="mr-2 h-4 w-4" />
-              Horarios Académicos
-            </TabsTrigger>
+        {/* Statistics Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <GraduationCap className="h-8 w-8 text-blue-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Total Estudiantes</p>
+                  <p className="text-2xl font-bold text-gray-900">{students.length}</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <BookOpen className="h-8 w-8 text-green-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Estudiantes Activos</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {students.filter((s) => s.status === "active").length}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <Award className="h-8 w-8 text-yellow-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Promedio GPA</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {(students.reduce((acc, s) => acc + s.gpa, 0) / students.length).toFixed(1)}
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="pt-6">
+              <div className="flex items-center">
+                <Calendar className="h-8 w-8 text-purple-600" />
+                <div className="ml-4">
+                  <p className="text-sm font-medium text-gray-600">Asistencia Promedio</p>
+                  <p className="text-2xl font-bold text-gray-900">
+                    {Math.round(students.reduce((acc, s) => acc + s.attendanceRate, 0) / students.length)}%
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Main Content */}
+        <Tabs defaultValue="list" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="list">Lista de Estudiantes</TabsTrigger>
+            <TabsTrigger value="schedule">Horarios</TabsTrigger>
           </TabsList>
-          <TabsContent value="list" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>
-                  Estudiantes{" "}
-                  {searchTerm || semesterFilter !== "all" || specialtyFilter !== "all" || statusFilter !== "all"
-                    ? "(Filtrados)"
-                    : ""}
-                </CardTitle>
-                <CardDescription>{filteredStudents.length} estudiantes encontrados</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="rounded-md border">
-                  <div className="overflow-x-auto">
-                    <table className="w-full text-sm">
-                      <thead>
-                        <tr className="bg-muted/50">
-                          <th className="h-10 px-4 text-left align-middle font-medium">Nombre</th>
-                          <th className="h-10 px-4 text-left align-middle font-medium">Email</th>
-                          <th className="h-10 px-4 text-left align-middle font-medium">Semestre</th>
-                          <th className="h-10 px-4 text-left align-middle font-medium">Especialidad</th>
-                          <th className="h-10 px-4 text-left align-middle font-medium">Profesor</th>
-                          <th className="h-10 px-4 text-left align-middle font-medium">GPA</th>
-                          <th className="h-10 px-4 text-left align-middle font-medium">Progreso</th>
-                          <th className="h-10 px-4 text-left align-middle font-medium">Estado</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {filteredStudents.map((student) => (
-                          <tr key={student.id} className="border-t hover:bg-muted/50">
-                            <td className="p-4 align-middle">{student.name}</td>
-                            <td className="p-4 align-middle">{student.email}</td>
-                            <td className="p-4 align-middle">{student.semester}</td>
-                            <td className="p-4 align-middle">{student.specialty}</td>
-                            <td className="p-4 align-middle">{student.professor}</td>
-                            <td className="p-4 align-middle">{student.gpa.toFixed(1)}</td>
-                            <td className="p-4 align-middle">
-                              <div className="flex items-center gap-2">
-                                <Progress
-                                  value={(student.creditsCompleted / student.totalCredits) * 100}
-                                  className="h-2 w-20"
-                                />
-                                <span className="text-xs">
-                                  {Math.round((student.creditsCompleted / student.totalCredits) * 100)}%
+
+          <TabsContent value="list">
+            <div className="space-y-4">
+              {filteredStudents.length === 0 ? (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <GraduationCap className="h-12 w-12 text-gray-400 mb-4" />
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron estudiantes</h3>
+                    <p className="text-gray-600 text-center">
+                      {searchTerm ? "Intenta ajustar los términos de búsqueda" : "No hay estudiantes registrados"}
+                    </p>
+                  </CardContent>
+                </Card>
+              ) : (
+                filteredStudents.map((student) => (
+                  <Card key={student.id} className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-4">
+                          <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
+                            <span className="text-blue-600 font-semibold text-lg">
+                              {student.name
+                                .split(" ")
+                                .map((n) => n[0])
+                                .join("")
+                                .slice(0, 2)}
+                            </span>
+                          </div>
+
+                          <div className="flex-1">
+                            <div className="flex items-center space-x-2 mb-2">
+                              <h3 className="text-lg font-semibold">{student.name}</h3>
+                              <Badge className={getStatusColor(student.status)}>{getStatusLabel(student.status)}</Badge>
+                            </div>
+
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 text-sm text-gray-600">
+                              <div>
+                                <span className="font-medium">ID:</span> {student.studentId}
+                              </div>
+                              <div>
+                                <span className="font-medium">Semestre:</span> {student.semester}
+                              </div>
+                              <div>
+                                <span className="font-medium">Especialidad:</span> {student.specialty}
+                              </div>
+                              <div>
+                                <span className="font-medium">GPA:</span> {student.gpa}
+                              </div>
+                            </div>
+
+                            <div className="mt-3 space-y-2">
+                              <div className="flex items-center justify-between text-sm">
+                                <span>Progreso de Créditos</span>
+                                <span>
+                                  {student.completedCredits}/{student.totalCredits}
                                 </span>
                               </div>
-                            </td>
-                            <td className="p-4 align-middle">
-                              <Badge className={getStatusBadgeColor(student.status)}>
-                                {getStatusText(student.status)}
-                              </Badge>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                              <Progress
+                                value={(student.completedCredits / student.totalCredits) * 100}
+                                className="h-2"
+                              />
+                            </div>
+
+                            <div className="mt-2 flex items-center space-x-4 text-sm text-gray-600">
+                              <div>
+                                <span className="font-medium">Asistencia:</span> {student.attendanceRate}%
+                              </div>
+                              <div>
+                                <span className="font-medium">Email:</span> {student.email}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex items-center space-x-2">
+                          <Button variant="outline" size="sm" onClick={() => setSelectedStudent(student)}>
+                            Ver Detalles
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              )}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="schedule">
+            <StudentSchedule />
+          </TabsContent>
+        </Tabs>
+
+        {/* Student Form Modal */}
+        {showForm && <StudentForm onClose={() => setShowForm(false)} onSuccess={() => setShowForm(false)} />}
+
+        {/* Student Details Modal */}
+        {selectedStudent && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50">
+            <Card className="w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Detalles del Estudiante</CardTitle>
+                    <CardDescription>{selectedStudent.name}</CardDescription>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedStudent(null)}>
+                    ×
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">ID de Estudiante</label>
+                      <p className="text-lg">{selectedStudent.studentId}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Semestre Actual</label>
+                      <p className="text-lg">{selectedStudent.semester}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Especialidad</label>
+                      <p className="text-lg">{selectedStudent.specialty}</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">GPA</label>
+                      <p className="text-lg">{selectedStudent.gpa}</p>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Progreso Académico</label>
+                    <div className="mt-2">
+                      <div className="flex justify-between text-sm mb-1">
+                        <span>Créditos Completados</span>
+                        <span>
+                          {selectedStudent.completedCredits}/{selectedStudent.totalCredits}
+                        </span>
+                      </div>
+                      <Progress
+                        value={(selectedStudent.completedCredits / selectedStudent.totalCredits) * 100}
+                        className="h-3"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Tasa de Asistencia</label>
+                      <p className="text-lg">{selectedStudent.attendanceRate}%</p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-600">Estado</label>
+                      <Badge className={getStatusColor(selectedStudent.status)}>
+                        {getStatusLabel(selectedStudent.status)}
+                      </Badge>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Email</label>
+                    <p className="text-lg">{selectedStudent.email}</p>
+                  </div>
+
+                  <div>
+                    <label className="text-sm font-medium text-gray-600">Fecha de Inscripción</label>
+                    <p className="text-lg">{new Date(selectedStudent.enrollmentDate).toLocaleDateString("es-ES")}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          </TabsContent>
-          <TabsContent value="schedule" className="mt-4">
-            <Card>
-              <CardHeader>
-                <CardTitle>Horarios Académicos</CardTitle>
-                <CardDescription>Vista de horarios por semana</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <StudentSchedule students={filteredStudents} />
-              </CardContent>
-            </Card>
-          </TabsContent>
-        </Tabs>
+          </div>
+        )}
       </div>
-    </ProtectedRoute>
+    </div>
   )
 }

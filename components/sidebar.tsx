@@ -136,6 +136,32 @@ export const dashboardConfig: DashboardConfig = {
           description: "Información de estudiantes",
         },
       ]
+    } else if (role === "secretary") {
+      navigationItems = [
+        {
+          title: "Dashboard",
+          href: "/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Panel Secretaría",
+          href: "/dashboard/secretary",
+          icon: Calendar,
+          description: "Gestión de citas y estudiantes",
+        },
+        {
+          title: "Citas",
+          href: "/appointments",
+          icon: Calendar,
+          description: "Gestión de citas médicas",
+        },
+        {
+          title: "Estudiantes Info",
+          href: "/students-info",
+          icon: GraduationCap,
+          description: "Información de estudiantes",
+        },
+      ]
     } else {
       navigationItems = [
         {

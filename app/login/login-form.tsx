@@ -7,7 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { AlertCircle } from "lucide-react"
 import { useAuth, TEST_USERS } from "@/contexts/auth-context"
@@ -20,11 +20,11 @@ export function LoginForm() {
   const [redirecting, setRedirecting] = useState(false)
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { login, user } = useAuth()
+  const { login, isAuthenticated } = useAuth()
 
   // Verificar si ya está autenticado
   useEffect(() => {
-    if (user) {
+    if (isAuthenticated) {
       const callbackUrl = searchParams.get("callbackUrl")
       if (callbackUrl) {
         router.push(decodeURIComponent(callbackUrl))
@@ -32,7 +32,7 @@ export function LoginForm() {
         router.push("/dashboard")
       }
     }
-  }, [user, router, searchParams])
+  }, [isAuthenticated, router, searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -48,11 +48,9 @@ export function LoginForm() {
 
         // Usar el contexto de autenticación para iniciar sesión
         login({
-          id: user.id,
           email: user.email,
           role: user.role,
           name: user.name,
-          specialty: user.specialty,
         })
 
         // Verificar si hay una URL de callback
@@ -105,31 +103,71 @@ export function LoginForm() {
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      {error && (
-        <Alert variant="destructive">
-          <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error}</AlertDescription>
-        </Alert>
-      )}
-      <div className="space-y-2">
-        <Label htmlFor="email">Correo electrónico</Label>
-        <Input
-          id="email"
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="correo@ejemplo.com"
-          required
-        />
-      </div>
-      <div className="space-y-2">
-        <Label htmlFor="password">Contraseña</Label>
-        <Input id="password" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-      </div>
-      <Button type="submit" className="w-full" disabled={loading}>
-        {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
-      </Button>
-    </form>
+    <Card className="border-primary-200 shadow-soft-lg bg-white">
+      <CardHeader>
+        <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
+        <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="email">Correo electrónico</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="correo@ejemplo.com"
+              required
+            />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="password">Contraseña</Label>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </div>
+          <Button type="submit" className="w-full" disabled={loading}>
+            {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
+          </Button>
+        </form>
+      </CardContent>
+      <CardFooter className="flex flex-col space-y-4">
+        <p className="text-sm text-primary-600">
+          ¿No tienes una cuenta?{" "}
+          <a href="/register" className="text-primary-600 hover:underline">
+            Regístrate
+          </a>
+        </p>
+
+        <div className="w-full pt-4 border-t border-primary-200">
+          <p className="text-sm font-medium mb-2 text-primary-800">Credenciales de prueba:</p>
+          <div className="text-xs text-primary-600 space-y-1">
+            <p>
+              <strong>Paciente:</strong> paciente@clinica.com / paciente
+            </p>
+            <p>
+              <strong>Estudiante:</strong> estudiante@clinica.com / estudiante
+            </p>
+            <p>
+              <strong>Profesor:</strong> profesor@clinica.com / profesor
+            </p>
+            <p>
+              <strong>Admin:</strong> admin@clinica.com / admin
+            </p>
+          </div>
+        </div>
+      </CardFooter>
+    </Card>
   )
 }
