@@ -84,6 +84,24 @@ const routes = [
         component: () => import("../views/dashboard/student/Academic.vue"),
         meta: { roles: ["student"] },
       },
+      {
+        path: "assignments",
+        name: "StudentAssignments",
+        component: () => import("../views/dashboard/student/Assignments.vue"),
+        meta: { roles: ["student"] },
+      },
+      {
+        path: "odontograms",
+        name: "Odontograms",
+        component: () => import("../views/dashboard/student/Odontograms.vue"),
+        meta: { roles: ["student"] },
+      },
+      {
+        path: "self-assignment",
+        name: "SelfAssignment",
+        component: () => import("../views/dashboard/student/SelfAssignment.vue"),
+        meta: { roles: ["student"] },
+      },
       // Professor routes
       {
         path: "teacher",
@@ -104,10 +122,47 @@ const routes = [
         meta: { roles: ["professor"] },
       },
       {
+        path: "teacher/assignments",
+        name: "TeacherAssignments",
+        component: () => import("../views/dashboard/professor/Assignments.vue"),
+        meta: { roles: ["professor"] },
+      },
+      {
+        path: "teacher/clinical-records",
+        name: "TeacherClinicalRecords",
+        component: () => import("../views/dashboard/professor/ClinicalRecords.vue"),
+        meta: { roles: ["professor"] },
+      },
+      {
+        path: "teacher/extension-requests",
+        name: "ExtensionRequests",
+        component: () => import("../views/dashboard/professor/ExtensionRequests.vue"),
+        meta: { roles: ["professor"] },
+      },
+      {
         path: "specialty",
         name: "Specialty",
         component: () => import("../views/dashboard/professor/Specialty.vue"),
         meta: { roles: ["professor"] },
+      },
+      // Secretary routes
+      {
+        path: "secretary",
+        name: "Secretary",
+        component: () => import("../views/dashboard/secretary/Secretary.vue"),
+        meta: { roles: ["secretary"] },
+      },
+      {
+        path: "secretary/patient-assignment",
+        name: "PatientAssignment",
+        component: () => import("../views/dashboard/secretary/PatientAssignment.vue"),
+        meta: { roles: ["secretary"] },
+      },
+      {
+        path: "secretary/schedule",
+        name: "SecretarySchedule",
+        component: () => import("../views/dashboard/secretary/Schedule.vue"),
+        meta: { roles: ["secretary"] },
       },
       // Admin routes
       {
@@ -126,6 +181,12 @@ const routes = [
         path: "admin/analytics",
         name: "AdminAnalytics",
         component: () => import("../views/dashboard/admin/Analytics.vue"),
+        meta: { roles: ["admin"] },
+      },
+      {
+        path: "admin/monitoring",
+        name: "AdminMonitoring",
+        component: () => import("../views/dashboard/admin/Monitoring.vue"),
         meta: { roles: ["admin"] },
       },
       // Common routes
