@@ -434,4 +434,153 @@ const assignments = ref([
   {
     id: 3,
     title: 'Presentación: Técnicas de Cirugía Oral',
-    description: 'Presentación oral sobre técnicas avanzadas de cirugía oral
+    description: 'Presentación oral sobre técnicas avanzadas de cirugía oral y maxilofacial',
+    professor: 'Dr. López',
+    subject: 'Cirugía Oral',
+    assignedDate: '5 Ene 2025',
+    dueDate: '20 Ene 2025',
+    status: 'submitted',
+    submissionDate: '18 Ene 2025',
+    maxGrade: 90,
+    grade: 85,
+    feedback: 'Excelente presentación, muy bien estructurada. Mejorar la explicación de contraindicaciones.',
+    requirements: [
+      'Duración: 15-20 minutos',
+      'Incluir casos clínicos',
+      'Material audiovisual de apoyo',
+      'Sesión de preguntas y respuestas'
+    ]
+  },
+  {
+    id: 4,
+    title: 'Examen Práctico: Periodoncia',
+    description: 'Evaluación práctica de técnicas de raspado y alisado radicular',
+    professor: 'Dr. González',
+    subject: 'Periodoncia',
+    assignedDate: '12 Ene 2025',
+    dueDate: '28 Ene 2025',
+    status: 'graded',
+    submissionDate: '26 Ene 2025',
+    maxGrade: 100,
+    grade: 92,
+    feedback: 'Técnica excelente, muy buena destreza manual. Continuar practicando la angulación de instrumentos.',
+    requirements: [
+      'Demostración en paciente real',
+      'Uso correcto de instrumentos',
+      'Medidas de bioseguridad',
+      'Documentación del procedimiento'
+    ]
+  }
+])
+
+const filteredAssignments = computed(() => {
+  return assignments.value.filter(assignment => {
+    const matchesStatus = !statusFilter.value || assignment.status === statusFilter.value
+    const matchesSubject = !subjectFilter.value || assignment.subject.toLowerCase().includes(subjectFilter.value.toLowerCase())
+    const matchesProfessor = !professorFilter.value || assignment.professor.toLowerCase().includes(professorFilter.value.toLowerCase())
+    const matchesSearch = !searchTerm.value || assignment.title.toLowerCase().includes(searchTerm.value.toLowerCase())
+    
+    return matchesStatus && matchesSubject && matchesProfessor && matchesSearch
+  })
+})
+
+const getStatusColor = (status) => {
+  switch (status) {
+    case 'pending':
+      return 'bg-yellow-100 text-yellow-800'
+    case 'in-progress':
+      return 'bg-blue-100 text-blue-800'
+    case 'submitted':
+      return 'bg-purple-100 text-purple-800'
+    case 'graded':
+      return 'bg-green-100 text-green-800'
+    default:
+      return 'bg-gray-100 text-gray-800'
+  }
+}
+
+const getStatusLabel = (status) => {
+  switch (status) {
+    case 'pending':
+      return 'Pendiente'
+    case 'in-progress':
+      return 'En progreso'
+    case 'submitted':
+      return 'Entregada'
+    case 'graded':
+      return 'Calificada'
+    default:
+      return 'Desconocido'
+  }
+}
+
+const getDueDateColor = (dueDate) => {
+  const today = new Date()
+  const due = new Date(dueDate)
+  const diffTime = due - today
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+  
+  if (diffDays < 0) return 'text-red-600 font-medium'
+  if (diffDays <= 3) return 'text-orange-600 font-medium'
+  if (diffDays <= 7) return 'text-yellow-600'
+  return 'text-gray-600'
+}
+
+const getProgressColor = (progress) => {
+  if (progress >= 80) return 'bg-green-500'
+  if (progress >= 60) return 'bg-blue-500'
+  if (progress >= 40) return 'bg-yellow-500'
+  return 'bg-red-500'
+}
+
+const startAssignment = (assignment) => {
+  assignment.status = 'in-progress'
+  if (assignment.progress === 0) {
+    assignment.progress = 10
+  }
+  alert(`Comenzando trabajo en: ${assignment.title}`)
+}
+
+const submitAssignment = (assignment) => {
+  assignment.status = 'submitted'
+  assignment.submissionDate = new Date().toLocaleDateString('es-ES')
+  assignment.progress = 100
+  alert(`Tarea entregada: ${assignment.title}`)
+}
+
+const requestExtension = (assignment) => {
+  extensionRequest.value = {
+    assignmentId: assignment.id,
+    assignmentTitle: assignment.title,
+    newDueDate: '',
+    reason: ''
+  }
+  showExtensionModal.value = true
+}
+
+const viewAssignmentDetails = (assignment) => {
+  selectedAssignment.value = assignment
+  showDetailsModal.value = true
+}
+
+const startAssignmentFromModal = () => {
+  if (selectedAssignment.value) {
+    startAssignment(selectedAssignment.value)
+    showDetailsModal.value = false
+  }
+}
+
+const submitExtensionRequest = () => {
+  // Here you would typically send the request to the server
+  alert(`Solicitud de extensión enviada para: ${extensionRequest.value.assignmentTitle}`)
+  showExtensionModal.value = false
+  
+  // Reset form
+  extensionRequest.value = {
+    assignmentId: null,
+    assignmentTitle: '',
+    newDueDate: '',
+    reason: ''
+  }
+}
+</script>
