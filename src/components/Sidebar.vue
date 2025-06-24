@@ -5,7 +5,7 @@
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-3">
           <UleamBranding variant="logo-only" />
-          <div v-if="!collapsed">
+          <div>
             <h2 class="text-lg font-bold text-green-700">ULEAM</h2>
             <p class="text-xs text-green-600">Clínica Dental</p>
           </div>
@@ -94,8 +94,7 @@ import UleamBranding from './UleamBranding.vue'
 import {
   Calendar, Users, FileText, Settings, LogOut, ChevronLeft, ChevronRight, Home,
   Stethoscope, GraduationCap, Shield, BarChart3, Clock, BookOpen, User, Activity,
-  Database, CheckSquare, FileCheck, TrendingUp, CalendarIcon, Bell, HelpCircle,
-  UserPlus, ClipboardList, Briefcase, Monitor, AlertTriangle, Upload, Search
+  Database, CheckSquare, FileCheck, TrendingUp, CalendarIcon, Bell, HelpCircle
 } from 'lucide-vue-next'
 
 const router = useRouter()
@@ -131,24 +130,18 @@ const getNavigationForRole = (role) => {
         {
           title: 'Pacientes',
           items: [
-            { title: 'Mis Pacientes', href: '/dashboard/patients', icon: Users, description: 'Gestionar pacientes' },
-            { title: 'Auto-asignación', href: '/dashboard/self-assignment', icon: UserPlus, description: 'Seleccionar pacientes' },
+            { title: 'Lista de Pacientes', href: '/dashboard/patients', icon: Users, description: 'Gestionar pacientes' },
             { title: 'Citas', href: '/dashboard/appointments', icon: Calendar, description: 'Agenda de citas' },
             { title: 'Casos Clínicos', href: '/dashboard/clinical-cases', icon: FileCheck, description: 'Casos asignados' },
             { title: 'Historial Clínico', href: '/dashboard/clinical-history', icon: FileText, description: 'Expedientes' }
           ]
         },
         {
-          title: 'Herramientas Clínicas',
-          items: [
-            { title: 'Odontogramas', href: '/dashboard/odontograms', icon: Stethoscope, description: 'Adulto, infantil, mixto' }
-          ]
-        },
-        {
           title: 'Académico',
           items: [
-            { title: 'Mis Tareas', href: '/dashboard/assignments', icon: BookOpen, description: 'Tareas del profesor' },
-            { title: 'Progreso Académico', href: '/dashboard/academic', icon: TrendingUp, description: 'Mi avance' }
+            { title: 'Mis Tareas', href: '/dashboard/academic', icon: BookOpen, description: 'Actividades académicas' },
+            { title: 'Horarios', href: '/dashboard/schedule', icon: Clock, description: 'Programación' },
+            { title: 'Mi Progreso', href: '/dashboard/my-progress', icon: TrendingUp, description: 'Avance académico' }
           ]
         },
         {
@@ -167,40 +160,22 @@ const getNavigationForRole = (role) => {
           items: [
             { title: 'Dashboard', href: '/dashboard/teacher', icon: Home, description: 'Panel principal' },
             { title: 'Estudiantes', href: '/dashboard/teacher/students', icon: GraduationCap, description: 'Gestionar estudiantes' },
-            { title: 'Tareas', href: '/dashboard/teacher/assignments', icon: ClipboardList, description: 'Crear y gestionar tareas' },
-            { title: 'Extensiones', href: '/dashboard/teacher/extension-requests', icon: Clock, description: 'Solicitudes de extensión' }
-          ]
-        },
-        {
-          title: 'Supervisión Clínica',
-          items: [
-            { title: 'Registros Clínicos', href: '/dashboard/teacher/clinical-records', icon: FileText, description: 'Historias y casos' },
             { title: 'Aprobaciones', href: '/dashboard/teacher/approvals', icon: CheckSquare, description: 'Revisar solicitudes' },
-            { title: 'Mi Especialidad', href: '/dashboard/specialty', icon: Stethoscope, description: 'Área de especialización' }
+            { title: 'Asignaciones', href: '/dashboard/teacher/assignments', icon: FileCheck, description: 'Tareas y proyectos' }
+          ]
+        },
+        {
+          title: 'Supervisión',
+          items: [
+            { title: 'Progreso', href: '/dashboard/teacher/progress', icon: TrendingUp, description: 'Seguimiento académico' },
+            { title: 'Especialidad', href: '/dashboard/specialty', icon: Stethoscope, description: 'Mi especialidad' },
+            { title: 'Estadísticas', href: '/dashboard/statistics', icon: BarChart3, description: 'Métricas y reportes' }
           ]
         },
         {
           title: 'Herramientas',
           items: [
-            { title: 'Mi Perfil', href: '/dashboard/my-profile', icon: User, description: 'Información personal' },
-            { title: 'Configuración', href: '/dashboard/settings', icon: Settings, description: 'Preferencias' }
-          ]
-        }
-      ]
-
-    case 'secretary':
-      return [
-        {
-          title: 'Gestión de Pacientes',
-          items: [
-            { title: 'Dashboard', href: '/dashboard/secretary', icon: Home, description: 'Panel principal' },
-            { title: 'Asignar Pacientes', href: '/dashboard/secretary/patient-assignment', icon: UserPlus, description: 'Asignar a estudiantes' },
-            { title: 'Horarios', href: '/dashboard/secretary/schedule', icon: Calendar, description: 'Gestión de horarios' }
-          ]
-        },
-        {
-          title: 'Herramientas',
-          items: [
+            { title: 'Horarios', href: '/dashboard/schedule', icon: Clock, description: 'Programación' },
             { title: 'Mi Perfil', href: '/dashboard/my-profile', icon: User, description: 'Información personal' },
             { title: 'Configuración', href: '/dashboard/settings', icon: Settings, description: 'Preferencias' }
           ]
@@ -215,14 +190,23 @@ const getNavigationForRole = (role) => {
             { title: 'Dashboard', href: '/dashboard/admin', icon: Home, description: 'Panel principal' },
             { title: 'Usuarios', href: '/dashboard/admin/users', icon: Users, description: 'Gestión de usuarios' },
             { title: 'Analíticas', href: '/dashboard/admin/analytics', icon: BarChart3, description: 'Reportes y métricas' },
-            { title: 'Monitoreo', href: '/dashboard/admin/monitoring', icon: Monitor, description: 'Sistema de monitoreo' }
+            { title: 'Seguridad', href: '/dashboard/admin/security', icon: Shield, description: 'Configuración de seguridad' }
+          ]
+        },
+        {
+          title: 'Sistema',
+          items: [
+            { title: 'Configuración', href: '/dashboard/admin/system-config', icon: Settings, description: 'Configuración del sistema' },
+            { title: 'Base de Datos', href: '/dashboard/admin/database', icon: Database, description: 'Gestión de datos' },
+            { title: 'Respaldos', href: '/dashboard/admin/backups', icon: FileText, description: 'Copias de seguridad' }
           ]
         },
         {
           title: 'Herramientas',
           items: [
-            { title: 'Mi Perfil', href: '/dashboard/my-profile', icon: User, description: 'Información personal' },
-            { title: 'Configuración', href: '/dashboard/settings', icon: Settings, description: 'Preferencias' }
+            { title: 'Logs', href: '/dashboard/admin/logs', icon: Activity, description: 'Registros del sistema' },
+            { title: 'Notificaciones', href: '/dashboard/admin/notifications', icon: Bell, description: 'Sistema de alertas' },
+            { title: 'Soporte', href: '/dashboard/admin/support', icon: HelpCircle, description: 'Centro de ayuda' }
           ]
         }
       ]
@@ -255,8 +239,6 @@ const getRoleColor = (role) => {
       return 'bg-purple-100 text-purple-600 border-purple-300'
     case 'admin':
       return 'bg-red-100 text-red-600 border-red-300'
-    case 'secretary':
-      return 'bg-yellow-100 text-yellow-600 border-yellow-300'
     default:
       return 'bg-gray-100 text-gray-600 border-gray-300'
   }

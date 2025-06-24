@@ -4,14 +4,9 @@ export interface User {
   name: string
   email: string
   password: string
-  role: "patient" | "student" | "professor" | "admin" | "secretary"
+  role: "patient" | "student" | "professor" | "admin"
   status: "active" | "inactive" | "pending"
   createdAt: string
-  specialty?: string
-  professor?: string
-  profileImage?: string
-  department?: string
-  permissions?: string[]
 }
 
 export interface Patient extends User {
@@ -21,8 +16,6 @@ export interface Patient extends User {
   address: string
   allergies: string | null
   medicalHistory: string | null
-  assignedStudent?: string
-  assignedDate?: string
 }
 
 export interface Student extends User {
@@ -32,13 +25,6 @@ export interface Student extends User {
   professorId: string
   progress: number
   semester: number
-  assignedPatients: string[]
-  schedule: {
-    day: string
-    startTime: string
-    endTime: string
-    available: boolean
-  }[]
 }
 
 export interface Professor extends User {
@@ -46,20 +32,12 @@ export interface Professor extends User {
   specialty: string
   officeHours: string
   department: string
-  students: string[]
-  gradingCriteria: {
-    technique: number
-    knowledge: number
-    professionalism: number
-    documentation: number
-    patientCare: number
-  }
 }
 
-export interface Secretary extends User {
-  role: "secretary"
+export interface Admin extends User {
+  role: "admin"
   department: string
-  managedSpecialties: string[]
+  permissions: string[]
 }
 
 export interface Appointment {
@@ -151,89 +129,13 @@ export interface ClinicalCase {
   patientId: string
   studentId: string
   professorId: string
-  title: string
-  description: string
-  specialty: string
+  treatment: string
   startDate: string
-  endDate?: string
-  status: "active" | "completed" | "cancelled" | "on-hold"
+  status: "in-progress" | "completed" | "cancelled"
   progress: number
-  sessions: ClinicalSession[]
-  treatmentPlan: string
-  objectives: string[]
-  complications?: string
-  outcome?: string
-  learningPoints: string[]
-  attachments: Document[]
-}
-
-export interface ClinicalSession {
-  id: string
-  caseId: string
-  date: string
-  duration: number
-  procedures: string[]
-  notes: string
-  complications?: string
-  nextSteps: string
-  attachments: Document[]
-  supervisorNotes?: string
-  grade?: number
-}
-
-export interface Odontogram {
-  id: string
-  patientId: string
-  studentId: string
-  type: "adult" | "pediatric" | "mixed"
-  date: string
-  teeth: {
-    [toothNumber: string]: {
-      condition: "healthy" | "caries" | "filled" | "crown" | "missing" | "root_canal" | "implant"
-      surfaces?: string[]
-      notes?: string
-      treatmentNeeded?: string
-      priority?: "low" | "medium" | "high" | "urgent"
-    }
-  }
-  generalNotes: string
-  treatmentPlan: string[]
-  attachments: Document[]
-}
-
-export interface Assignment {
-  id: string
-  title: string
-  description: string
-  professorId: string
-  studentIds: string[]
-  dueDate: string
-  createdDate: string
-  status: "draft" | "published" | "closed"
-  maxScore: number
-  attachments: Document[]
-  instructions: string
+  lastUpdate: string
   specialty: string
-  submissions: AssignmentSubmission[]
-}
-
-export interface AssignmentSubmission {
-  id: string
-  assignmentId: string
-  studentId: string
-  submittedDate: string
-  files: Document[]
-  notes: string
-  status: "submitted" | "late" | "graded" | "extension_requested"
-  grade?: number
-  feedback?: string
-  extensionRequest?: {
-    reason: string
-    requestedDate: string
-    newDueDate: string
-    status: "pending" | "approved" | "rejected"
-    professorResponse?: string
-  }
+  notes: string | null
 }
 
 // Datos de usuarios
@@ -251,8 +153,6 @@ export const patients: Patient[] = [
     address: "Calle Principal 123, Ciudad",
     allergies: "Penicilina",
     medicalHistory: "Hipertensión controlada",
-    assignedStudent: "s1",
-    assignedDate: "2025-01-15",
   },
   {
     id: "p2",
@@ -267,8 +167,6 @@ export const patients: Patient[] = [
     address: "Avenida Central 456, Ciudad",
     allergies: null,
     medicalHistory: "Diabetes tipo 2",
-    assignedStudent: "s2",
-    assignedDate: "2025-01-20",
   },
   {
     id: "p3",
@@ -283,8 +181,6 @@ export const patients: Patient[] = [
     address: "Plaza Mayor 789, Ciudad",
     allergies: "Látex",
     medicalHistory: null,
-    assignedStudent: "s3",
-    assignedDate: "2025-02-05",
   },
   {
     id: "p4",
@@ -299,8 +195,6 @@ export const patients: Patient[] = [
     address: "Calle Secundaria 321, Ciudad",
     allergies: null,
     medicalHistory: "Asma",
-    assignedStudent: null, // Sin asignar
-    assignedDate: null,
   },
   {
     id: "p5",
@@ -308,15 +202,13 @@ export const patients: Patient[] = [
     email: "paciente5@ejemplo.com",
     password: "password",
     role: "patient",
-    status: "active",
+    status: "inactive",
     createdAt: "2025-01-10",
     dob: "2010-07-25",
     phone: "555-876-5432",
     address: "Avenida Principal 654, Ciudad",
     allergies: null,
     medicalHistory: null,
-    assignedStudent: "s5",
-    assignedDate: "2025-01-10",
   },
 ]
 
@@ -324,7 +216,7 @@ export const students: Student[] = [
   {
     id: "s1",
     name: "Pedro Gómez",
-    email: "estudiante1@uleam.edu.ec",
+    email: "estudiante1@ejemplo.com",
     password: "password",
     role: "student",
     status: "active",
@@ -334,19 +226,11 @@ export const students: Student[] = [
     professorId: "pr1",
     progress: 75,
     semester: 8,
-    assignedPatients: ["p1"],
-    schedule: [
-      { day: "Lunes", startTime: "08:00", endTime: "12:00", available: true },
-      { day: "Martes", startTime: "14:00", endTime: "18:00", available: true },
-      { day: "Miércoles", startTime: "08:00", endTime: "12:00", available: true },
-      { day: "Jueves", startTime: "14:00", endTime: "18:00", available: false },
-      { day: "Viernes", startTime: "08:00", endTime: "12:00", available: true },
-    ],
   },
   {
     id: "s2",
     name: "Laura Torres",
-    email: "estudiante2@uleam.edu.ec",
+    email: "estudiante2@ejemplo.com",
     password: "password",
     role: "student",
     status: "active",
@@ -356,19 +240,11 @@ export const students: Student[] = [
     professorId: "pr2",
     progress: 60,
     semester: 7,
-    assignedPatients: ["p2"],
-    schedule: [
-      { day: "Lunes", startTime: "14:00", endTime: "18:00", available: true },
-      { day: "Martes", startTime: "08:00", endTime: "12:00", available: true },
-      { day: "Miércoles", startTime: "14:00", endTime: "18:00", available: true },
-      { day: "Jueves", startTime: "08:00", endTime: "12:00", available: true },
-      { day: "Viernes", startTime: "14:00", endTime: "18:00", available: false },
-    ],
   },
   {
     id: "s3",
     name: "Miguel Sánchez",
-    email: "estudiante3@uleam.edu.ec",
+    email: "estudiante3@ejemplo.com",
     password: "password",
     role: "student",
     status: "active",
@@ -378,19 +254,11 @@ export const students: Student[] = [
     professorId: "pr3",
     progress: 90,
     semester: 9,
-    assignedPatients: ["p3"],
-    schedule: [
-      { day: "Lunes", startTime: "08:00", endTime: "12:00", available: true },
-      { day: "Martes", startTime: "08:00", endTime: "12:00", available: false },
-      { day: "Miércoles", startTime: "14:00", endTime: "18:00", available: true },
-      { day: "Jueves", startTime: "14:00", endTime: "18:00", available: true },
-      { day: "Viernes", startTime: "08:00", endTime: "16:00", available: true },
-    ],
   },
   {
     id: "s4",
     name: "Carmen Díaz",
-    email: "estudiante4@uleam.edu.ec",
+    email: "estudiante4@ejemplo.com",
     password: "password",
     role: "student",
     status: "active",
@@ -400,19 +268,11 @@ export const students: Student[] = [
     professorId: "pr4",
     progress: 40,
     semester: 6,
-    assignedPatients: [],
-    schedule: [
-      { day: "Lunes", startTime: "14:00", endTime: "18:00", available: true },
-      { day: "Martes", startTime: "14:00", endTime: "18:00", available: true },
-      { day: "Miércoles", startTime: "08:00", endTime: "12:00", available: false },
-      { day: "Jueves", startTime: "08:00", endTime: "12:00", available: true },
-      { day: "Viernes", startTime: "14:00", endTime: "18:00", available: true },
-    ],
   },
   {
     id: "s5",
     name: "Javier Ruiz",
-    email: "estudiante5@uleam.edu.ec",
+    email: "estudiante5@ejemplo.com",
     password: "password",
     role: "student",
     status: "active",
@@ -422,14 +282,20 @@ export const students: Student[] = [
     professorId: "pr5",
     progress: 85,
     semester: 8,
-    assignedPatients: ["p5"],
-    schedule: [
-      { day: "Lunes", startTime: "08:00", endTime: "12:00", available: false },
-      { day: "Martes", startTime: "08:00", endTime: "12:00", available: true },
-      { day: "Miércoles", startTime: "08:00", endTime: "12:00", available: true },
-      { day: "Jueves", startTime: "14:00", endTime: "18:00", available: true },
-      { day: "Viernes", startTime: "08:00", endTime: "12:00", available: true },
-    ],
+  },
+  {
+    id: "s6",
+    name: "Elena Morales",
+    email: "estudiante6@ejemplo.com",
+    password: "password",
+    role: "student",
+    status: "inactive",
+    createdAt: "2024-09-01",
+    studentId: "E12350",
+    specialty: "Endodoncia",
+    professorId: "pr1",
+    progress: 70,
+    semester: 7,
   },
 ]
 
@@ -437,7 +303,7 @@ export const professors: Professor[] = [
   {
     id: "pr1",
     name: "Dr. Martínez",
-    email: "profesor1@uleam.edu.ec",
+    email: "profesor1@ejemplo.com",
     password: "password",
     role: "professor",
     status: "active",
@@ -445,19 +311,11 @@ export const professors: Professor[] = [
     specialty: "Endodoncia",
     officeHours: "Lunes y Miércoles 14:00-16:00",
     department: "Departamento de Endodoncia",
-    students: ["s1"],
-    gradingCriteria: {
-      technique: 30,
-      knowledge: 25,
-      professionalism: 20,
-      documentation: 15,
-      patientCare: 10,
-    },
   },
   {
     id: "pr2",
     name: "Dra. Rodríguez",
-    email: "profesor2@uleam.edu.ec",
+    email: "profesor2@ejemplo.com",
     password: "password",
     role: "professor",
     status: "active",
@@ -465,19 +323,11 @@ export const professors: Professor[] = [
     specialty: "Ortodoncia",
     officeHours: "Martes y Jueves 10:00-12:00",
     department: "Departamento de Ortodoncia",
-    students: ["s2"],
-    gradingCriteria: {
-      technique: 35,
-      knowledge: 20,
-      professionalism: 15,
-      documentation: 20,
-      patientCare: 10,
-    },
   },
   {
     id: "pr3",
     name: "Dr. Sánchez",
-    email: "profesor3@uleam.edu.ec",
+    email: "profesor3@ejemplo.com",
     password: "password",
     role: "professor",
     status: "active",
@@ -485,19 +335,11 @@ export const professors: Professor[] = [
     specialty: "Periodoncia",
     officeHours: "Miércoles y Viernes 15:00-17:00",
     department: "Departamento de Periodoncia",
-    students: ["s3"],
-    gradingCriteria: {
-      technique: 25,
-      knowledge: 30,
-      professionalism: 20,
-      documentation: 15,
-      patientCare: 10,
-    },
   },
   {
     id: "pr4",
     name: "Dra. López",
-    email: "profesor4@uleam.edu.ec",
+    email: "profesor4@ejemplo.com",
     password: "password",
     role: "professor",
     status: "active",
@@ -505,19 +347,11 @@ export const professors: Professor[] = [
     specialty: "Cirugía Oral",
     officeHours: "Lunes y Jueves 09:00-11:00",
     department: "Departamento de Cirugía Oral",
-    students: ["s4"],
-    gradingCriteria: {
-      technique: 40,
-      knowledge: 20,
-      professionalism: 15,
-      documentation: 15,
-      patientCare: 10,
-    },
   },
   {
     id: "pr5",
     name: "Dr. Fernández",
-    email: "profesor5@uleam.edu.ec",
+    email: "profesor5@ejemplo.com",
     password: "password",
     role: "professor",
     status: "active",
@@ -525,18 +359,10 @@ export const professors: Professor[] = [
     specialty: "Odontopediatría",
     officeHours: "Martes y Viernes 13:00-15:00",
     department: "Departamento de Odontopediatría",
-    students: ["s5"],
-    gradingCriteria: {
-      technique: 25,
-      knowledge: 25,
-      professionalism: 25,
-      documentation: 15,
-      patientCare: 10,
-    },
   },
 ]
 
-export const admins: User[] = [
+export const admins: Admin[] = [
   {
     id: "a1",
     name: "Admin Principal",
@@ -550,47 +376,8 @@ export const admins: User[] = [
   },
 ]
 
-export const secretaries: Secretary[] = [
-  {
-    id: "sec1",
-    name: "Carmen Vásquez",
-    email: "secretaria1@uleam.edu.ec",
-    password: "password",
-    role: "secretary",
-    status: "active",
-    createdAt: "2023-01-10",
-    department: "Clínica Dental",
-    managedSpecialties: ["Endodoncia", "Ortodoncia", "Periodoncia"],
-    permissions: [
-      "assign_patients",
-      "view_schedules",
-      "manage_appointments",
-      "view_student_schedules",
-      "coordinate_assignments",
-    ],
-  },
-  {
-    id: "sec2",
-    name: "Rosa Mendoza",
-    email: "secretaria2@uleam.edu.ec",
-    password: "password",
-    role: "secretary",
-    status: "active",
-    createdAt: "2023-02-15",
-    department: "Clínica Dental",
-    managedSpecialties: ["Cirugía Oral", "Odontopediatría"],
-    permissions: [
-      "assign_patients",
-      "view_schedules",
-      "manage_appointments",
-      "view_student_schedules",
-      "coordinate_assignments",
-    ],
-  },
-]
-
 // Unir todos los usuarios
-export const users: User[] = [...patients, ...students, ...professors, ...admins, ...secretaries]
+export const users: User[] = [...patients, ...students, ...professors, ...admins]
 
 // Datos de citas
 export const appointments: Appointment[] = [
@@ -1253,198 +1040,78 @@ export const clinicalCases: ClinicalCase[] = [
     patientId: "p1",
     studentId: "s1",
     professorId: "pr1",
-    title: "Tratamiento de Conducto en Molar Superior",
-    description: "Caso clínico de tratamiento de conducto en molar superior derecho",
-    specialty: "Endodoncia",
+    treatment: "Tratamiento de conducto en molar superior",
     startDate: "2025-05-10",
     status: "in-progress",
     progress: 60,
-    sessions: [
-      {
-        id: "ses1",
-        caseId: "cc1",
-        date: "2025-05-15",
-        duration: 60,
-        procedures: ["Diagnóstico", "Plan de Tratamiento"],
-        notes: "Paciente presenta dolor agudo a la percusión y pruebas térmicas positivas.",
-        complications: null,
-        nextSteps: "Realizar tratamiento de conducto",
-        attachments: [],
-        supervisorNotes: null,
-        grade: null,
-      },
-    ],
-    treatmentPlan: "Tratamiento de conducto en molar superior derecho",
-    objectives: ["Diagnóstico preciso", "Plan de tratamiento efectivo"],
-    complications: null,
-    outcome: null,
-    learningPoints: ["Importancia del diagnóstico", "Técnicas de obturación"],
-    attachments: [],
+    lastUpdate: "2025-05-18",
+    specialty: "Endodoncia",
+    notes: "Paciente presenta dolor agudo a la percusión y pruebas térmicas positivas.",
   },
   {
     id: "cc2",
     patientId: "p2",
     studentId: "s2",
     professorId: "pr2",
-    title: "Tratamiento Ortodóntico con Brackets",
-    description: "Caso clínico de tratamiento ortodóntico con brackets convencionales",
-    specialty: "Ortodoncia",
+    treatment: "Tratamiento ortodóntico con brackets",
     startDate: "2025-05-05",
     status: "in-progress",
     progress: 40,
-    sessions: [
-      {
-        id: "ses2",
-        caseId: "cc2",
-        date: "2025-05-10",
-        duration: 45,
-        procedures: ["Análisis de Radiografías", "Diagnóstico Diferencial"],
-        notes: "Paciente presenta maloclusión clase II.",
-        complications: null,
-        nextSteps: "Iniciar tratamiento con brackets",
-        attachments: [],
-        supervisorNotes: null,
-        grade: null,
-      },
-    ],
-    treatmentPlan: "Tratamiento ortodóntico con brackets convencionales",
-    objectives: ["Análisis radiográfico", "Plan de tratamiento"],
-    complications: null,
-    outcome: null,
-    learningPoints: ["Importancia de la radiografía", "Técnicas de brackets"],
-    attachments: [],
+    lastUpdate: "2025-05-15",
+    specialty: "Ortodoncia",
+    notes: "Paciente presenta maloclusión clase II. Se inicia tratamiento con brackets convencionales.",
   },
   {
     id: "cc3",
     patientId: "p3",
     studentId: "s3",
     professorId: "pr3",
-    title: "Tratamiento Periodontal",
-    description: "Caso clínico de tratamiento periodontal",
-    specialty: "Periodoncia",
+    treatment: "Tratamiento periodontal",
     startDate: "2025-05-01",
     status: "in-progress",
     progress: 70,
-    sessions: [
-      {
-        id: "ses3",
-        caseId: "cc3",
-        date: "2025-05-20",
-        duration: 60,
-        procedures: ["Técnica de Sondaje", "Raspado y Alisado Radicular"],
-        notes: "Paciente presenta gingivitis generalizada.",
-        complications: null,
-        nextSteps: "Realizar limpieza profunda",
-        attachments: [],
-        supervisorNotes: null,
-        grade: null,
-      },
-    ],
-    treatmentPlan: "Limpieza profunda y terapia periodontal",
-    objectives: ["Técnica de sondaje", "Raspado y alisado radicular"],
-    complications: null,
-    outcome: null,
-    learningPoints: ["Importancia del sondaje", "Técnicas de limpieza"],
-    attachments: [],
+    lastUpdate: "2025-05-24",
+    specialty: "Periodoncia",
+    notes: "Paciente presenta gingivitis generalizada. Se realiza limpieza profunda y se dan instrucciones de higiene.",
   },
   {
     id: "cc4",
     patientId: "p4",
     studentId: "s4",
     professorId: "pr4",
-    title: "Extracción de Terceros Molares",
-    description: "Caso clínico de extracción de terceros molares inferiores impactados",
-    specialty: "Cirugía Oral",
+    treatment: "Extracción de terceros molares",
     startDate: "2025-05-12",
     status: "in-progress",
     progress: 30,
-    sessions: [
-      {
-        id: "ses4",
-        caseId: "cc4",
-        date: "2025-05-17",
-        duration: 90,
-        procedures: ["Planificación Quirúrgica", "Técnica de Incisión"],
-        notes: "Paciente presenta terceros molares impactados.",
-        complications: null,
-        nextSteps: "Realizar extracción quirúrgica",
-        attachments: [],
-        supervisorNotes: null,
-        grade: null,
-      },
-    ],
-    treatmentPlan: "Extracción de terceros molares inferiores impactados",
-    objectives: ["Planificación quirúrgica", "Técnica de incisión"],
-    complications: null,
-    outcome: null,
-    learningPoints: ["Importancia de la planificación quirúrgica", "Técnicas de incisión"],
-    attachments: [],
+    lastUpdate: "2025-05-17",
+    specialty: "Cirugía Oral",
+    notes: "Paciente presenta terceros molares impactados. Se planifica extracción quirúrgica.",
   },
   {
     id: "cc5",
     patientId: "p5",
     studentId: "s5",
     professorId: "pr5",
-    title: "Restauración de Muelas Deciduos",
-    description: "Caso clínico de restauración de molares deciduos",
-    specialty: "Odontopediatría",
+    treatment: "Restauración de molares deciduos",
     startDate: "2025-05-08",
     status: "in-progress",
     progress: 80,
-    sessions: [
-      {
-        id: "ses5",
-        caseId: "cc5",
-        date: "2025-05-26",
-        duration: 60,
-        procedures: ["Comunicación con el Paciente", "Manejo de Conducta"],
-        notes: "Paciente presenta caries en molares deciduos.",
-        complications: null,
-        nextSteps: "Realizar restauración con ionómero de vidrio",
-        attachments: [],
-        supervisorNotes: null,
-        grade: null,
-      },
-    ],
-    treatmentPlan: "Restauración de molares deciduos con ionómero de vidrio",
-    objectives: ["Comunicación con el paciente", "Manejo de conducta"],
-    complications: null,
-    outcome: null,
-    learningPoints: ["Importancia de la comunicación", "Técnicas de restauración"],
-    attachments: [],
+    lastUpdate: "2025-05-26",
+    specialty: "Odontopediatría",
+    notes: "Paciente presenta caries en molares deciduos. Se realiza restauración con ionómero de vidrio.",
   },
   {
     id: "cc6",
     patientId: "p1",
     studentId: "s6",
     professorId: "pr1",
-    title: "Retratamiento de Conducto en Premolar Inferior",
-    description: "Caso clínico de retratamiento de conducto en premolar inferior",
-    specialty: "Endodoncia",
+    treatment: "Retratamiento de conducto en premolar inferior",
     startDate: "2025-04-15",
     status: "completed",
     progress: 100,
-    sessions: [
-      {
-        id: "ses6",
-        caseId: "cc6",
-        date: "2025-05-01",
-        duration: 60,
-        procedures: ["Diagnóstico", "Plan de Tratamiento"],
-        notes: "Paciente presentaba tratamiento de conducto previo con filtración.",
-        complications: null,
-        nextSteps: "Finalizar tratamiento",
-        attachments: [],
-        supervisorNotes: null,
-        grade: null,
-      },
-    ],
-    treatmentPlan: "Retratamiento de conducto en premolar inferior",
-    objectives: ["Diagnóstico preciso", "Plan de tratamiento efectivo"],
-    complications: null,
-    outcome: "Tratamiento exitoso",
-    learningPoints: ["Importancia del diagnóstico", "Técnicas de retratamiento"],
-    attachments: [],
+    lastUpdate: "2025-05-01",
+    specialty: "Endodoncia",
+    notes: "Paciente presentaba tratamiento de conducto previo con filtración. Se realizó retratamiento exitoso.",
   },
 ]
 
@@ -1565,68 +1232,6 @@ export const mockPatientData = {
   },
 }
 
-// Datos de tareas con entregas
-export const assignments: Assignment[] = [
-  {
-    id: "a1",
-    title: "Caso Clínico: Tratamiento de Endodoncia Complejo",
-    description: "Documentar un caso completo de endodoncia con complicaciones",
-    professorId: "pr1",
-    studentIds: ["s1"],
-    dueDate: "2025-05-30",
-    createdDate: "2025-05-15",
-    status: "published",
-    maxScore: 100,
-    attachments: [],
-    instructions: "El caso debe incluir historia clínica completa, radiografías y plan de tratamiento",
-    specialty: "Endodoncia",
-    submissions: [
-      {
-        id: "sub1",
-        assignmentId: "a1",
-        studentId: "s1",
-        submittedDate: "2025-05-28",
-        files: [],
-        notes: "Caso completado según las especificaciones",
-        status: "submitted",
-        grade: 85,
-        feedback: "Buen trabajo, pero falta más detalle en el diagnóstico diferencial",
-      },
-    ],
-  },
-  {
-    id: "a2",
-    title: "Análisis Cefalométrico",
-    description: "Realizar análisis cefalométrico completo",
-    professorId: "pr2",
-    studentIds: ["s2"],
-    dueDate: "2025-06-15",
-    createdDate: "2025-05-20",
-    status: "published",
-    maxScore: 80,
-    attachments: [],
-    instructions: "Incluir mediciones y plan de tratamiento ortodóntico",
-    specialty: "Ortodoncia",
-    submissions: [
-      {
-        id: "sub2",
-        assignmentId: "a2",
-        studentId: "s2",
-        submittedDate: "2025-06-10",
-        files: [],
-        notes: "Análisis completado con todas las mediciones",
-        status: "extension_requested",
-        extensionRequest: {
-          reason: "Tuve problemas con el software de análisis cefalométrico",
-          requestedDate: "2025-06-14",
-          newDueDate: "2025-06-20",
-          status: "pending",
-        },
-      },
-    ],
-  },
-]
-
 // Exportar todos los datos
 export const mockData = {
   users,
@@ -1634,7 +1239,6 @@ export const mockData = {
   students,
   professors,
   admins,
-  secretaries,
   appointments,
   medicalRecords,
   documents,
@@ -1644,7 +1248,6 @@ export const mockData = {
   clinicalCases,
   specialties,
   mockPatientData,
-  assignments,
 }
 
 export default mockData

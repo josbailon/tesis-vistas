@@ -1,550 +1,399 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
+import { useState } from "react"
+import { useAuth } from "@/contexts/auth-context"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import {
+  Users,
   Search,
   Plus,
-  Eye,
-  Edit,
   Calendar,
+  FileText,
   Phone,
   Mail,
   MapPin,
+  Clock,
+  CheckCircle,
+  AlertCircle,
   User,
-  Filter,
-  Download,
-  Upload,
-  Stethoscope,
 } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { LoadingSpinner } from "@/components/loading-spinner"
 
-// Mock patient data
+// Mock data for patients
 const mockPatients = [
   {
-    id: "pat1",
+    id: "1",
     name: "Ana García",
     email: "ana.garcia@email.com",
-    phone: "+593 99 123 4567",
-    address: "Av. 4 de Noviembre, Manta",
-    dob: "1995-03-15",
-    gender: "Femenino",
-    status: "active",
+    phone: "0987654321",
+    age: 28,
+    address: "Av. Principal 123, Manta",
     lastVisit: "2024-01-15",
     nextAppointment: "2024-01-25",
-    specialty: "Endodoncia",
-    student: "Juan Pérez",
-    professor: "Dr. Martínez",
-    treatments: 3,
-    avatar: "/placeholder.svg",
-  },
-  {
-    id: "pat2",
-    name: "Carlos López",
-    email: "carlos.lopez@email.com",
-    phone: "+593 99 234 5678",
-    address: "Calle 13 de Abril, Manta",
-    dob: "1988-07-22",
-    gender: "Masculino",
     status: "active",
-    lastVisit: "2024-01-10",
-    nextAppointment: "2024-01-28",
-    specialty: "Ortodoncia",
-    student: "María López",
-    professor: "Dra. Rodríguez",
-    treatments: 5,
-    avatar: "/placeholder.svg",
+    treatments: ["Limpieza", "Ortodoncia"],
+    emergencyContact: "María García - 0987654322",
   },
   {
-    id: "pat3",
-    name: "María Fernández",
-    email: "maria.fernandez@email.com",
-    phone: "+593 99 345 6789",
-    address: "Av. Malecón, Manta",
-    dob: "1992-11-08",
-    gender: "Femenino",
-    status: "inactive",
-    lastVisit: "2023-12-20",
+    id: "2",
+    name: "Carlos Mendoza",
+    email: "carlos.mendoza@email.com",
+    phone: "0987654323",
+    age: 35,
+    address: "Calle 24 de Mayo 456, Manta",
+    lastVisit: "2024-01-10",
+    nextAppointment: "2024-01-30",
+    status: "active",
+    treatments: ["Endodoncia", "Corona"],
+    emergencyContact: "Rosa Mendoza - 0987654324",
+  },
+  {
+    id: "3",
+    name: "María López",
+    email: "maria.lopez@email.com",
+    phone: "0987654325",
+    age: 42,
+    address: "Av. 4 de Noviembre 789, Manta",
+    lastVisit: "2024-01-08",
     nextAppointment: null,
-    specialty: "Periodoncia",
-    student: "Carlos Rodríguez",
-    professor: "Dr. Sánchez",
-    treatments: 2,
-    avatar: "/placeholder.svg",
+    status: "inactive",
+    treatments: ["Limpieza", "Extracción"],
+    emergencyContact: "Juan López - 0987654326",
+  },
+  {
+    id: "4",
+    name: "Roberto Silva",
+    email: "roberto.silva@email.com",
+    phone: "0987654327",
+    age: 29,
+    address: "Calle Bolívar 321, Manta",
+    lastVisit: "2024-01-12",
+    nextAppointment: "2024-01-28",
+    status: "active",
+    treatments: ["Ortodoncia", "Blanqueamiento"],
+    emergencyContact: "Elena Silva - 0987654328",
   },
 ]
 
 export default function PatientsPage() {
-  const { toast } = useToast()
-  const [patients, setPatients] = useState(mockPatients)
+  const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [specialtyFilter, setSpecialtyFilter] = useState("all")
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAddPatientOpen, setIsAddPatientOpen] = useState(false)
+  const [selectedPatient, setSelectedPatient] = useState<any>(null)
 
-  useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => setIsLoading(false), 1000)
-    return () => clearTimeout(timer)
-  }, [])
+  // Verify user is student
+  if (!user || user.role !== "student") {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <div className="text-center">
+          <AlertCircle className="h-12 w-12 text-error-500 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-primary-800 mb-2">Acceso Denegado</h2>
+          <p className="text-primary-600">Solo los estudiantes pueden acceder a esta página.</p>
+        </div>
+      </div>
+    )
+  }
 
-  const filteredPatients = patients.filter((patient) => {
-    const matchesSearch =
+  const filteredPatients = mockPatients.filter(
+    (patient) =>
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm)
+      patient.phone.includes(searchTerm),
+  )
 
-    const matchesStatus = statusFilter === "all" || patient.status === statusFilter
-    const matchesSpecialty = specialtyFilter === "all" || patient.specialty === specialtyFilter
-
-    return matchesSearch && matchesStatus && matchesSpecialty
-  })
-
-  const handleAddPatient = () => {
-    setIsAddPatientOpen(true)
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "active":
+        return "bg-success-100 text-success-700 border-success-300"
+      case "inactive":
+        return "bg-neutral-100 text-neutral-700 border-neutral-300"
+      default:
+        return "bg-info-100 text-info-700 border-info-300"
+    }
   }
 
-  const handleEditPatient = (patientId: string) => {
-    toast({
-      title: "Editar Paciente",
-      description: `Editando paciente ${patientId}`,
-    })
-  }
-
-  const handleViewPatient = (patientId: string) => {
-    // Navigate to patient detail page
-    window.location.href = `/dashboard/patient-view/${patientId}`
-  }
-
-  const handleScheduleAppointment = (patientId: string) => {
-    toast({
-      title: "Programar Cita",
-      description: `Programando cita para paciente ${patientId}`,
-    })
-  }
-
-  const handleExportData = () => {
-    toast({
-      title: "Exportando Datos",
-      description: "Los datos de pacientes se están exportando...",
-    })
-  }
-
-  const handleImportData = () => {
-    toast({
-      title: "Importar Datos",
-      description: "Función de importación disponible próximamente",
-    })
-  }
-
-  if (isLoading) {
-    return <LoadingSpinner message="Cargando pacientes..." />
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "active":
+        return "Activo"
+      case "inactive":
+        return "Inactivo"
+      default:
+        return "Desconocido"
+    }
   }
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Gestión de Pacientes</h1>
-          <p className="text-muted-foreground">Administra la información de todos los pacientes de la clínica</p>
+          <h1 className="text-3xl font-bold text-primary-800">Gestión de Pacientes</h1>
+          <p className="text-primary-600">Estudiante: {user.name}</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleImportData}>
-            <Upload className="h-4 w-4 mr-2" />
-            Importar
-          </Button>
-          <Button variant="outline" onClick={handleExportData}>
-            <Download className="h-4 w-4 mr-2" />
-            Exportar
-          </Button>
-          <Dialog open={isAddPatientOpen} onOpenChange={setIsAddPatientOpen}>
-            <DialogTrigger asChild>
-              <Button onClick={handleAddPatient}>
-                <Plus className="h-4 w-4 mr-2" />
-                Nuevo Paciente
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="max-w-2xl">
-              <DialogHeader>
-                <DialogTitle>Agregar Nuevo Paciente</DialogTitle>
-                <DialogDescription>Completa la información del nuevo paciente</DialogDescription>
-              </DialogHeader>
-              <PatientForm onClose={() => setIsAddPatientOpen(false)} />
-            </DialogContent>
-          </Dialog>
-        </div>
+        <Button className="bg-primary-600 hover:bg-primary-700 text-white shadow-soft">
+          <Plus className="h-4 w-4 mr-2" />
+          Nuevo Paciente
+        </Button>
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        <Card className="border-primary-200 hover:shadow-soft transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Pacientes</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-primary-800">Total Pacientes</CardTitle>
+            <Users className="h-4 w-4 text-primary-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{patients.length}</div>
-            <p className="text-xs text-muted-foreground">+2 este mes</p>
+            <div className="text-2xl font-bold text-primary-700">{mockPatients.length}</div>
+            <p className="text-xs text-primary-600">Pacientes asignados</p>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card className="border-success-200 hover:shadow-soft transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pacientes Activos</CardTitle>
-            <User className="h-4 w-4 text-green-500" />
+            <CardTitle className="text-sm font-medium text-success-800">Pacientes Activos</CardTitle>
+            <CheckCircle className="h-4 w-4 text-success-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{patients.filter((p) => p.status === "active").length}</div>
-            <p className="text-xs text-muted-foreground">
-              {Math.round((patients.filter((p) => p.status === "active").length / patients.length) * 100)}% del total
-            </p>
+            <div className="text-2xl font-bold text-success-700">
+              {mockPatients.filter((p) => p.status === "active").length}
+            </div>
+            <p className="text-xs text-success-600">En tratamiento</p>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card className="border-info-200 hover:shadow-soft transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Citas Hoy</CardTitle>
-            <Calendar className="h-4 w-4 text-blue-500" />
+            <CardTitle className="text-sm font-medium text-info-800">Citas Pendientes</CardTitle>
+            <Calendar className="h-4 w-4 text-info-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">8</div>
-            <p className="text-xs text-muted-foreground">3 pendientes</p>
+            <div className="text-2xl font-bold text-info-700">
+              {mockPatients.filter((p) => p.nextAppointment).length}
+            </div>
+            <p className="text-xs text-info-600">Próximas citas</p>
           </CardContent>
         </Card>
-        <Card>
+
+        <Card className="border-warning-200 hover:shadow-soft transition-shadow">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Tratamientos Activos</CardTitle>
-            <Stethoscope className="h-4 w-4 text-purple-500" />
+            <CardTitle className="text-sm font-medium text-warning-800">Tratamientos</CardTitle>
+            <FileText className="h-4 w-4 text-warning-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{patients.reduce((sum, p) => sum + p.treatments, 0)}</div>
-            <p className="text-xs text-muted-foreground">En progreso</p>
+            <div className="text-2xl font-bold text-warning-700">
+              {mockPatients.reduce((acc, p) => acc + p.treatments.length, 0)}
+            </div>
+            <p className="text-xs text-warning-600">En progreso</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
-            <div className="flex items-center space-x-2 flex-1">
-              <Search className="h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Buscar pacientes por nombre, email o teléfono..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="max-w-sm"
-              />
-            </div>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Filter className="h-4 w-4 text-muted-foreground" />
-                <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    <SelectItem value="active">Activos</SelectItem>
-                    <SelectItem value="inactive">Inactivos</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
-                  <SelectTrigger className="w-[150px]">
-                    <SelectValue placeholder="Especialidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    <SelectItem value="Endodoncia">Endodoncia</SelectItem>
-                    <SelectItem value="Ortodoncia">Ortodoncia</SelectItem>
-                    <SelectItem value="Periodoncia">Periodoncia</SelectItem>
-                    <SelectItem value="Cirugía Oral">Cirugía Oral</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
+      {/* Search and Filters */}
+      <Card className="border-primary-200">
+        <CardHeader>
+          <CardTitle className="text-primary-800">Buscar Pacientes</CardTitle>
+          <CardDescription className="text-primary-600">
+            Encuentra pacientes por nombre, email o teléfono
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-2">
+            <Search className="h-4 w-4 text-primary-600" />
+            <Input
+              placeholder="Buscar pacientes..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="border-primary-200 focus:border-primary-500 focus:ring-primary-500"
+            />
           </div>
         </CardContent>
       </Card>
 
-      {/* Patients List */}
-      <Tabs defaultValue="grid" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="grid">Vista de Tarjetas</TabsTrigger>
-          <TabsTrigger value="table">Vista de Tabla</TabsTrigger>
-        </TabsList>
-
-        <TabsContent value="grid" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-            {filteredPatients.map((patient) => (
-              <Card key={patient.id} className="hover:shadow-md transition-shadow">
-                <CardHeader className="pb-3">
-                  <div className="flex items-start justify-between">
+      {/* Patients Table */}
+      <Card className="border-primary-200">
+        <CardHeader>
+          <CardTitle className="text-primary-800">Lista de Pacientes</CardTitle>
+          <CardDescription className="text-primary-600">
+            {filteredPatients.length} paciente(s) encontrado(s)
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="text-primary-800">Paciente</TableHead>
+                <TableHead className="text-primary-800">Contacto</TableHead>
+                <TableHead className="text-primary-800">Estado</TableHead>
+                <TableHead className="text-primary-800">Última Visita</TableHead>
+                <TableHead className="text-primary-800">Próxima Cita</TableHead>
+                <TableHead className="text-primary-800">Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredPatients.map((patient) => (
+                <TableRow key={patient.id} className="hover:bg-primary-50">
+                  <TableCell>
                     <div className="flex items-center space-x-3">
-                      <Avatar className="h-12 w-12">
-                        <AvatarImage src={patient.avatar || "/placeholder.svg"} alt={patient.name} />
-                        <AvatarFallback>
-                          {patient.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
+                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                        <User className="h-4 w-4 text-primary-600" />
+                      </div>
                       <div>
-                        <CardTitle className="text-lg">{patient.name}</CardTitle>
-                        <CardDescription>{patient.specialty}</CardDescription>
+                        <div className="font-medium text-primary-800">{patient.name}</div>
+                        <div className="text-sm text-primary-600">{patient.age} años</div>
                       </div>
                     </div>
-                    <Badge
-                      variant={patient.status === "active" ? "default" : "secondary"}
-                      className={patient.status === "active" ? "bg-green-100 text-green-800" : ""}
-                    >
-                      {patient.status === "active" ? "Activo" : "Inactivo"}
-                    </Badge>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-3">
-                  <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-muted-foreground" />
-                      <span className="truncate">{patient.email}</span>
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <div className="flex items-center text-sm text-primary-700">
+                        <Mail className="h-3 w-3 mr-1" />
+                        {patient.email}
+                      </div>
+                      <div className="flex items-center text-sm text-primary-700">
+                        <Phone className="h-3 w-3 mr-1" />
+                        {patient.phone}
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-muted-foreground" />
-                      <span>{patient.phone}</span>
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(patient.status)}>{getStatusText(patient.status)}</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center text-sm text-primary-700">
+                      <Clock className="h-3 w-3 mr-1" />
+                      {patient.lastVisit}
                     </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-muted-foreground" />
-                      <span className="truncate">{patient.address}</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-2 border-t">
-                    <div className="flex justify-between text-xs text-muted-foreground mb-2">
-                      <span>Última visita: {patient.lastVisit}</span>
-                      <span>{patient.treatments} tratamientos</span>
-                    </div>
-                    {patient.nextAppointment && (
-                      <div className="text-xs text-blue-600">Próxima cita: {patient.nextAppointment}</div>
+                  </TableCell>
+                  <TableCell>
+                    {patient.nextAppointment ? (
+                      <div className="flex items-center text-sm text-primary-700">
+                        <Calendar className="h-3 w-3 mr-1" />
+                        {patient.nextAppointment}
+                      </div>
+                    ) : (
+                      <span className="text-sm text-neutral-500">Sin cita</span>
                     )}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setSelectedPatient(patient)}
+                        className="border-primary-200 text-primary-700 hover:bg-primary-50"
+                      >
+                        Ver Detalles
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-primary-200 text-primary-700 hover:bg-primary-50"
+                      >
+                        <Calendar className="h-3 w-3 mr-1" />
+                        Cita
+                      </Button>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* Patient Details Modal */}
+      {selectedPatient && (
+        <Card className="border-primary-200 bg-primary-50">
+          <CardHeader>
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-primary-800">Detalles del Paciente</CardTitle>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setSelectedPatient(null)}
+                className="border-primary-200 text-primary-700 hover:bg-primary-100"
+              >
+                Cerrar
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <Tabs defaultValue="info" className="w-full">
+              <TabsList className="grid w-full grid-cols-3 bg-primary-100">
+                <TabsTrigger value="info" className="data-[state=active]:bg-primary-600 data-[state=active]:text-white">
+                  Información
+                </TabsTrigger>
+                <TabsTrigger
+                  value="treatments"
+                  className="data-[state=active]:bg-primary-600 data-[state=active]:text-white"
+                >
+                  Tratamientos
+                </TabsTrigger>
+                <TabsTrigger
+                  value="history"
+                  className="data-[state=active]:bg-primary-600 data-[state=active]:text-white"
+                >
+                  Historial
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="info" className="space-y-4">
+                <div className="grid gap-4 md:grid-cols-2">
+                  <div>
+                    <h4 className="font-semibold text-primary-800 mb-2">Información Personal</h4>
+                    <div className="space-y-2 text-sm">
+                      <div className="flex items-center">
+                        <User className="h-4 w-4 mr-2 text-primary-600" />
+                        <span className="text-primary-700">{selectedPatient.name}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Mail className="h-4 w-4 mr-2 text-primary-600" />
+                        <span className="text-primary-700">{selectedPatient.email}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <Phone className="h-4 w-4 mr-2 text-primary-600" />
+                        <span className="text-primary-700">{selectedPatient.phone}</span>
+                      </div>
+                      <div className="flex items-center">
+                        <MapPin className="h-4 w-4 mr-2 text-primary-600" />
+                        <span className="text-primary-700">{selectedPatient.address}</span>
+                      </div>
+                    </div>
                   </div>
-
-                  <div className="flex justify-between gap-2 pt-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleViewPatient(patient.id)}
-                      className="flex-1"
-                    >
-                      <Eye className="h-4 w-4 mr-1" />
-                      Ver
-                    </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleEditPatient(patient.id)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button size="sm" onClick={() => handleScheduleAppointment(patient.id)}>
-                      <Calendar className="h-4 w-4" />
-                    </Button>
+                  <div>
+                    <h4 className="font-semibold text-primary-800 mb-2">Contacto de Emergencia</h4>
+                    <div className="text-sm text-primary-700">{selectedPatient.emergencyContact}</div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
+                </div>
+              </TabsContent>
 
-        <TabsContent value="table" className="space-y-4">
-          <Card>
-            <CardContent className="p-0">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="border-b">
-                    <tr className="text-left">
-                      <th className="p-4 font-medium">Paciente</th>
-                      <th className="p-4 font-medium">Contacto</th>
-                      <th className="p-4 font-medium">Especialidad</th>
-                      <th className="p-4 font-medium">Estado</th>
-                      <th className="p-4 font-medium">Última Visita</th>
-                      <th className="p-4 font-medium">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredPatients.map((patient) => (
-                      <tr key={patient.id} className="border-b hover:bg-muted/50">
-                        <td className="p-4">
-                          <div className="flex items-center space-x-3">
-                            <Avatar className="h-8 w-8">
-                              <AvatarImage src={patient.avatar || "/placeholder.svg"} alt={patient.name} />
-                              <AvatarFallback>
-                                {patient.name
-                                  .split(" ")
-                                  .map((n) => n[0])
-                                  .join("")}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <div className="font-medium">{patient.name}</div>
-                              <div className="text-sm text-muted-foreground">{patient.gender}</div>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="text-sm">
-                            <div>{patient.email}</div>
-                            <div className="text-muted-foreground">{patient.phone}</div>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <Badge variant="outline">{patient.specialty}</Badge>
-                        </td>
-                        <td className="p-4">
-                          <Badge
-                            variant={patient.status === "active" ? "default" : "secondary"}
-                            className={patient.status === "active" ? "bg-green-100 text-green-800" : ""}
-                          >
-                            {patient.status === "active" ? "Activo" : "Inactivo"}
-                          </Badge>
-                        </td>
-                        <td className="p-4 text-sm">{patient.lastVisit}</td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <Button variant="ghost" size="sm" onClick={() => handleViewPatient(patient.id)}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleEditPatient(patient.id)}>
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button variant="ghost" size="sm" onClick={() => handleScheduleAppointment(patient.id)}>
-                              <Calendar className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </CardContent>
-          </Card>
-        </TabsContent>
-      </Tabs>
+              <TabsContent value="treatments" className="space-y-4">
+                <h4 className="font-semibold text-primary-800">Tratamientos Actuales</h4>
+                <div className="flex flex-wrap gap-2">
+                  {selectedPatient.treatments.map((treatment: string, index: number) => (
+                    <Badge key={index} className="bg-primary-100 text-primary-800 border-primary-300">
+                      {treatment}
+                    </Badge>
+                  ))}
+                </div>
+              </TabsContent>
 
-      {filteredPatients.length === 0 && (
-        <Card>
-          <CardContent className="text-center py-8">
-            <User className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-            <h3 className="text-lg font-medium mb-2">No se encontraron pacientes</h3>
-            <p className="text-muted-foreground mb-4">No hay pacientes que coincidan con los filtros seleccionados.</p>
-            <Button
-              onClick={() => {
-                setSearchTerm("")
-                setStatusFilter("all")
-                setSpecialtyFilter("all")
-              }}
-            >
-              Limpiar Filtros
-            </Button>
+              <TabsContent value="history" className="space-y-4">
+                <h4 className="font-semibold text-primary-800">Historial de Visitas</h4>
+                <div className="text-sm text-primary-700">
+                  <p>Última visita: {selectedPatient.lastVisit}</p>
+                  {selectedPatient.nextAppointment && <p>Próxima cita: {selectedPatient.nextAppointment}</p>}
+                </div>
+              </TabsContent>
+            </Tabs>
           </CardContent>
         </Card>
       )}
     </div>
-  )
-}
-
-// Patient Form Component
-function PatientForm({ onClose }: { onClose: () => void }) {
-  const { toast } = useToast()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-
-    try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1500))
-
-      toast({
-        title: "¡Éxito!",
-        description: "Paciente agregado correctamente",
-      })
-
-      onClose()
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo agregar el paciente",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="grid grid-cols-2 gap-4">
-        <div>
-          <label className="text-sm font-medium">Nombre Completo</label>
-          <Input placeholder="Nombre del paciente" required />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Teléfono</label>
-          <Input placeholder="Número de teléfono" />
-        </div>
-        <div className="col-span-2">
-          <label className="text-sm font-medium">Email</label>
-          <Input type="email" placeholder="correo@ejemplo.com" />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Fecha de Nacimiento</label>
-          <Input type="date" />
-        </div>
-        <div>
-          <label className="text-sm font-medium">Género</label>
-          <Select>
-            <SelectTrigger>
-              <SelectValue placeholder="Seleccionar" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="masculino">Masculino</SelectItem>
-              <SelectItem value="femenino">Femenino</SelectItem>
-              <SelectItem value="otro">Otro</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-        <div className="col-span-2">
-          <label className="text-sm font-medium">Dirección</label>
-          <Input placeholder="Dirección completa" />
-        </div>
-      </div>
-
-      <div className="flex justify-end gap-2 pt-4">
-        <Button type="button" variant="outline" onClick={onClose}>
-          Cancelar
-        </Button>
-        <Button type="submit" disabled={isSubmitting}>
-          {isSubmitting ? "Guardando..." : "Guardar Paciente"}
-        </Button>
-      </div>
-    </form>
   )
 }

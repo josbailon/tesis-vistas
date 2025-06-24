@@ -1,364 +1,157 @@
-"use client"
+import { LayoutDashboard, Users, FileText, Settings, Calendar, GraduationCap } from "lucide-react"
 
-import { useState } from "react"
-import Link from "next/link"
-import { usePathname } from "next/navigation"
-import {
-  LayoutDashboard,
-  Users,
-  FileText,
-  Settings,
-  Calendar,
-  GraduationCap,
-  Stethoscope,
-  UserCheck,
-  ClipboardList,
-  BookOpen,
-  Activity,
-  Shield,
-  UserCog,
-  CalendarCheck,
-  Bell,
-  UserPlus,
-  Clock,
-  Upload,
-  MessageSquare,
-  SmileIcon as Tooth,
-} from "lucide-react"
-import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { Menu } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
-import { UleamBranding } from "@/components/uleam-branding"
+import type { MainNavItem, SidebarNavItem } from "@/types"
 
-interface NavigationItem {
-  title: string
-  href: string
-  icon: any
-  description?: string
+interface DashboardConfig {
+  mainNav: MainNavItem[]
+  sidebarNav: SidebarNavItem[]
+  getNavigationItems: (role: string | undefined) => SidebarNavItem[]
 }
 
-export function Sidebar() {
-  const [open, setOpen] = useState(false)
-  const pathname = usePathname()
-  const { user } = useAuth()
+export const dashboardConfig: DashboardConfig = {
+  mainNav: [
+    {
+      title: "Documentation",
+      href: "/docs",
+    },
+    {
+      title: "Support",
+      href: "/support",
+      disabled: true,
+    },
+  ],
+  sidebarNav: [],
+  getNavigationItems: (role: string | undefined) => {
+    let navigationItems: SidebarNavItem[] = []
 
-  const getNavigationItems = (role: string | undefined): NavigationItem[] => {
-    const baseItems = [
-      {
-        title: "Dashboard",
-        href: "/dashboard",
-        icon: LayoutDashboard,
-        description: "Panel principal",
-      },
-      {
-        title: "Notificaciones",
-        href: "/dashboard/notifications",
-        icon: Bell,
-        description: "Ver notificaciones",
-      },
-      {
-        title: "Verificar Workflows",
-        href: "/dashboard/test-workflow",
-        icon: Activity,
-        description: "Probar flujos completos",
-      },
-    ]
-
-    switch (role) {
-      case "admin":
-        return [
-          ...baseItems,
-          {
-            title: "Gestión de Usuarios",
-            href: "/dashboard/admin/users",
-            icon: UserCog,
-            description: "CRUD de usuarios",
-          },
-          {
-            title: "Tratamientos",
-            href: "/dashboard/admin/treatments",
-            icon: Stethoscope,
-            description: "Catálogo de tratamientos",
-          },
-          {
-            title: "Horarios",
-            href: "/dashboard/admin/schedules",
-            icon: Calendar,
-            description: "Gestión de horarios",
-          },
-          {
-            title: "Analíticas",
-            href: "/dashboard/admin/analytics",
-            icon: Activity,
-            description: "Estadísticas del sistema",
-          },
-          {
-            title: "Seguridad",
-            href: "/dashboard/admin/security",
-            icon: Shield,
-            description: "Configuración de seguridad",
-          },
-          {
-            title: "Configuración",
-            href: "/dashboard/admin/system-config",
-            icon: Settings,
-            description: "Configuración del sistema",
-          },
-        ]
-
-      case "student":
-        return [
-          ...baseItems,
-          {
-            title: "Panel Principal",
-            href: "/dashboard/student",
-            icon: LayoutDashboard,
-            description: "Dashboard de estudiante",
-          },
-          {
-            title: "Mi Especialización",
-            href: "/dashboard/student/specialization",
-            icon: Stethoscope,
-            description: "Seleccionar especialización",
-          },
-          {
-            title: "Mis Pacientes",
-            href: "/dashboard/student/patients",
-            icon: Users,
-            description: "Gestionar pacientes",
-          },
-          {
-            title: "Asignar Pacientes",
-            href: "/dashboard/student/assign-patients",
-            icon: UserPlus,
-            description: "Auto-asignar pacientes",
-          },
-          {
-            title: "Odontogramas",
-            href: "/dashboard/student/odontograms",
-            icon: Tooth,
-            description: "Crear odontogramas",
-          },
-          {
-            title: "Historias Clínicas",
-            href: "/dashboard/student/clinical-histories",
-            icon: FileText,
-            description: "Gestionar historias",
-          },
-          {
-            title: "Casos Clínicos",
-            href: "/dashboard/student/clinical-cases",
-            icon: Stethoscope,
-            description: "Administrar casos",
-          },
-          {
-            title: "Mis Citas",
-            href: "/dashboard/student/appointments",
-            icon: CalendarCheck,
-            description: "Programar citas",
-          },
-          {
-            title: "Mis Tareas",
-            href: "/dashboard/student/assignments",
-            icon: ClipboardList,
-            description: "Tareas asignadas",
-          },
-          {
-            title: "Subir Tareas",
-            href: "/dashboard/student/submit-assignment",
-            icon: Upload,
-            description: "Entregar trabajos",
-          },
-        ]
-
-      case "professor":
-        return [
-          ...baseItems,
-          {
-            title: "Panel Principal",
-            href: "/dashboard/teacher",
-            icon: LayoutDashboard,
-            description: "Dashboard profesor",
-          },
-          {
-            title: "Mis Estudiantes",
-            href: "/dashboard/teacher/students",
-            icon: GraduationCap,
-            description: "Gestionar estudiantes",
-          },
-          {
-            title: "Evaluaciones",
-            href: "/dashboard/teacher/evaluations",
-            icon: ClipboardList,
-            description: "Evaluar estudiantes",
-          },
-          {
-            title: "Crear Tareas",
-            href: "/dashboard/teacher/assignments",
-            icon: BookOpen,
-            description: "Gestionar actividades",
-          },
-          {
-            title: "Solicitudes de Extensión",
-            href: "/dashboard/teacher/extension-requests",
-            icon: MessageSquare,
-            description: "Revisar extensiones",
-          },
-          {
-            title: "Aprobaciones",
-            href: "/dashboard/teacher/approvals",
-            icon: UserCheck,
-            description: "Revisar trabajos",
-          },
-          {
-            title: "Progreso",
-            href: "/dashboard/teacher/progress",
-            icon: Activity,
-            description: "Seguimiento académico",
-          },
-          {
-            title: "Registros Clínicos",
-            href: "/dashboard/teacher/clinical-records",
-            icon: FileText,
-            description: "Ver historias clínicas",
-          },
-        ]
-
-      case "secretary":
-        return [
-          ...baseItems,
-          {
-            title: "Panel Principal",
-            href: "/dashboard/secretary",
-            icon: LayoutDashboard,
-            description: "Dashboard secretaria",
-          },
-          {
-            title: "Asignar Pacientes",
-            href: "/dashboard/secretary/patient-assignment",
-            icon: UserPlus,
-            description: "Asignar pacientes a estudiantes",
-          },
-          {
-            title: "Gestión de Citas",
-            href: "/dashboard/secretary/appointments",
-            icon: Calendar,
-            description: "Programar citas",
-          },
-          {
-            title: "Horarios Estudiantes",
-            href: "/dashboard/secretary/schedules",
-            icon: Clock,
-            description: "Ver horarios",
-          },
-          {
-            title: "Pacientes",
-            href: "/dashboard/patients",
-            icon: Users,
-            description: "Gestionar pacientes",
-          },
-        ]
-
-      case "patient":
-        return [
-          ...baseItems,
-          {
-            title: "Mis Citas",
-            href: "/dashboard/my-appointments",
-            icon: Calendar,
-            description: "Ver mis citas",
-          },
-          {
-            title: "Agendar Cita",
-            href: "/dashboard/book-appointment",
-            icon: CalendarCheck,
-            description: "Solicitar nueva cita",
-          },
-          {
-            title: "Mi Historial",
-            href: "/dashboard/my-records",
-            icon: FileText,
-            description: "Historial médico",
-          },
-          {
-            title: "Odontograma",
-            href: "/dashboard/patient/odontogram",
-            icon: Tooth,
-            description: "Ver odontograma",
-          },
-        ]
-
-      default:
-        return baseItems
+    if (role === "admin") {
+      navigationItems = [
+        {
+          title: "Dashboard",
+          href: "/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Usuarios",
+          href: "/users",
+          icon: Users,
+          description: "Gestión de usuarios y roles",
+        },
+        {
+          title: "Citas",
+          href: "/appointments",
+          icon: Calendar,
+          description: "Gestión de citas médicas",
+        },
+        {
+          title: "Documentos",
+          href: "/documents",
+          icon: FileText,
+          description: "Gestión de documentos",
+        },
+        {
+          title: "Ajustes",
+          href: "/settings",
+          icon: Settings,
+          description: "Configuración general del sistema",
+        },
+        {
+          title: "Estudiantes",
+          href: "/students-info",
+          icon: GraduationCap,
+          description: "Información de estudiantes",
+        },
+      ]
+    } else if (role === "doctor") {
+      navigationItems = [
+        {
+          title: "Dashboard",
+          href: "/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Citas",
+          href: "/appointments",
+          icon: Calendar,
+          description: "Gestión de citas médicas",
+        },
+        {
+          title: "Documentos",
+          href: "/documents",
+          icon: FileText,
+          description: "Gestión de documentos",
+        },
+      ]
+    } else if (role === "patient") {
+      navigationItems = [
+        {
+          title: "Dashboard",
+          href: "/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Mis Citas",
+          href: "/appointments",
+          icon: Calendar,
+          description: "Gestionar citas médicas",
+        },
+      ]
+    } else if (role === "student") {
+      navigationItems = [
+        {
+          title: "Dashboard",
+          href: "/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Información Estudiantes",
+          href: "/students-info",
+          icon: GraduationCap,
+          description: "Información académica",
+        },
+        {
+          title: "Citas",
+          href: "/appointments",
+          icon: Calendar,
+          description: "Gestionar citas",
+        },
+      ]
+    } else if (role === "professor") {
+      navigationItems = [
+        {
+          title: "Dashboard",
+          href: "/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Citas",
+          href: "/appointments",
+          icon: Calendar,
+          description: "Gestionar citas médicas",
+        },
+        {
+          title: "Estudiantes Info",
+          href: "/students-info",
+          icon: GraduationCap,
+          description: "Información de estudiantes",
+        },
+      ]
+    } else {
+      navigationItems = [
+        {
+          title: "Dashboard",
+          href: "/dashboard",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Citas",
+          href: "/appointments",
+          icon: Calendar,
+          description: "Gestión de citas médicas",
+        },
+      ]
     }
-  }
 
-  const navigationItems = getNavigationItems(user?.role)
-
-  const SidebarContent = () => (
-    <div className="flex h-full flex-col bg-gradient-to-b from-blue-50 to-white border-r border-blue-100">
-      <div className="flex h-16 items-center border-b border-blue-100 px-6 bg-white/80 backdrop-blur-sm">
-        <UleamBranding />
-      </div>
-      <ScrollArea className="flex-1 px-4 py-6 custom-scrollbar">
-        <nav className="space-y-2">
-          {navigationItems.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "flex items-center gap-3 rounded-lg px-3 py-3 text-sm font-medium transition-all duration-200 hover:scale-105 hover:shadow-md",
-                  isActive
-                    ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-lg"
-                    : "text-blue-700 hover:bg-gradient-to-r hover:from-blue-50 hover:to-indigo-50 hover:text-blue-800",
-                )}
-                onClick={() => setOpen(false)}
-              >
-                <Icon className="h-5 w-5 flex-shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <div className="font-medium truncate">{item.title}</div>
-                  {item.description && <div className="text-xs opacity-75 truncate">{item.description}</div>}
-                </div>
-              </Link>
-            )
-          })}
-        </nav>
-      </ScrollArea>
-      <div className="border-t border-blue-100 p-4 bg-white/80 backdrop-blur-sm">
-        <div className="text-xs text-gray-500 text-center">Clínica Dental ULEAM</div>
-      </div>
-    </div>
-  )
-
-  return (
-    <>
-      {/* Mobile Sidebar */}
-      <Sheet open={open} onOpenChange={setOpen}>
-        <SheetTrigger asChild>
-          <Button
-            variant="outline"
-            size="icon"
-            className="shrink-0 md:hidden fixed top-4 left-4 z-50 bg-white/90 backdrop-blur-sm border-blue-200 hover:bg-blue-50 hover:scale-110 transition-all duration-200 shadow-lg"
-          >
-            <Menu className="h-5 w-5 text-blue-600" />
-            <span className="sr-only">Toggle navigation menu</span>
-          </Button>
-        </SheetTrigger>
-        <SheetContent side="left" className="flex flex-col p-0 w-80">
-          <SidebarContent />
-        </SheetContent>
-      </Sheet>
-
-      {/* Desktop Sidebar */}
-      <div className="hidden md:block w-80 flex-shrink-0">
-        <SidebarContent />
-      </div>
-    </>
-  )
+    return navigationItems
+  },
 }

@@ -2,25 +2,37 @@
 
 import type React from "react"
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
+import { useState, useEffect } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { AlertCircle, Eye, EyeOff } from "lucide-react"
-import { useAuth } from "@/contexts/auth-context"
-import Link from "next/link"
+import { AlertCircle } from "lucide-react"
+import { useAuth, TEST_USERS } from "@/contexts/auth-context"
 
 export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [loading, setLoading] = useState(false)
+  const [redirecting, setRedirecting] = useState(false)
   const router = useRouter()
-  const { login } = useAuth()
+  const searchParams = useSearchParams()
+  const { login, isAuthenticated } = useAuth()
+
+  // Verificar si ya está autenticado
+  useEffect(() => {
+    if (isAuthenticated) {
+      const callbackUrl = searchParams.get("callbackUrl")
+      if (callbackUrl) {
+        router.push(decodeURIComponent(callbackUrl))
+      } else {
+        router.push("/dashboard")
+      }
+    }
+  }, [isAuthenticated, router, searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -28,90 +40,132 @@ export function LoginForm() {
     setError("")
 
     try {
-      await login(email, password)
+      // Autenticación simple en el cliente
+      const user = TEST_USERS.find((u) => u.email === email && u.password === password)
 
-      // Redirect to dashboard
-      router.push("/dashboard")
-    } catch (error: any) {
-      setError(error.message || "Error de autenticación")
-    } finally {
+      if (user) {
+        setRedirecting(true)
+
+        // Usar el contexto de autenticación para iniciar sesión
+        login({
+          email: user.email,
+          role: user.role,
+          name: user.name,
+        })
+
+        // Verificar si hay una URL de callback
+        const callbackUrl = searchParams.get("callbackUrl")
+        if (callbackUrl) {
+          console.log("Redirigiendo a URL de callback:", callbackUrl)
+          router.push(decodeURIComponent(callbackUrl))
+        } else {
+          // Redirección basada en el rol
+          let redirectPath = "/dashboard"
+          switch (user.role) {
+            case "patient":
+              redirectPath = "/dashboard/my-appointments"
+              break
+            case "student":
+              redirectPath = "/dashboard/patients"
+              break
+            case "professor":
+              redirectPath = "/dashboard/specialty"
+              break
+            case "admin":
+              redirectPath = "/dashboard/users"
+              break
+          }
+          console.log("Redirigiendo a ruta basada en rol:", redirectPath)
+          router.push(redirectPath)
+        }
+      } else {
+        setError("Credenciales incorrectas")
+        setLoading(false)
+      }
+    } catch (err) {
+      console.error("Login error:", err)
+      setError("Error al iniciar sesión")
       setLoading(false)
     }
   }
 
+  if (redirecting) {
+    return (
+      <Card className="w-full max-w-md mx-auto">
+        <CardContent className="flex flex-col items-center justify-center p-6">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            <p className="text-lg font-medium">Redirigiendo al panel de control...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
+
   return (
-    <Card className="w-full max-w-md mx-auto">
-      <CardHeader className="space-y-1">
-        <CardTitle className="text-2xl font-bold text-center">Iniciar Sesión</CardTitle>
-        <CardDescription className="text-center">Ingresa tus credenciales para acceder al sistema</CardDescription>
+    <Card className="border-primary-200 shadow-soft-lg bg-white">
+      <CardHeader>
+        <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
+        <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
       </CardHeader>
       <CardContent>
-        {error && (
-          <Alert variant="destructive" className="mb-4">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
-        )}
-
         <form onSubmit={handleSubmit} className="space-y-4">
+          {error && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-2">
-            <Label htmlFor="email">Correo Electrónico</Label>
+            <Label htmlFor="email">Correo electrónico</Label>
             <Input
               id="email"
               type="email"
-              placeholder="correo@ejemplo.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="correo@ejemplo.com"
               required
-              disabled={loading}
             />
           </div>
-
           <div className="space-y-2">
             <Label htmlFor="password">Contraseña</Label>
-            <div className="relative">
-              <Input
-                id="password"
-                type={showPassword ? "text" : "password"}
-                placeholder="Tu contraseña"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                disabled={loading}
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                onClick={() => setShowPassword(!showPassword)}
-                disabled={loading}
-              >
-                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-              </Button>
-            </div>
+            <Input
+              id="password"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
           </div>
-
           <Button type="submit" className="w-full" disabled={loading}>
             {loading ? "Iniciando sesión..." : "Iniciar Sesión"}
           </Button>
         </form>
       </CardContent>
-
-      <CardFooter className="flex flex-col space-y-2">
-        <div className="text-sm text-center text-muted-foreground">
+      <CardFooter className="flex flex-col space-y-4">
+        <p className="text-sm text-primary-600">
           ¿No tienes una cuenta?{" "}
-          <Link href="/register" className="text-primary hover:underline">
-            Regístrate aquí
-          </Link>
-        </div>
+          <a href="/register" className="text-primary-600 hover:underline">
+            Regístrate
+          </a>
+        </p>
 
-        {/* Demo credentials for testing */}
-        <div className="text-xs text-center text-muted-foreground border-t pt-2 mt-2">
-          <p className="font-medium mb-1">Credenciales de prueba:</p>
-          <p>Admin: admin@clinica.com / admin</p>
-          <p>Estudiante: estudiante@clinica.com / estudiante</p>
-          <p>Paciente: paciente@clinica.com / paciente</p>
+        <div className="w-full pt-4 border-t border-primary-200">
+          <p className="text-sm font-medium mb-2 text-primary-800">Credenciales de prueba:</p>
+          <div className="text-xs text-primary-600 space-y-1">
+            <p>
+              <strong>Paciente:</strong> paciente@clinica.com / paciente
+            </p>
+            <p>
+              <strong>Estudiante:</strong> estudiante@clinica.com / estudiante
+            </p>
+            <p>
+              <strong>Profesor:</strong> profesor@clinica.com / profesor
+            </p>
+            <p>
+              <strong>Admin:</strong> admin@clinica.com / admin
+            </p>
+          </div>
         </div>
       </CardFooter>
     </Card>

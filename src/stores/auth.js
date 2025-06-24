@@ -31,13 +31,6 @@ export const TEST_USERS = [
     role: "patient",
     password: "paciente",
   },
-  {
-    id: "5",
-    email: "secretaria@clinica.com",
-    name: "Carmen Ruiz",
-    role: "secretary",
-    password: "secretaria",
-  },
 ]
 
 export const useAuthStore = defineStore("auth", () => {
@@ -109,8 +102,6 @@ export const useAuthStore = defineStore("auth", () => {
         return "Profesor"
       case "admin":
         return "Administrador"
-      case "secretary":
-        return "Secretaria"
       default:
         return "Usuario"
     }

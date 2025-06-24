@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react"
-import { authAPI } from "@/lib/api-client"
 
 export interface User {
   id: string
@@ -15,9 +14,74 @@ interface AuthContextType {
   user: User | null
   isLoading: boolean
   isInitialized: boolean
-  login: (email: string, password: string) => Promise<void>
+  login: (user: User) => void
   logout: () => void
 }
+
+// Export TEST_USERS for testing and development
+export const TEST_USERS = [
+  {
+    id: "1",
+    email: "admin@clinica.com",
+    name: "Dr. Admin",
+    role: "admin",
+    password: "admin",
+  },
+  {
+    id: "2",
+    email: "profesor@clinica.com",
+    name: "Dr. María González",
+    role: "professor",
+    specialty: "Endodoncia",
+    password: "profesor",
+  },
+  {
+    id: "3",
+    email: "estudiante@clinica.com",
+    name: "Juan Pérez",
+    role: "student",
+    password: "estudiante",
+  },
+  {
+    id: "4",
+    email: "paciente@clinica.com",
+    name: "Ana López",
+    role: "patient",
+    password: "paciente",
+  },
+  {
+    id: "5",
+    email: "endodoncia@clinica.com",
+    name: "Dr. Carlos Ruiz",
+    role: "professor",
+    specialty: "Endodoncia",
+    password: "endodoncia",
+  },
+  {
+    id: "6",
+    email: "ortodoncia@clinica.com",
+    name: "Dra. Laura Martín",
+    role: "professor",
+    specialty: "Ortodoncia",
+    password: "ortodoncia",
+  },
+  {
+    id: "7",
+    email: "cirugia@clinica.com",
+    name: "Dr. Roberto Silva",
+    role: "professor",
+    specialty: "Cirugía Oral",
+    password: "cirugia",
+  },
+  {
+    id: "8",
+    email: "pediatria@clinica.com",
+    name: "Dra. Carmen Vega",
+    role: "professor",
+    specialty: "Odontopediatría",
+    password: "pediatria",
+  },
+]
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
@@ -50,45 +114,34 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const initializeAuth = async () => {
       try {
-        console.log("🔄 Initializing authentication with API...")
+        console.log("🔄 Initializing authentication (single instance)...")
 
-        // Check if we're in the browser
-        if (typeof window === "undefined") {
-          globalAuthState.isLoading = false
-          globalAuthState.isInitialized = true
-          setIsLoading(false)
-          setIsInitialized(true)
-          return
-        }
+        const savedUser = localStorage.getItem("clinic_user")
+        const savedExpiry = localStorage.getItem("clinic_expiry")
 
-        const token = localStorage.getItem("access_token")
-        if (token) {
-          try {
-            const response = await authAPI.getProfile()
-            const userData = response.data
+        if (savedUser && savedExpiry) {
+          const expiry = Number.parseInt(savedExpiry)
+          if (Date.now() < expiry) {
+            const userData = JSON.parse(savedUser)
             globalAuthState.user = userData
             setUser(userData)
-            console.log("✅ User restored from API:", userData.role, userData.name)
-          } catch (error) {
-            console.log("⚠️ Token invalid, cleaning up")
-            localStorage.removeItem("access_token")
+            console.log("✅ User restored:", userData.role, userData.name)
+          } else {
+            console.log("⚠️ Session expired, cleaning up")
             localStorage.removeItem("clinic_user")
             localStorage.removeItem("clinic_expiry")
             globalAuthState.user = null
             setUser(null)
           }
         } else {
-          console.log("ℹ️ No token found")
+          console.log("ℹ️ No saved session found")
           globalAuthState.user = null
           setUser(null)
         }
       } catch (error) {
         console.error("❌ Auth initialization error:", error)
-        if (typeof window !== "undefined") {
-          localStorage.removeItem("access_token")
-          localStorage.removeItem("clinic_user")
-          localStorage.removeItem("clinic_expiry")
-        }
+        localStorage.removeItem("clinic_user")
+        localStorage.removeItem("clinic_expiry")
         globalAuthState.user = null
         setUser(null)
       } finally {
@@ -103,29 +156,21 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     initializeAuth()
   }, [])
 
-  const login = async (email: string, password: string) => {
+  const login = (userData: User) => {
     try {
-      console.log("🔐 Logging in user via API...")
-
-      const response = await authAPI.login({ email, password })
-      const { access_token, user: userData } = response.data
+      console.log("🔐 Logging in user:", userData.role, userData.name)
 
       // Update global state
       globalAuthState.user = userData
       setUser(userData)
 
-      // Save to localStorage only if in browser
-      if (typeof window !== "undefined") {
-        localStorage.setItem("access_token", access_token)
-        localStorage.setItem("clinic_user", JSON.stringify(userData))
-        localStorage.setItem("clinic_expiry", (Date.now() + 24 * 60 * 60 * 1000).toString())
-      }
+      // Save to localStorage
+      localStorage.setItem("clinic_user", JSON.stringify(userData))
+      localStorage.setItem("clinic_expiry", (Date.now() + 24 * 60 * 60 * 1000).toString())
 
-      console.log("✅ Login successful via API")
-    } catch (error: any) {
+      console.log("✅ Login successful")
+    } catch (error) {
       console.error("❌ Login error:", error)
-      const message = error.response?.data?.message || "Error de autenticación"
-      throw new Error(message)
     }
   }
 
@@ -136,12 +181,9 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     globalAuthState.user = null
     setUser(null)
 
-    // Clear localStorage only if in browser
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("access_token")
-      localStorage.removeItem("clinic_user")
-      localStorage.removeItem("clinic_expiry")
-    }
+    // Clear localStorage
+    localStorage.removeItem("clinic_user")
+    localStorage.removeItem("clinic_expiry")
 
     console.log("✅ Logout complete")
   }
