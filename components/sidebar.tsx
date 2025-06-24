@@ -18,8 +18,12 @@ import {
   Shield,
   UserCog,
   CalendarCheck,
-  FileCheck,
   Bell,
+  UserPlus,
+  Clock,
+  Upload,
+  MessageSquare,
+  SmileIcon as Tooth,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
@@ -54,12 +58,6 @@ export function Sidebar() {
         href: "/dashboard/notifications",
         icon: Bell,
         description: "Ver notificaciones",
-      },
-      {
-        title: "Test Interacciones",
-        href: "/dashboard/test-interactions",
-        icon: Activity,
-        description: "Probar elementos interactivos",
       },
     ]
 
@@ -121,22 +119,22 @@ export function Sidebar() {
             description: "Seleccionar especialización",
           },
           {
-            title: "Gestión de Pacientes",
-            href: "/dashboard/patients",
-            icon: Users,
-            description: "Gestionar pacientes",
-          },
-          {
-            title: "Odontogramas",
-            href: "/dashboard/student/odontograms",
-            icon: Stethoscope,
-            description: "Crear odontogramas",
-          },
-          {
             title: "Mis Pacientes",
             href: "/dashboard/student/patients",
             icon: Users,
             description: "Gestionar pacientes",
+          },
+          {
+            title: "Asignar Pacientes",
+            href: "/dashboard/student/assign-patients",
+            icon: UserPlus,
+            description: "Auto-asignar pacientes",
+          },
+          {
+            title: "Odontogramas",
+            href: "/dashboard/student/odontograms",
+            icon: Tooth,
+            description: "Crear odontogramas",
           },
           {
             title: "Historias Clínicas",
@@ -151,10 +149,10 @@ export function Sidebar() {
             description: "Administrar casos",
           },
           {
-            title: "Programar Citas",
+            title: "Mis Citas",
             href: "/dashboard/student/appointments",
             icon: CalendarCheck,
-            description: "Agendar citas para pacientes",
+            description: "Programar citas",
           },
           {
             title: "Mis Tareas",
@@ -163,16 +161,22 @@ export function Sidebar() {
             description: "Tareas asignadas",
           },
           {
-            title: "Subir Trabajos",
-            href: "/dashboard/student/uploads",
-            icon: FileCheck,
-            description: "Subir asignaciones",
+            title: "Subir Tareas",
+            href: "/dashboard/student/submit-assignment",
+            icon: Upload,
+            description: "Entregar trabajos",
           },
         ]
 
       case "professor":
         return [
           ...baseItems,
+          {
+            title: "Panel Principal",
+            href: "/dashboard/teacher",
+            icon: LayoutDashboard,
+            description: "Dashboard profesor",
+          },
           {
             title: "Mis Estudiantes",
             href: "/dashboard/teacher/students",
@@ -186,10 +190,16 @@ export function Sidebar() {
             description: "Evaluar estudiantes",
           },
           {
-            title: "Crear Actividades",
+            title: "Crear Tareas",
             href: "/dashboard/teacher/assignments",
             icon: BookOpen,
-            description: "Subir actividades",
+            description: "Gestionar actividades",
+          },
+          {
+            title: "Solicitudes de Extensión",
+            href: "/dashboard/teacher/extension-requests",
+            icon: MessageSquare,
+            description: "Revisar extensiones",
           },
           {
             title: "Aprobaciones",
@@ -203,21 +213,39 @@ export function Sidebar() {
             icon: Activity,
             description: "Seguimiento académico",
           },
+          {
+            title: "Registros Clínicos",
+            href: "/dashboard/teacher/clinical-records",
+            icon: FileText,
+            description: "Ver historias clínicas",
+          },
         ]
 
       case "secretary":
         return [
           ...baseItems,
           {
-            title: "Gestión de Citas",
+            title: "Panel Principal",
             href: "/dashboard/secretary",
+            icon: LayoutDashboard,
+            description: "Dashboard secretaria",
+          },
+          {
+            title: "Asignar Pacientes",
+            href: "/dashboard/secretary/patient-assignment",
+            icon: UserPlus,
+            description: "Asignar pacientes a estudiantes",
+          },
+          {
+            title: "Gestión de Citas",
+            href: "/dashboard/secretary/appointments",
             icon: Calendar,
             description: "Programar citas",
           },
           {
             title: "Horarios Estudiantes",
             href: "/dashboard/secretary/schedules",
-            icon: ClipboardList,
+            icon: Clock,
             description: "Ver horarios",
           },
           {
@@ -252,7 +280,7 @@ export function Sidebar() {
           {
             title: "Odontograma",
             href: "/dashboard/patient/odontogram",
-            icon: Stethoscope,
+            icon: Tooth,
             description: "Ver odontograma",
           },
         ]
