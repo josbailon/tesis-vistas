@@ -14,6 +14,19 @@ import {
   ChevronRight,
   LogOut,
   User,
+  ClipboardList,
+  BookOpen,
+  Stethoscope,
+  UserCheck,
+  Clock,
+  Shield,
+  BarChart3,
+  CheckSquare,
+  FolderOpen,
+  CalendarCheck,
+  MessageSquare,
+  Phone,
+  Archive,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useAuth } from "@/contexts/auth-context"
@@ -63,37 +76,123 @@ export const dashboardConfig: DashboardConfig = {
           icon: LayoutDashboard,
         },
         {
-          title: "Usuarios",
-          href: "/dashboard/users",
+          title: "Gestión de Usuarios",
+          href: "/dashboard/admin/users",
           icon: Users,
-          description: "Gestión de usuarios y roles",
+          description: "CRUD completo de usuarios",
         },
         {
-          title: "Citas",
-          href: "/appointments",
-          icon: Calendar,
-          description: "Gestión de citas médicas",
-        },
-        {
-          title: "Estudiantes",
-          href: "/students-info",
+          title: "Gestión de Estudiantes",
+          href: "/dashboard/admin/students",
           icon: GraduationCap,
-          description: "Información de estudiantes",
+          description: "CRUD de estudiantes",
         },
         {
-          title: "Documentos",
-          href: "/dashboard/medical-records",
+          title: "Gestión de Profesores",
+          href: "/dashboard/admin/professors",
+          icon: UserCheck,
+          description: "CRUD de profesores",
+        },
+        {
+          title: "Gestión de Pacientes",
+          href: "/dashboard/admin/patients",
+          icon: User,
+          description: "CRUD de pacientes",
+        },
+        {
+          title: "Gestión de Citas",
+          href: "/dashboard/admin/appointments",
+          icon: Calendar,
+          description: "CRUD de citas médicas",
+        },
+        {
+          title: "Historias Clínicas",
+          href: "/dashboard/admin/medical-records",
           icon: FileText,
-          description: "Gestión de documentos",
+          description: "Gestión de historiales",
         },
         {
-          title: "Ajustes",
-          href: "/dashboard/settings",
+          title: "Casos Clínicos",
+          href: "/dashboard/admin/clinical-cases",
+          icon: Stethoscope,
+          description: "Gestión de casos",
+        },
+        {
+          title: "Configuración Sistema",
+          href: "/dashboard/admin/system-config",
           icon: Settings,
-          description: "Configuración general del sistema",
+          description: "Configuración general",
+        },
+        {
+          title: "Reportes y Analytics",
+          href: "/dashboard/admin/analytics",
+          icon: BarChart3,
+          description: "Estadísticas del sistema",
+        },
+        {
+          title: "Seguridad",
+          href: "/dashboard/admin/security",
+          icon: Shield,
+          description: "Logs y seguridad",
         },
       ]
     } else if (role === "profesor") {
+      navigationItems = [
+        {
+          title: "Dashboard",
+          href: "/dashboard/teacher",
+          icon: LayoutDashboard,
+        },
+        {
+          title: "Mis Estudiantes",
+          href: "/dashboard/teacher/students",
+          icon: GraduationCap,
+          description: "Ver progreso de estudiantes",
+        },
+        {
+          title: "Trabajos de Estudiantes",
+          href: "/dashboard/teacher/student-work",
+          icon: BookOpen,
+          description: "Revisar trabajos enviados",
+        },
+        {
+          title: "Asignar Tareas",
+          href: "/dashboard/teacher/assignments",
+          icon: ClipboardList,
+          description: "Crear y gestionar tareas",
+        },
+        {
+          title: "Historias Clínicas",
+          href: "/dashboard/teacher/clinical-history",
+          icon: FileText,
+          description: "Supervisar historiales",
+        },
+        {
+          title: "Casos Clínicos",
+          href: "/dashboard/teacher/clinical-cases",
+          icon: Stethoscope,
+          description: "Supervisar casos",
+        },
+        {
+          title: "Horarios Estudiantes",
+          href: "/dashboard/teacher/student-schedules",
+          icon: CalendarCheck,
+          description: "Ver horarios y citas",
+        },
+        {
+          title: "Aprobaciones",
+          href: "/dashboard/teacher/approvals",
+          icon: CheckSquare,
+          description: "Aprobar tratamientos",
+        },
+        {
+          title: "Progreso Académico",
+          href: "/dashboard/teacher/progress",
+          icon: BarChart3,
+          description: "Seguimiento académico",
+        },
+      ]
+    } else if (role === "estudiante") {
       navigationItems = [
         {
           title: "Dashboard",
@@ -101,22 +200,52 @@ export const dashboardConfig: DashboardConfig = {
           icon: LayoutDashboard,
         },
         {
-          title: "Citas",
-          href: "/appointments",
+          title: "Mis Citas",
+          href: "/dashboard/appointments",
           icon: Calendar,
-          description: "Gestión de citas médicas",
+          description: "Gestionar mis citas",
         },
         {
-          title: "Estudiantes Info",
-          href: "/students-info",
-          icon: GraduationCap,
-          description: "Información de estudiantes",
+          title: "Mis Pacientes",
+          href: "/dashboard/patients",
+          icon: Users,
+          description: "Pacientes asignados",
         },
         {
-          title: "Documentos",
-          href: "/dashboard/medical-records",
+          title: "Historias Clínicas",
+          href: "/dashboard/clinical-history",
           icon: FileText,
-          description: "Gestión de documentos",
+          description: "Crear historiales",
+        },
+        {
+          title: "Casos Clínicos",
+          href: "/dashboard/clinical-cases",
+          icon: Stethoscope,
+          description: "Mis casos clínicos",
+        },
+        {
+          title: "Mis Tareas",
+          href: "/dashboard/assignments",
+          icon: ClipboardList,
+          description: "Tareas asignadas",
+        },
+        {
+          title: "Mi Horario",
+          href: "/dashboard/schedule",
+          icon: Clock,
+          description: "Horario académico",
+        },
+        {
+          title: "Progreso Académico",
+          href: "/dashboard/academic",
+          icon: BarChart3,
+          description: "Mi progreso",
+        },
+        {
+          title: "Mi Perfil",
+          href: "/dashboard/my-profile",
+          icon: User,
+          description: "Información personal",
         },
       ]
     } else if (role === "paciente") {
@@ -128,9 +257,21 @@ export const dashboardConfig: DashboardConfig = {
         },
         {
           title: "Mis Citas",
-          href: "/appointments",
+          href: "/dashboard/my-appointments",
           icon: Calendar,
-          description: "Gestionar citas médicas",
+          description: "Ver y agendar citas",
+        },
+        {
+          title: "Agendar Cita",
+          href: "/dashboard/book-appointment",
+          icon: CalendarCheck,
+          description: "Nueva cita",
+        },
+        {
+          title: "Mi Historial",
+          href: "/dashboard/my-records",
+          icon: FileText,
+          description: "Historial médico",
         },
         {
           title: "Mi Perfil",
@@ -139,30 +280,60 @@ export const dashboardConfig: DashboardConfig = {
           description: "Información personal",
         },
       ]
-    } else if (role === "estudiante") {
+    } else if (role === "secretario") {
       navigationItems = [
         {
           title: "Dashboard",
-          href: "/dashboard",
+          href: "/dashboard/secretary",
           icon: LayoutDashboard,
         },
         {
-          title: "Información Estudiantes",
-          href: "/students-info",
-          icon: GraduationCap,
-          description: "Información académica",
-        },
-        {
-          title: "Citas",
-          href: "/appointments",
+          title: "Gestión de Citas",
+          href: "/dashboard/secretary/appointments",
           icon: Calendar,
-          description: "Gestionar citas",
+          description: "Agendar y gestionar citas",
         },
         {
-          title: "Mi Perfil",
-          href: "/dashboard/my-profile",
-          icon: User,
-          description: "Información personal",
+          title: "Registro de Pacientes",
+          href: "/dashboard/secretary/patient-registration",
+          icon: UserCheck,
+          description: "Registrar nuevos pacientes",
+        },
+        {
+          title: "Agenda Diaria",
+          href: "/dashboard/secretary/daily-agenda",
+          icon: CalendarCheck,
+          description: "Agenda del día",
+        },
+        {
+          title: "Comunicaciones",
+          href: "/dashboard/secretary/communications",
+          icon: MessageSquare,
+          description: "Mensajes y notificaciones",
+        },
+        {
+          title: "Contactos",
+          href: "/dashboard/secretary/contacts",
+          icon: Phone,
+          description: "Directorio de contactos",
+        },
+        {
+          title: "Documentos",
+          href: "/dashboard/secretary/documents",
+          icon: FolderOpen,
+          description: "Gestión de documentos",
+        },
+        {
+          title: "Reportes",
+          href: "/dashboard/secretary/reports",
+          icon: BarChart3,
+          description: "Reportes administrativos",
+        },
+        {
+          title: "Archivo",
+          href: "/dashboard/secretary/archive",
+          icon: Archive,
+          description: "Archivo de documentos",
         },
       ]
     } else {
@@ -244,7 +415,7 @@ export function Sidebar() {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-2">
+      <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
         {navigationItems.map((item) => {
           const Icon = item.icon
           const isActive = pathname === item.href
