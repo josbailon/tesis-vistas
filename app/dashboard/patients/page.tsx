@@ -1,399 +1,696 @@
 "use client"
 
 import { useState } from "react"
+import { motion } from "framer-motion"
 import { useAuth } from "@/contexts/auth-context"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { ProtectedRoute } from "@/components/protected-route"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
-  Users,
-  Search,
-  Plus,
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  User,
+  Phone,
   Calendar,
   FileText,
-  Phone,
-  Mail,
-  MapPin,
+  Search,
+  Filter,
+  Eye,
+  Edit,
+  Plus,
   Clock,
-  CheckCircle,
-  AlertCircle,
-  User,
+  MapPin,
+  Stethoscope,
+  AlertTriangle,
 } from "lucide-react"
 
-// Mock data for patients
-const mockPatients = [
-  {
-    id: "1",
-    name: "Ana García",
-    email: "ana.garcia@email.com",
-    phone: "0987654321",
-    age: 28,
-    address: "Av. Principal 123, Manta",
-    lastVisit: "2024-01-15",
-    nextAppointment: "2024-01-25",
-    status: "active",
-    treatments: ["Limpieza", "Ortodoncia"],
-    emergencyContact: "María García - 0987654322",
-  },
-  {
-    id: "2",
-    name: "Carlos Mendoza",
-    email: "carlos.mendoza@email.com",
-    phone: "0987654323",
-    age: 35,
-    address: "Calle 24 de Mayo 456, Manta",
-    lastVisit: "2024-01-10",
-    nextAppointment: "2024-01-30",
-    status: "active",
-    treatments: ["Endodoncia", "Corona"],
-    emergencyContact: "Rosa Mendoza - 0987654324",
-  },
-  {
-    id: "3",
-    name: "María López",
-    email: "maria.lopez@email.com",
-    phone: "0987654325",
-    age: 42,
-    address: "Av. 4 de Noviembre 789, Manta",
-    lastVisit: "2024-01-08",
-    nextAppointment: null,
-    status: "inactive",
-    treatments: ["Limpieza", "Extracción"],
-    emergencyContact: "Juan López - 0987654326",
-  },
-  {
-    id: "4",
-    name: "Roberto Silva",
-    email: "roberto.silva@email.com",
-    phone: "0987654327",
-    age: 29,
-    address: "Calle Bolívar 321, Manta",
-    lastVisit: "2024-01-12",
-    nextAppointment: "2024-01-28",
-    status: "active",
-    treatments: ["Ortodoncia", "Blanqueamiento"],
-    emergencyContact: "Elena Silva - 0987654328",
-  },
-]
-
-export default function PatientsPage() {
+export default function StudentPatientsPage() {
   const { user } = useAuth()
   const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
   const [selectedPatient, setSelectedPatient] = useState<any>(null)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
 
-  // Verify user is student
-  if (!user || user.role !== "student") {
-    return (
-      <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <AlertCircle className="h-12 w-12 text-error-500 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-primary-800 mb-2">Acceso Denegado</h2>
-          <p className="text-primary-600">Solo los estudiantes pueden acceder a esta página.</p>
-        </div>
-      </div>
-    )
+  // Mock data for assigned patients
+  const patients = [
+    {
+      id: "pat1",
+      name: "Ana García López",
+      age: 28,
+      gender: "Femenino",
+      phone: "0999-123-456",
+      email: "ana.garcia@gmail.com",
+      address: "Av. Universidad 123, Manta",
+      emergencyContact: "María García - 0998-765-432",
+      assignedDate: "2024-01-15",
+      status: "active",
+      nextAppointment: {
+        date: "2024-01-25",
+        time: "09:00",
+        type: "Tratamiento",
+        location: "Consultorio 3",
+      },
+      medicalHistory: {
+        allergies: ["Ninguna conocida"],
+        medications: ["Ibuprofeno 400mg"],
+        conditions: ["Hipertensión controlada"],
+        lastUpdate: "2024-01-20",
+      },
+      treatmentHistory: [
+        {
+          date: "2024-01-15",
+          procedure: "Consulta inicial",
+          notes: "Evaluación completa realizada",
+          status: "completed",
+        },
+        {
+          date: "2024-01-20",
+          procedure: "Preparación de conducto",
+          notes: "Primera sesión de endodoncia",
+          status: "completed",
+        },
+        {
+          date: "2024-01-25",
+          procedure: "Continuación endodoncia",
+          notes: "Segunda sesión programada",
+          status: "scheduled",
+        },
+      ],
+      currentTreatment: "Endodoncia pieza 16",
+      supervisor: "Dr. Martínez",
+      totalVisits: 2,
+      pendingTasks: 1,
+    },
+    {
+      id: "pat2",
+      name: "Roberto Silva Mendoza",
+      age: 35,
+      gender: "Masculino",
+      phone: "0998-234-567",
+      email: "roberto.silva@hotmail.com",
+      address: "Calle 24 de Mayo 456, Manta",
+      emergencyContact: "Carmen Silva - 0997-654-321",
+      assignedDate: "2024-01-18",
+      status: "active",
+      nextAppointment: {
+        date: "2024-01-26",
+        time: "11:00",
+        type: "Consulta",
+        location: "Consultorio 5",
+      },
+      medicalHistory: {
+        allergies: ["Penicilina"],
+        medications: ["Ninguna"],
+        conditions: ["Ninguna"],
+        lastUpdate: "2024-01-18",
+      },
+      treatmentHistory: [
+        {
+          date: "2024-01-18",
+          procedure: "Evaluación ortodóntica",
+          notes: "Primera consulta, evaluación para brackets",
+          status: "completed",
+        },
+        {
+          date: "2024-01-26",
+          procedure: "Plan de tratamiento",
+          notes: "Presentación del plan ortodóntico",
+          status: "scheduled",
+        },
+      ],
+      currentTreatment: "Evaluación ortodóntica",
+      supervisor: "Dra. Rodríguez",
+      totalVisits: 1,
+      pendingTasks: 2,
+    },
+    {
+      id: "pat3",
+      name: "Carmen Vega Torres",
+      age: 42,
+      gender: "Femenino",
+      phone: "0997-345-678",
+      email: "carmen.vega@yahoo.com",
+      address: "Barrio Los Almendros, Manta",
+      emergencyContact: "Pedro Vega - 0996-543-210",
+      assignedDate: "2024-01-10",
+      status: "completed",
+      nextAppointment: null,
+      medicalHistory: {
+        allergies: ["Ninguna conocida"],
+        medications: ["Metformina"],
+        conditions: ["Diabetes tipo 2"],
+        lastUpdate: "2024-01-22",
+      },
+      treatmentHistory: [
+        {
+          date: "2024-01-10",
+          procedure: "Evaluación periodontal",
+          notes: "Diagnóstico de gingivitis",
+          status: "completed",
+        },
+        {
+          date: "2024-01-15",
+          procedure: "Limpieza profunda",
+          notes: "Raspado y alisado radicular",
+          status: "completed",
+        },
+        {
+          date: "2024-01-22",
+          procedure: "Control post-tratamiento",
+          notes: "Evolución favorable, alta médica",
+          status: "completed",
+        },
+      ],
+      currentTreatment: "Tratamiento completado",
+      supervisor: "Dr. Silva",
+      totalVisits: 3,
+      pendingTasks: 0,
+    },
+  ]
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "active":
+        return (
+          <Badge className="bg-green-100 text-green-800">
+            <User className="h-3 w-3 mr-1" />
+            Activo
+          </Badge>
+        )
+      case "completed":
+        return (
+          <Badge className="bg-blue-100 text-blue-800">
+            <FileText className="h-3 w-3 mr-1" />
+            Completado
+          </Badge>
+        )
+      case "pending":
+        return (
+          <Badge className="bg-yellow-100 text-yellow-800">
+            <Clock className="h-3 w-3 mr-1" />
+            Pendiente
+          </Badge>
+        )
+      default:
+        return <Badge variant="secondary">{status}</Badge>
+    }
   }
 
-  const filteredPatients = mockPatients.filter(
-    (patient) =>
+  const filteredPatients = patients.filter((patient) => {
+    const matchesSearch =
       patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      patient.phone.includes(searchTerm),
-  )
+      patient.currentTreatment.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesStatus = statusFilter === "all" || patient.status === statusFilter
+    return matchesSearch && matchesStatus
+  })
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "active":
-        return "bg-success-100 text-success-700 border-success-300"
-      case "inactive":
-        return "bg-neutral-100 text-neutral-700 border-neutral-300"
-      default:
-        return "bg-info-100 text-info-700 border-info-300"
-    }
-  }
-
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case "active":
-        return "Activo"
-      case "inactive":
-        return "Inactivo"
-      default:
-        return "Desconocido"
-    }
-  }
+  const activePatients = patients.filter((p) => p.status === "active")
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-primary-800">Gestión de Pacientes</h1>
-          <p className="text-primary-600">Estudiante: {user.name}</p>
+    <ProtectedRoute requiredRoles={["estudiante"]}>
+      <div className="space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Mis Pacientes</h1>
+            <p className="text-muted-foreground">Gestiona los pacientes asignados a tu cuidado</p>
+          </div>
+          <Button>
+            <Plus className="mr-2 h-4 w-4" />
+            Solicitar Paciente
+          </Button>
         </div>
-        <Button className="bg-primary-600 hover:bg-primary-700 text-white shadow-soft">
-          <Plus className="h-4 w-4 mr-2" />
-          Nuevo Paciente
-        </Button>
-      </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-        <Card className="border-primary-200 hover:shadow-soft transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-primary-800">Total Pacientes</CardTitle>
-            <Users className="h-4 w-4 text-primary-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-primary-700">{mockPatients.length}</div>
-            <p className="text-xs text-primary-600">Pacientes asignados</p>
-          </CardContent>
-        </Card>
+        {/* Stats Cards */}
+        <div className="grid gap-4 md:grid-cols-4">
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Total Pacientes</CardTitle>
+              <User className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{patients.length}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Activos</CardTitle>
+              <Stethoscope className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{activePatients.length}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Próximas Citas</CardTitle>
+              <Calendar className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{patients.filter((p) => p.nextAppointment).length}</div>
+            </CardContent>
+          </Card>
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Tareas Pendientes</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-yellow-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{patients.reduce((sum, p) => sum + p.pendingTasks, 0)}</div>
+            </CardContent>
+          </Card>
+        </div>
 
-        <Card className="border-success-200 hover:shadow-soft transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-success-800">Pacientes Activos</CardTitle>
-            <CheckCircle className="h-4 w-4 text-success-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-success-700">
-              {mockPatients.filter((p) => p.status === "active").length}
-            </div>
-            <p className="text-xs text-success-600">En tratamiento</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-info-200 hover:shadow-soft transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-info-800">Citas Pendientes</CardTitle>
-            <Calendar className="h-4 w-4 text-info-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-info-700">
-              {mockPatients.filter((p) => p.nextAppointment).length}
-            </div>
-            <p className="text-xs text-info-600">Próximas citas</p>
-          </CardContent>
-        </Card>
-
-        <Card className="border-warning-200 hover:shadow-soft transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-warning-800">Tratamientos</CardTitle>
-            <FileText className="h-4 w-4 text-warning-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-warning-700">
-              {mockPatients.reduce((acc, p) => acc + p.treatments.length, 0)}
-            </div>
-            <p className="text-xs text-warning-600">En progreso</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Search and Filters */}
-      <Card className="border-primary-200">
-        <CardHeader>
-          <CardTitle className="text-primary-800">Buscar Pacientes</CardTitle>
-          <CardDescription className="text-primary-600">
-            Encuentra pacientes por nombre, email o teléfono
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
+        {/* Filters */}
+        <div className="flex flex-col md:flex-row gap-4 items-start md:items-center justify-between">
           <div className="flex items-center space-x-2">
-            <Search className="h-4 w-4 text-primary-600" />
+            <Search className="h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Buscar pacientes..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="border-primary-200 focus:border-primary-500 focus:ring-primary-500"
+              className="w-[300px]"
             />
           </div>
-        </CardContent>
-      </Card>
+          <div className="flex items-center space-x-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Filtrar por estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos</SelectItem>
+                <SelectItem value="active">Activos</SelectItem>
+                <SelectItem value="completed">Completados</SelectItem>
+                <SelectItem value="pending">Pendientes</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
 
-      {/* Patients Table */}
-      <Card className="border-primary-200">
-        <CardHeader>
-          <CardTitle className="text-primary-800">Lista de Pacientes</CardTitle>
-          <CardDescription className="text-primary-600">
-            {filteredPatients.length} paciente(s) encontrado(s)
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="text-primary-800">Paciente</TableHead>
-                <TableHead className="text-primary-800">Contacto</TableHead>
-                <TableHead className="text-primary-800">Estado</TableHead>
-                <TableHead className="text-primary-800">Última Visita</TableHead>
-                <TableHead className="text-primary-800">Próxima Cita</TableHead>
-                <TableHead className="text-primary-800">Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
+        <Tabs defaultValue="active" className="w-full">
+          <TabsList>
+            <TabsTrigger value="active">Pacientes Activos</TabsTrigger>
+            <TabsTrigger value="all">Todos los Pacientes</TabsTrigger>
+            <TabsTrigger value="completed">Completados</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active" className="space-y-4">
+            <div className="grid gap-4">
+              {activePatients.map((patient, index) => (
+                <motion.div
+                  key={patient.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                >
+                  <Card className="hover:shadow-md transition-shadow">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-4 flex-1">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-lg font-semibold">{patient.name}</h3>
+                            {getStatusBadge(patient.status)}
+                            {patient.pendingTasks > 0 && (
+                              <Badge variant="outline" className="text-yellow-600">
+                                {patient.pendingTasks} tareas pendientes
+                              </Badge>
+                            )}
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <span>
+                                {patient.age} años, {patient.gender}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Phone className="h-4 w-4 text-muted-foreground" />
+                              <span>{patient.phone}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                              <span>{patient.currentTreatment}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span>{patient.totalVisits} visitas</span>
+                            </div>
+                          </div>
+
+                          {patient.nextAppointment && (
+                            <div className="bg-blue-50 p-3 rounded-lg">
+                              <p className="text-sm font-medium">Próxima Cita:</p>
+                              <div className="flex items-center gap-4 text-sm">
+                                <span className="flex items-center gap-1">
+                                  <Calendar className="h-4 w-4" />
+                                  {patient.nextAppointment.date}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <Clock className="h-4 w-4" />
+                                  {patient.nextAppointment.time}
+                                </span>
+                                <span className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  {patient.nextAppointment.location}
+                                </span>
+                              </div>
+                            </div>
+                          )}
+
+                          {patient.medicalHistory.allergies.length > 0 &&
+                            patient.medicalHistory.allergies[0] !== "Ninguna conocida" && (
+                              <div className="bg-red-50 p-3 rounded-lg border border-red-200">
+                                <p className="text-sm font-medium text-red-800">⚠️ Alergias:</p>
+                                <p className="text-sm text-red-700">{patient.medicalHistory.allergies.join(", ")}</p>
+                              </div>
+                            )}
+                        </div>
+
+                        <div className="flex flex-col gap-2 ml-4">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedPatient(patient)
+                              setIsViewDialogOpen(true)
+                            }}
+                          >
+                            <Eye className="h-4 w-4 mr-1" />
+                            Ver Detalles
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Phone className="h-4 w-4 mr-1" />
+                            Contactar
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <FileText className="h-4 w-4 mr-1" />
+                            Historia
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4 mr-1" />
+                            Editar
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="all" className="space-y-4">
+            <div className="grid gap-4">
               {filteredPatients.map((patient) => (
-                <TableRow key={patient.id} className="hover:bg-primary-50">
-                  <TableCell>
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
-                        <User className="h-4 w-4 text-primary-600" />
+                <Card key={patient.id} className="hover:shadow-md transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-3 flex-1">
+                        <div className="flex items-center gap-3">
+                          <h3 className="text-lg font-semibold">{patient.name}</h3>
+                          {getStatusBadge(patient.status)}
+                        </div>
+
+                        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                          <div className="flex items-center gap-2">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span>
+                              {patient.age} años, {patient.gender}
+                            </span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <span>{patient.phone}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                            <span>{patient.currentTreatment}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-muted-foreground" />
+                            <span>{patient.totalVisits} visitas</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-col gap-2 ml-4">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedPatient(patient)
+                            setIsViewDialogOpen(true)
+                          }}
+                        >
+                          <Eye className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </TabsContent>
+
+          <TabsContent value="completed" className="space-y-4">
+            <div className="grid gap-4">
+              {patients
+                .filter((patient) => patient.status === "completed")
+                .map((patient) => (
+                  <Card key={patient.id} className="opacity-75">
+                    <CardContent className="p-6">
+                      <div className="flex justify-between items-start">
+                        <div className="space-y-3 flex-1">
+                          <div className="flex items-center gap-3">
+                            <h3 className="text-lg font-semibold">{patient.name}</h3>
+                            {getStatusBadge(patient.status)}
+                          </div>
+
+                          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+                            <div className="flex items-center gap-2">
+                              <User className="h-4 w-4 text-muted-foreground" />
+                              <span>
+                                {patient.age} años, {patient.gender}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                              <span>{patient.currentTreatment}</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span>{patient.totalVisits} visitas totales</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Calendar className="h-4 w-4 text-muted-foreground" />
+                              <span>Asignado: {patient.assignedDate}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-col gap-2 ml-4">
+                          <Button variant="outline" size="sm">
+                            Ver Reporte Final
+                          </Button>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+            </div>
+          </TabsContent>
+        </Tabs>
+
+        {/* Patient Details Dialog */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          {selectedPatient && (
+            <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle>Detalles del Paciente</DialogTitle>
+                <DialogDescription>Información completa de {selectedPatient.name}</DialogDescription>
+              </DialogHeader>
+
+              <div className="space-y-6">
+                {/* Personal Info */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Información Personal</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-sm font-medium">Nombre Completo</p>
+                        <p>{selectedPatient.name}</p>
                       </div>
                       <div>
-                        <div className="font-medium text-primary-800">{patient.name}</div>
-                        <div className="text-sm text-primary-600">{patient.age} años</div>
+                        <p className="text-sm font-medium">Edad</p>
+                        <p>{selectedPatient.age} años</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Género</p>
+                        <p>{selectedPatient.gender}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Teléfono</p>
+                        <p>{selectedPatient.phone}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Email</p>
+                        <p>{selectedPatient.email}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Contacto de Emergencia</p>
+                        <p>{selectedPatient.emergencyContact}</p>
                       </div>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="space-y-1">
-                      <div className="flex items-center text-sm text-primary-700">
-                        <Mail className="h-3 w-3 mr-1" />
-                        {patient.email}
-                      </div>
-                      <div className="flex items-center text-sm text-primary-700">
-                        <Phone className="h-3 w-3 mr-1" />
-                        {patient.phone}
-                      </div>
+                    <div className="mt-4">
+                      <p className="text-sm font-medium">Dirección</p>
+                      <p>{selectedPatient.address}</p>
                     </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(patient.status)}>{getStatusText(patient.status)}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center text-sm text-primary-700">
-                      <Clock className="h-3 w-3 mr-1" />
-                      {patient.lastVisit}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {patient.nextAppointment ? (
-                      <div className="flex items-center text-sm text-primary-700">
-                        <Calendar className="h-3 w-3 mr-1" />
-                        {patient.nextAppointment}
-                      </div>
-                    ) : (
-                      <span className="text-sm text-neutral-500">Sin cita</span>
-                    )}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex space-x-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setSelectedPatient(patient)}
-                        className="border-primary-200 text-primary-700 hover:bg-primary-50"
-                      >
-                        Ver Detalles
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="border-primary-200 text-primary-700 hover:bg-primary-50"
-                      >
-                        <Calendar className="h-3 w-3 mr-1" />
-                        Cita
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                  </CardContent>
+                </Card>
 
-      {/* Patient Details Modal */}
-      {selectedPatient && (
-        <Card className="border-primary-200 bg-primary-50">
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-primary-800">Detalles del Paciente</CardTitle>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedPatient(null)}
-                className="border-primary-200 text-primary-700 hover:bg-primary-100"
-              >
-                Cerrar
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            <Tabs defaultValue="info" className="w-full">
-              <TabsList className="grid w-full grid-cols-3 bg-primary-100">
-                <TabsTrigger value="info" className="data-[state=active]:bg-primary-600 data-[state=active]:text-white">
-                  Información
-                </TabsTrigger>
-                <TabsTrigger
-                  value="treatments"
-                  className="data-[state=active]:bg-primary-600 data-[state=active]:text-white"
-                >
-                  Tratamientos
-                </TabsTrigger>
-                <TabsTrigger
-                  value="history"
-                  className="data-[state=active]:bg-primary-600 data-[state=active]:text-white"
-                >
-                  Historial
-                </TabsTrigger>
-              </TabsList>
-
-              <TabsContent value="info" className="space-y-4">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div>
-                    <h4 className="font-semibold text-primary-800 mb-2">Información Personal</h4>
-                    <div className="space-y-2 text-sm">
-                      <div className="flex items-center">
-                        <User className="h-4 w-4 mr-2 text-primary-600" />
-                        <span className="text-primary-700">{selectedPatient.name}</span>
+                {/* Medical History */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Historia Médica</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-medium">Alergias</p>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {selectedPatient.medicalHistory.allergies.map((allergy: string, index: number) => (
+                            <Badge key={index} variant={allergy === "Ninguna conocida" ? "outline" : "destructive"}>
+                              {allergy}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <Mail className="h-4 w-4 mr-2 text-primary-600" />
-                        <span className="text-primary-700">{selectedPatient.email}</span>
+                      <div>
+                        <p className="text-sm font-medium">Medicamentos Actuales</p>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {selectedPatient.medicalHistory.medications.map((medication: string, index: number) => (
+                            <Badge key={index} variant="outline">
+                              {medication}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <Phone className="h-4 w-4 mr-2 text-primary-600" />
-                        <span className="text-primary-700">{selectedPatient.phone}</span>
+                      <div>
+                        <p className="text-sm font-medium">Condiciones Médicas</p>
+                        <div className="flex flex-wrap gap-2 mt-1">
+                          {selectedPatient.medicalHistory.conditions.map((condition: string, index: number) => (
+                            <Badge key={index} variant="outline">
+                              {condition}
+                            </Badge>
+                          ))}
+                        </div>
                       </div>
-                      <div className="flex items-center">
-                        <MapPin className="h-4 w-4 mr-2 text-primary-600" />
-                        <span className="text-primary-700">{selectedPatient.address}</span>
+                      <div>
+                        <p className="text-sm font-medium">Última Actualización</p>
+                        <p className="text-sm text-muted-foreground">{selectedPatient.medicalHistory.lastUpdate}</p>
                       </div>
                     </div>
-                  </div>
-                  <div>
-                    <h4 className="font-semibold text-primary-800 mb-2">Contacto de Emergencia</h4>
-                    <div className="text-sm text-primary-700">{selectedPatient.emergencyContact}</div>
-                  </div>
-                </div>
-              </TabsContent>
+                  </CardContent>
+                </Card>
 
-              <TabsContent value="treatments" className="space-y-4">
-                <h4 className="font-semibold text-primary-800">Tratamientos Actuales</h4>
-                <div className="flex flex-wrap gap-2">
-                  {selectedPatient.treatments.map((treatment: string, index: number) => (
-                    <Badge key={index} className="bg-primary-100 text-primary-800 border-primary-300">
-                      {treatment}
-                    </Badge>
-                  ))}
-                </div>
-              </TabsContent>
+                {/* Treatment History */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Historial de Tratamientos</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {selectedPatient.treatmentHistory.map((treatment: any, index: number) => (
+                        <div key={index} className="border-l-2 border-blue-200 pl-4">
+                          <div className="flex items-center justify-between">
+                            <h4 className="font-medium">{treatment.procedure}</h4>
+                            <Badge
+                              variant={treatment.status === "completed" ? "default" : "outline"}
+                              className={
+                                treatment.status === "completed"
+                                  ? "bg-green-100 text-green-800"
+                                  : "bg-blue-100 text-blue-800"
+                              }
+                            >
+                              {treatment.status === "completed" ? "Completado" : "Programado"}
+                            </Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground">{treatment.date}</p>
+                          <p className="text-sm">{treatment.notes}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
 
-              <TabsContent value="history" className="space-y-4">
-                <h4 className="font-semibold text-primary-800">Historial de Visitas</h4>
-                <div className="text-sm text-primary-700">
-                  <p>Última visita: {selectedPatient.lastVisit}</p>
-                  {selectedPatient.nextAppointment && <p>Próxima cita: {selectedPatient.nextAppointment}</p>}
-                </div>
-              </TabsContent>
-            </Tabs>
-          </CardContent>
-        </Card>
-      )}
-    </div>
+                {/* Current Treatment */}
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Tratamiento Actual</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <p className="text-sm font-medium">Procedimiento</p>
+                        <p>{selectedPatient.currentTreatment}</p>
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium">Supervisor</p>
+                        <p>{selectedPatient.supervisor}</p>
+                      </div>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <p className="text-sm font-medium">Total de Visitas</p>
+                          <p>{selectedPatient.totalVisits}</p>
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium">Tareas Pendientes</p>
+                          <p>{selectedPatient.pendingTasks}</p>
+                        </div>
+                      </div>
+                      {selectedPatient.nextAppointment && (
+                        <div className="bg-blue-50 p-3 rounded-lg">
+                          <p className="text-sm font-medium">Próxima Cita</p>
+                          <p className="text-sm">
+                            {selectedPatient.nextAppointment.date} a las {selectedPatient.nextAppointment.time}
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {selectedPatient.nextAppointment.type} - {selectedPatient.nextAppointment.location}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </div>
+
+              <DialogFooter>
+                <Button variant="outline" onClick={() => setIsViewDialogOpen(false)}>
+                  Cerrar
+                </Button>
+                <Button>
+                  <Phone className="mr-2 h-4 w-4" />
+                  Contactar Paciente
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          )}
+        </Dialog>
+      </div>
+    </ProtectedRoute>
   )
 }
