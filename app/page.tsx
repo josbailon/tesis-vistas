@@ -1,16 +1,15 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
-import { useState } from "react"
 import { UleamBranding } from "@/components/uleam-branding"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Stethoscope, Users, GraduationCap, Shield, Heart, CheckCircle } from "lucide-react"
 import { LoginForm } from "@/app/login/login-form"
 
 export default function HomePage() {
-  const { user, isLoading } = useAuth()
+  const { user, isLoading, isInitialized } = useAuth()
   const router = useRouter()
   const [mounted, setMounted] = useState(false)
 
@@ -19,48 +18,51 @@ export default function HomePage() {
   }, [])
 
   useEffect(() => {
-    if (mounted && user && !isLoading) {
+    if (mounted && user && isInitialized) {
       router.replace("/dashboard")
     }
-  }, [user, isLoading, mounted, router])
+  }, [user, isInitialized, mounted, router])
 
-  if (!mounted || isLoading) {
+  // Show loading while auth is initializing
+  if (!mounted || !isInitialized || isLoading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-soft-gradient">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mx-auto mb-4"></div>
-          <p className="text-primary-800 font-medium">Cargando...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+          <p className="text-blue-800 font-medium">Cargando sistema...</p>
         </div>
       </div>
     )
   }
 
+  // If user is logged in, show redirect message
   if (user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-soft-gradient">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mx-auto mb-4"></div>
-          <p className="text-primary-800 font-medium">Redirigiendo al dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
+          <p className="text-blue-800 font-medium">Redirigiendo al dashboard...</p>
         </div>
       </div>
     )
   }
 
+  // Show login page
   return (
-    <div className="min-h-screen bg-soft-gradient flex">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex">
       {/* Left side - Login Form */}
       <div className="flex-1 flex items-center justify-center p-8">
         <div className="w-full max-w-md space-y-8">
           <div className="text-center">
             <UleamBranding variant="full" />
-            <h2 className="mt-6 text-3xl font-bold text-primary-800">Iniciar Sesión</h2>
-            <p className="mt-2 text-sm text-primary-600">Accede a la plataforma de la Clínica Dental Universitaria</p>
+            <h2 className="mt-6 text-3xl font-bold text-gray-900">Iniciar Sesión</h2>
+            <p className="mt-2 text-sm text-gray-600">Accede a la plataforma de la Clínica Dental Universitaria</p>
           </div>
 
-          <Card className="border-primary-200 shadow-soft-lg">
+          <Card className="border-gray-200 shadow-lg">
             <CardHeader>
-              <CardTitle className="text-center text-primary-800">Bienvenido</CardTitle>
-              <CardDescription className="text-center text-primary-600">
+              <CardTitle className="text-center text-gray-900">Bienvenido</CardTitle>
+              <CardDescription className="text-center text-gray-600">
                 Ingresa tus credenciales para continuar
               </CardDescription>
             </CardHeader>
@@ -70,10 +72,10 @@ export default function HomePage() {
           </Card>
 
           {/* Demo Credentials */}
-          <Card className="border-info-200 bg-info-50">
+          <Card className="border-blue-200 bg-blue-50">
             <CardHeader>
-              <CardTitle className="text-sm text-info-800">👥 Todos los Usuarios Disponibles</CardTitle>
-              <CardDescription className="text-xs text-info-600">
+              <CardTitle className="text-sm text-blue-800">👥 Todos los Usuarios Disponibles</CardTitle>
+              <CardDescription className="text-xs text-blue-600">
                 Selecciona cualquier usuario para probar el sistema
               </CardDescription>
             </CardHeader>
@@ -186,8 +188,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              <div className="text-center pt-2 border-t border-info-200">
-                <p className="text-xs text-info-700 font-medium">
+              <div className="text-center pt-2 border-t border-blue-200">
+                <p className="text-xs text-blue-700 font-medium">
                   💡 Tip: Copia y pega las credenciales para acceso rápido
                 </p>
               </div>
@@ -197,12 +199,12 @@ export default function HomePage() {
       </div>
 
       {/* Right side - Information */}
-      <div className="hidden lg:flex flex-1 bg-medical-gradient text-white p-8 items-center justify-center">
+      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-8 items-center justify-center">
         <div className="max-w-lg space-y-8">
           <div className="text-center">
             <Heart className="h-16 w-16 mx-auto mb-4 text-white" />
             <h3 className="text-2xl font-bold mb-4">Clínica Dental Universitaria ULEAM</h3>
-            <p className="text-primary-100 leading-relaxed">
+            <p className="text-blue-100 leading-relaxed">
               Plataforma integral para la gestión de la clínica dental universitaria, conectando estudiantes,
               profesores, pacientes y administradores.
             </p>
@@ -210,31 +212,31 @@ export default function HomePage() {
 
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-primary-200" />
-              <span className="text-primary-100">Servicios odontológicos gratuitos</span>
+              <CheckCircle className="h-5 w-5 text-blue-200" />
+              <span className="text-blue-100">Servicios odontológicos gratuitos</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-primary-200" />
-              <span className="text-primary-100">Atención supervisada por especialistas</span>
+              <CheckCircle className="h-5 w-5 text-blue-200" />
+              <span className="text-blue-100">Atención supervisada por especialistas</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-primary-200" />
-              <span className="text-primary-100">Tecnología de última generación</span>
+              <CheckCircle className="h-5 w-5 text-blue-200" />
+              <span className="text-blue-100">Tecnología de última generación</span>
             </div>
             <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-primary-200" />
-              <span className="text-primary-100">Formación práctica de excelencia</span>
+              <CheckCircle className="h-5 w-5 text-blue-200" />
+              <span className="text-blue-100">Formación práctica de excelencia</span>
             </div>
           </div>
 
           <div className="grid grid-cols-2 gap-4 pt-8">
             <div className="text-center">
               <div className="text-3xl font-bold text-white">4</div>
-              <div className="text-sm text-primary-200">Especialidades</div>
+              <div className="text-sm text-blue-200">Especialidades</div>
             </div>
             <div className="text-center">
               <div className="text-3xl font-bold text-white">100%</div>
-              <div className="text-sm text-primary-200">Gratuito</div>
+              <div className="text-sm text-blue-200">Gratuito</div>
             </div>
           </div>
         </div>
