@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,11 +14,13 @@ import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { UserPlus } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { UserPlus, Search, Eye, Edit, Phone, Mail, FileText, AlertCircle } from "lucide-react"
 
 export default function PatientRegistrationPage() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -80,10 +83,11 @@ export default function PatientRegistrationPage() {
     }
   }
 
-  const filteredPatients = recentPatients.filter((patient) =>
-    patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    patient.phone.includes(searchTerm) ||
-    patient.email.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredPatients = recentPatients.filter(
+    (patient) =>
+      patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      patient.phone.includes(searchTerm) ||
+      patient.email.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
   const nextStep = () => {
@@ -120,9 +124,7 @@ export default function PatientRegistrationPage() {
           <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Registro de Nuevo Paciente</DialogTitle>
-              <DialogDescription>
-                Paso {currentStep} de 4 - Completa toda la información del paciente
-              </DialogDescription>
+              <DialogDescription>Paso {currentStep} de 4 - Completa toda la información del paciente</DialogDescription>
             </DialogHeader>
 
             {/* Progress Indicator */}
@@ -131,20 +133,12 @@ export default function PatientRegistrationPage() {
                 <div key={step} className="flex items-center">
                   <div
                     className={`flex h-8 w-8 items-center justify-center rounded-full text-sm font-medium ${
-                      step <= currentStep
-                        ? "bg-blue-600 text-white"
-                        : "bg-gray-200 text-gray-600"
+                      step <= currentStep ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-600"
                     }`}
                   >
                     {step}
                   </div>
-                  {step < 4 && (
-                    <div
-                      className={`h-1 w-16 ${
-                        step < currentStep ? "bg-blue-600" : "bg-gray-200"
-                      }`}
-                    />
-                  )}
+                  {step < 4 && <div className={`h-1 w-16 ${step < currentStep ? "bg-blue-600" : "bg-gray-200"}`} />}
                 </div>
               ))}
             </div>
@@ -321,4 +315,209 @@ export default function PatientRegistrationPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                  <div className="space-y-2\
+                  <div className="space-y-2">
+                    <Label htmlFor="treatmentType">Tipo de Tratamiento Inicial</Label>
+                    <Select>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar tratamiento" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="consultation">Consulta General</SelectItem>
+                        <SelectItem value="cleaning">Limpieza Dental</SelectItem>
+                        <SelectItem value="endodontics">Endodoncia</SelectItem>
+                        <SelectItem value="orthodontics">Ortodoncia</SelectItem>
+                        <SelectItem value="surgery">Cirugía Oral</SelectItem>
+                        <SelectItem value="pediatric">Odontopediatría</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="notes">Notas Adicionales</Label>
+                    <Textarea id="notes" placeholder="Información adicional sobre el paciente o tratamiento..." />
+                  </div>
+                  <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                    <div className="flex items-start gap-2">
+                      <AlertCircle className="h-5 w-5 text-blue-600 mt-0.5" />
+                      <div>
+                        <h4 className="font-medium text-blue-800">Información Importante</h4>
+                        <p className="text-sm text-blue-700 mt-1">
+                          Una vez registrado el paciente, se enviará un correo de confirmación con los detalles de la
+                          primera cita y las instrucciones necesarias.
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <DialogFooter className="flex justify-between">
+              <div>
+                {currentStep > 1 && (
+                  <Button variant="outline" onClick={prevStep}>
+                    Anterior
+                  </Button>
+                )}
+              </div>
+              <div className="flex gap-2">
+                <Button variant="outline" onClick={resetForm}>
+                  Cancelar
+                </Button>
+                {currentStep < 4 ? (
+                  <Button onClick={nextStep}>Siguiente</Button>
+                ) : (
+                  <Button onClick={resetForm}>Registrar Paciente</Button>
+                )}
+              </div>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
+
+      {/* Stats Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Pacientes</CardTitle>
+            <UserPlus className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{recentPatients.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Activos</CardTitle>
+            <UserPlus className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{recentPatients.filter((p) => p.status === "active").length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Completados</CardTitle>
+            <UserPlus className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{recentPatients.filter((p) => p.status === "completed").length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Este Mes</CardTitle>
+            <UserPlus className="h-4 w-4 text-purple-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">12</div>
+          </CardContent>
+        </Card>
+      </div>
+
+      <Tabs defaultValue="recent" className="w-full">
+        <TabsList>
+          <TabsTrigger value="recent">Pacientes Recientes</TabsTrigger>
+          <TabsTrigger value="search">Buscar Pacientes</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="recent" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Pacientes Registrados Recientemente</CardTitle>
+              <CardDescription>Últimos pacientes registrados en el sistema</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {recentPatients.map((patient) => (
+                  <div key={patient.id} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold">{patient.name}</h3>
+                        {getStatusBadge(patient.status)}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        ID: {patient.id} • Edad: {patient.age} años • Registrado: {patient.registrationDate}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        Estudiante: {patient.assignedStudent} • Última visita: {patient.lastVisit}
+                      </div>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm">
+                        <Phone className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Mail className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="search" className="space-y-4">
+          <Card>
+            <CardHeader>
+              <CardTitle>Buscar Pacientes</CardTitle>
+              <CardDescription>Busca pacientes por nombre, teléfono o correo electrónico</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center space-x-2 mb-4">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Buscar por nombre, teléfono o correo..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="flex-1"
+                />
+              </div>
+
+              {searchTerm && (
+                <div className="space-y-4">
+                  {filteredPatients.length > 0 ? (
+                    filteredPatients.map((patient) => (
+                      <div key={patient.id} className="flex items-center justify-between p-4 border rounded-lg">
+                        <div className="space-y-1">
+                          <div className="flex items-center gap-2">
+                            <h3 className="font-semibold">{patient.name}</h3>
+                            {getStatusBadge(patient.status)}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            {patient.phone} • {patient.email}
+                          </div>
+                          <div className="text-sm text-muted-foreground">Estudiante: {patient.assignedStudent}</div>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="outline" size="sm">
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button variant="outline" size="sm">
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center py-8">
+                      <FileText className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                      <h3 className="text-lg font-medium">No se encontraron pacientes</h3>
+                      <p className="text-muted-foreground">No hay pacientes que coincidan con tu búsqueda</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  )
+}
