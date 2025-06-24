@@ -151,20 +151,78 @@ export function LoginForm() {
         </p>
 
         <div className="w-full pt-4 border-t border-primary-200">
-          <p className="text-sm font-medium mb-2 text-primary-800">Credenciales de prueba:</p>
-          <div className="text-xs text-primary-600 space-y-1">
-            <p>
-              <strong>Paciente:</strong> paciente@clinica.com / paciente
-            </p>
-            <p>
-              <strong>Estudiante:</strong> estudiante@clinica.com / estudiante
-            </p>
-            <p>
-              <strong>Profesor:</strong> profesor@clinica.com / profesor
-            </p>
-            <p>
-              <strong>Admin:</strong> admin@clinica.com / admin
-            </p>
+          <p className="text-sm font-medium mb-3 text-primary-800">Usuarios Disponibles:</p>
+          <div className="text-xs text-primary-600 space-y-2 max-h-48 overflow-y-auto">
+            <div className="grid gap-2">
+              <div className="p-2 bg-red-50 rounded border border-red-200">
+                <p className="font-semibold text-red-800">👨‍💼 Administrador</p>
+                <p>
+                  <strong>Email:</strong> admin@clinica.com
+                </p>
+                <p>
+                  <strong>Contraseña:</strong> admin
+                </p>
+                <p className="text-red-600">Dr. Admin - Gestión completa del sistema</p>
+              </div>
+
+              <div className="p-2 bg-blue-50 rounded border border-blue-200">
+                <p className="font-semibold text-blue-800">👩‍⚕️ Profesores</p>
+                <div className="space-y-1 mt-1">
+                  <div>
+                    <p>
+                      <strong>Email:</strong> profesor@clinica.com | <strong>Pass:</strong> profesor
+                    </p>
+                    <p className="text-blue-600">Dra. María González - Endodoncia</p>
+                  </div>
+                  <div>
+                    <p>
+                      <strong>Email:</strong> endodoncia@clinica.com | <strong>Pass:</strong> endodoncia
+                    </p>
+                    <p className="text-blue-600">Dr. Carlos Ruiz - Especialista en Endodoncia</p>
+                  </div>
+                  <div>
+                    <p>
+                      <strong>Email:</strong> ortodoncia@clinica.com | <strong>Pass:</strong> ortodoncia
+                    </p>
+                    <p className="text-blue-600">Dra. Laura Martín - Especialista en Ortodoncia</p>
+                  </div>
+                  <div>
+                    <p>
+                      <strong>Email:</strong> cirugia@clinica.com | <strong>Pass:</strong> cirugia
+                    </p>
+                    <p className="text-blue-600">Dr. Roberto Silva - Cirugía Oral</p>
+                  </div>
+                  <div>
+                    <p>
+                      <strong>Email:</strong> pediatria@clinica.com | <strong>Pass:</strong> pediatria
+                    </p>
+                    <p className="text-blue-600">Dra. Carmen Vega - Odontopediatría</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-2 bg-green-50 rounded border border-green-200">
+                <p className="font-semibold text-green-800">🎓 Estudiante</p>
+                <p>
+                  <strong>Email:</strong> estudiante@clinica.com
+                </p>
+                <p>
+                  <strong>Contraseña:</strong> estudiante
+                </p>
+                <p className="text-green-600">Juan Pérez - Estudiante de Odontología</p>
+              </div>
+
+              <div className="p-2 bg-purple-50 rounded border border-purple-200">
+                <p className="font-semibold text-purple-800">🏥 Paciente</p>
+                <p>
+                  <strong>Email:</strong> paciente@clinica.com
+                </p>
+                <p>
+                  <strong>Contraseña:</strong> paciente
+                </p>
+                <p className="text-purple-600">Ana López - Paciente registrado</p>
+              </div>
+            </div>
           </div>
         </div>
       </CardFooter>

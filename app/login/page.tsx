@@ -6,7 +6,6 @@ import { useAuth } from "@/contexts/auth-context"
 import { LoginForm } from "./login-form"
 import { UleamBranding } from "@/components/uleam-branding"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Stethoscope, Users, GraduationCap, Shield, Heart, CheckCircle } from "lucide-react"
 
 export default function LoginPage() {
@@ -72,42 +71,125 @@ export default function LoginPage() {
           {/* Demo Credentials */}
           <Card className="border-info-200 bg-info-50">
             <CardHeader>
-              <CardTitle className="text-sm text-info-800">Credenciales de Demostración</CardTitle>
+              <CardTitle className="text-sm text-info-800">👥 Todos los Usuarios Disponibles</CardTitle>
+              <CardDescription className="text-xs text-info-600">
+                Selecciona cualquier usuario para probar el sistema
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="grid gap-2">
-                <div className="flex items-center justify-between p-2 bg-white rounded border border-info-200">
-                  <div className="flex items-center gap-2">
-                    <Users className="h-4 w-4 text-info-600" />
-                    <span className="text-sm font-medium text-primary-800">Paciente</span>
+              <div className="grid gap-3 max-h-64 overflow-y-auto">
+                {/* Administrador */}
+                <div className="p-3 bg-white rounded-lg border border-red-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Shield className="h-4 w-4 text-red-600" />
+                    <span className="text-sm font-semibold text-red-800">Administrador</span>
                   </div>
-                  <Badge className="bg-info-100 text-info-700 border-info-300">paciente@demo.com</Badge>
+                  <div className="text-xs space-y-1">
+                    <p>
+                      <span className="font-medium">Email:</span> admin@clinica.com
+                    </p>
+                    <p>
+                      <span className="font-medium">Contraseña:</span> admin
+                    </p>
+                    <p className="text-red-600 italic">Dr. Admin - Control total del sistema</p>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between p-2 bg-white rounded border border-success-200">
-                  <div className="flex items-center gap-2">
-                    <GraduationCap className="h-4 w-4 text-success-600" />
-                    <span className="text-sm font-medium text-primary-800">Estudiante</span>
+
+                {/* Profesores */}
+                <div className="p-3 bg-white rounded-lg border border-blue-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Stethoscope className="h-4 w-4 text-blue-600" />
+                    <span className="text-sm font-semibold text-blue-800">Profesores Especialistas</span>
                   </div>
-                  <Badge className="bg-success-100 text-success-700 border-success-300">estudiante@demo.com</Badge>
+                  <div className="text-xs space-y-2">
+                    <div className="border-l-2 border-blue-300 pl-2">
+                      <p>
+                        <span className="font-medium">Email:</span> profesor@clinica.com
+                      </p>
+                      <p>
+                        <span className="font-medium">Pass:</span> profesor
+                      </p>
+                      <p className="text-blue-600">Dra. María González - Endodoncia</p>
+                    </div>
+                    <div className="border-l-2 border-blue-300 pl-2">
+                      <p>
+                        <span className="font-medium">Email:</span> endodoncia@clinica.com
+                      </p>
+                      <p>
+                        <span className="font-medium">Pass:</span> endodoncia
+                      </p>
+                      <p className="text-blue-600">Dr. Carlos Ruiz - Endodoncia</p>
+                    </div>
+                    <div className="border-l-2 border-blue-300 pl-2">
+                      <p>
+                        <span className="font-medium">Email:</span> ortodoncia@clinica.com
+                      </p>
+                      <p>
+                        <span className="font-medium">Pass:</span> ortodoncia
+                      </p>
+                      <p className="text-blue-600">Dra. Laura Martín - Ortodoncia</p>
+                    </div>
+                    <div className="border-l-2 border-blue-300 pl-2">
+                      <p>
+                        <span className="font-medium">Email:</span> cirugia@clinica.com
+                      </p>
+                      <p>
+                        <span className="font-medium">Pass:</span> cirugia
+                      </p>
+                      <p className="text-blue-600">Dr. Roberto Silva - Cirugía Oral</p>
+                    </div>
+                    <div className="border-l-2 border-blue-300 pl-2">
+                      <p>
+                        <span className="font-medium">Email:</span> pediatria@clinica.com
+                      </p>
+                      <p>
+                        <span className="font-medium">Pass:</span> pediatria
+                      </p>
+                      <p className="text-blue-600">Dra. Carmen Vega - Odontopediatría</p>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between p-2 bg-white rounded border border-warning-200">
-                  <div className="flex items-center gap-2">
-                    <Stethoscope className="h-4 w-4 text-warning-600" />
-                    <span className="text-sm font-medium text-primary-800">Profesor</span>
+
+                {/* Estudiante */}
+                <div className="p-3 bg-white rounded-lg border border-green-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <GraduationCap className="h-4 w-4 text-green-600" />
+                    <span className="text-sm font-semibold text-green-800">Estudiante</span>
                   </div>
-                  <Badge className="bg-warning-100 text-warning-700 border-warning-300">profesor@demo.com</Badge>
+                  <div className="text-xs space-y-1">
+                    <p>
+                      <span className="font-medium">Email:</span> estudiante@clinica.com
+                    </p>
+                    <p>
+                      <span className="font-medium">Contraseña:</span> estudiante
+                    </p>
+                    <p className="text-green-600 italic">Juan Pérez - Estudiante de Odontología</p>
+                  </div>
                 </div>
-                <div className="flex items-center justify-between p-2 bg-white rounded border border-error-200">
-                  <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-error-600" />
-                    <span className="text-sm font-medium text-primary-800">Admin</span>
+
+                {/* Paciente */}
+                <div className="p-3 bg-white rounded-lg border border-purple-200 shadow-sm">
+                  <div className="flex items-center gap-2 mb-2">
+                    <Users className="h-4 w-4 text-purple-600" />
+                    <span className="text-sm font-semibold text-purple-800">Paciente</span>
                   </div>
-                  <Badge className="bg-error-100 text-error-700 border-error-300">admin@demo.com</Badge>
+                  <div className="text-xs space-y-1">
+                    <p>
+                      <span className="font-medium">Email:</span> paciente@clinica.com
+                    </p>
+                    <p>
+                      <span className="font-medium">Contraseña:</span> paciente
+                    </p>
+                    <p className="text-purple-600 italic">Ana López - Paciente registrado</p>
+                  </div>
                 </div>
               </div>
-              <p className="text-xs text-info-700 text-center">
-                Contraseña para todas las cuentas: <strong>demo123</strong>
-              </p>
+
+              <div className="text-center pt-2 border-t border-info-200">
+                <p className="text-xs text-info-700 font-medium">
+                  💡 Tip: Copia y pega las credenciales para acceso rápido
+                </p>
+              </div>
             </CardContent>
           </Card>
         </div>
