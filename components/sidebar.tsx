@@ -59,6 +59,12 @@ export function Sidebar() {
         icon: Bell,
         description: "Ver notificaciones",
       },
+      {
+        title: "Verificar Workflows",
+        href: "/dashboard/test-workflow",
+        icon: Activity,
+        description: "Probar flujos completos",
+      },
     ]
 
     switch (role) {
