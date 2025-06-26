@@ -6,11 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start",
-    "test": "jest",
-    "test:ci": "jest --ci --coverage --watchAll=false",
-    "test:coverage": "jest --coverage",
-    "test:watch": "jest --watch"
+    "start": "next start"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
@@ -38,6 +34,7 @@
     "@radix-ui/react-slot": "latest",
     "@radix-ui/react-switch": "latest",
     "@radix-ui/react-tabs": "latest",
+    "@radix-ui/react-textarea": "1.0.4",
     "@radix-ui/react-toast": "latest",
     "@radix-ui/react-toggle": "latest",
     "@radix-ui/react-toggle-group": "latest",
@@ -46,7 +43,11 @@
     "@testing-library/jest-dom": "latest",
     "@testing-library/react": "latest",
     "@testing-library/user-event": "latest",
+    "@types/node": "20.5.0",
+    "@types/react": "18.2.21",
+    "@types/react-dom": "18.2.7",
     "@vitejs/plugin-vue": "latest",
+    "autoprefixer": "10.4.15",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "latest",
@@ -64,6 +65,7 @@
     "node-notifier": "latest",
     "path": "latest",
     "pinia": "latest",
+    "postcss": "8.4.28",
     "react": "^18",
     "react-day-picker": "latest",
     "react-dom": "^18",
@@ -76,9 +78,11 @@
     "stylus": "latest",
     "sugarss": "latest",
     "tailwind-merge": "^2.5.5",
+    "tailwindcss": "3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "terser": "latest",
     "tsx": "latest",
+    "typescript": "5.1.6",
     "vaul": "latest",
     "vite": "latest",
     "vue": "latest",
@@ -89,14 +93,9 @@
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "autoprefixer": "10.4.15",
     "eslint": "8.47.0",
     "eslint-config-next": "14.2.16",
     "postcss": "^8.5",
-    "tailwindcss": "3.4.17",
     "typescript": "^5"
-  },
-  "engines": {
-    "node": ">=18.17.0"
   }
 }
