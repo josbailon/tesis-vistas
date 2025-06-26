@@ -1,7 +1,7 @@
 "use client"
 import { screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
-import { renderWithProviders, mockUsers, mockImplementations, jest } from "../utils/test-utils"
+import { renderWithProviders, mockUsers, mockImplementations } from "../utils/test-utils"
 import AdminDashboard from "@/app/dashboard/admin/page"
 import UserManagement from "@/app/dashboard/admin/users/page"
 

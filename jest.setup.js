@@ -15,11 +15,11 @@ jest.mock("next/navigation", () => ({
       refresh: jest.fn(),
     }
   },
-  usePathname() {
-    return "/"
-  },
   useSearchParams() {
     return new URLSearchParams()
+  },
+  usePathname() {
+    return "/"
   },
 }))
 
@@ -32,58 +32,63 @@ const localStorageMock = {
 }
 global.localStorage = localStorageMock
 
-// Mock window.location
-delete window.location
-window.location = {
-  href: "http://localhost:3000",
-  assign: jest.fn(),
-  replace: jest.fn(),
-  reload: jest.fn(),
+// Mock window.matchMedia
+Object.defineProperty(window, "matchMedia", {
+  writable: true,
+  value: jest.fn().mockImplementation((query) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: jest.fn(), // deprecated
+    removeListener: jest.fn(), // deprecated
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+    dispatchEvent: jest.fn(),
+  })),
+})
+
+// Mock IntersectionObserver
+global.IntersectionObserver = class IntersectionObserver {
+  constructor() {}
+  observe() {
+    return null
+  }
+  disconnect() {
+    return null
+  }
+  unobserve() {
+    return null
+  }
 }
 
-// Mock console methods to reduce noise in tests
-global.console = {
-  ...console,
-  log: jest.fn(),
-  debug: jest.fn(),
-  info: jest.fn(),
-  warn: jest.fn(),
-  error: jest.fn(),
+// Mock ResizeObserver
+global.ResizeObserver = class ResizeObserver {
+  constructor() {}
+  observe() {
+    return null
+  }
+  disconnect() {
+    return null
+  }
+  unobserve() {
+    return null
+  }
 }
 
-// Setup test utilities
-global.testUtils = {
-  createMockUser: (role = "patient", overrides = {}) => ({
-    id: "1",
-    email: `${role}@test.com`,
-    name: `Test ${role}`,
-    role,
-    ...overrides,
-  }),
+// Suppress console errors during tests
+const originalError = console.error
+const beforeAll = global.beforeAll
+const afterAll = global.afterAll
 
-  createMockAppointment: (overrides = {}) => ({
-    id: "1",
-    patientId: "1",
-    studentId: "2",
-    professorId: "3",
-    date: "2024-01-15",
-    time: "10:00",
-    duration: 60,
-    status: "confirmed",
-    type: "Consulta",
-    specialty: "Endodoncia",
-    ...overrides,
-  }),
+beforeAll(() => {
+  console.error = (...args) => {
+    if (typeof args[0] === "string" && args[0].includes("Warning: ReactDOM.render is no longer supported")) {
+      return
+    }
+    originalError.call(console, ...args)
+  }
+})
 
-  createMockPatient: (overrides = {}) => ({
-    id: "1",
-    name: "Test Patient",
-    email: "patient@test.com",
-    phone: "123-456-7890",
-    dob: "1990-01-01",
-    address: "Test Address",
-    allergies: null,
-    medicalHistory: null,
-    ...overrides,
-  }),
-}
+afterAll(() => {
+  console.error = originalError
+})

@@ -1,21 +1,41 @@
+import { Loader2 } from "lucide-react"
+import { cn } from "@/lib/utils"
+
 interface LoadingSpinnerProps {
-  message?: string
   size?: "sm" | "md" | "lg"
+  className?: string
+  text?: string
 }
 
-export function LoadingSpinner({ message = "Cargando...", size = "md" }: LoadingSpinnerProps) {
+export function LoadingSpinner({ size = "md", className, text }: LoadingSpinnerProps) {
   const sizeClasses = {
-    sm: "h-8 w-8",
-    md: "h-12 w-12",
-    lg: "h-16 w-16",
+    sm: "h-4 w-4",
+    md: "h-6 w-6",
+    lg: "h-8 w-8",
   }
 
   return (
-    <div className="flex h-full w-full items-center justify-center">
-      <div className="flex flex-col items-center space-y-4">
-        <div className={`animate-spin rounded-full border-b-2 border-primary ${sizeClasses[size]}`}></div>
-        <p className="text-lg font-medium">{message}</p>
+    <div className={cn("flex items-center justify-center", className)}>
+      <div className="flex flex-col items-center space-y-2">
+        <Loader2 className={cn("animate-spin", sizeClasses[size])} />
+        {text && <p className="text-sm text-muted-foreground">{text}</p>}
       </div>
+    </div>
+  )
+}
+
+export function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <LoadingSpinner size="lg" text="Cargando..." />
+    </div>
+  )
+}
+
+export function ComponentLoader({ className }: { className?: string }) {
+  return (
+    <div className={cn("flex items-center justify-center p-4", className)}>
+      <LoadingSpinner size="md" />
     </div>
   )
 }

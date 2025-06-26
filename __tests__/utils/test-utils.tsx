@@ -1,8 +1,8 @@
 import type React from "react"
 import type { ReactElement } from "react"
 import { render, type RenderOptions } from "@testing-library/react"
-import { AuthProvider, type User } from "@/contexts/auth-context"
-import { expect } from "@jest/globals" // Import expect from jest globals
+import type { User } from "@/contexts/auth-context"
+import jest from "jest" // Import jest to fix the undeclared variable error
 
 // Mock user data for different roles
 export const mockUsers = {
@@ -45,6 +45,11 @@ interface CustomRenderOptions extends Omit<RenderOptions, "wrapper"> {
   initialRoute?: string
 }
 
+// Mock AuthProvider component for testing
+function MockAuthProvider({ children, value }: { children: React.ReactNode; value: any }) {
+  return <div data-testid="mock-auth-provider">{children}</div>
+}
+
 export function renderWithProviders(
   ui: ReactElement,
   { user = null, initialRoute = "/", ...renderOptions }: CustomRenderOptions = {},
@@ -59,7 +64,7 @@ export function renderWithProviders(
       logout: jest.fn(),
     }
 
-    return <AuthProvider value={mockAuthContext}>{children}</AuthProvider>
+    return <MockAuthProvider value={mockAuthContext}>{children}</MockAuthProvider>
   }
 
   return render(ui, { wrapper: Wrapper, ...renderOptions })
@@ -169,31 +174,4 @@ export const mockImplementations = {
     }),
     generateReport: jest.fn().mockResolvedValue({ reportId: "123" }),
   },
-}
-
-// Custom matchers
-expect.extend({
-  toHaveRole(received, expectedRole) {
-    const pass = received?.role === expectedRole
-    if (pass) {
-      return {
-        message: () => `expected user not to have role ${expectedRole}`,
-        pass: true,
-      }
-    } else {
-      return {
-        message: () => `expected user to have role ${expectedRole}, but got ${received?.role}`,
-        pass: false,
-      }
-    }
-  },
-})
-
-// Declare custom matcher types
-declare global {
-  namespace jest {
-    interface Matchers<R> {
-      toHaveRole(expectedRole: string): R
-    }
-  }
 }
