@@ -1,18 +1,10 @@
-import type React from "react"
-import type { Metadata } from "next"
-import "./globals.css"
-import { AppointmentProvider } from "@/contexts/appointment-context"
-import { Inter } from "next/font/google"
-import { ThemeProvider } from "@/components/theme-provider"
-import { AuthProvider } from "@/contexts/auth-context"
-import { Toaster } from "@/components/ui/toaster"
-
-const inter = Inter({ subsets: ["latin"] })
+import type { Metadata } from 'next'
+import './globals.css'
 
 export const metadata: Metadata = {
-  title: "Clínica Dental ULEAM",
-  description: "Sistema de gestión de clínica dental universitaria",
-  generator: "v0.dev",
+  title: 'v0 App',
+  description: 'Created with v0',
+  generator: 'v0.dev',
 }
 
 export default function RootLayout({
@@ -21,17 +13,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="es">
-      <body className={inter.className}>
-        <AuthProvider>
-          <AppointmentProvider>
-            <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-              {children}
-              <Toaster />
-            </ThemeProvider>
-          </AppointmentProvider>
-        </AuthProvider>
-      </body>
+    <html lang="en">
+      <body>{children}</body>
     </html>
   )
 }

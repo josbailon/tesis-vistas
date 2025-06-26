@@ -10,4 +10,14 @@ const pinia = createPinia()
 app.use(pinia)
 app.use(router)
 
+// Global error handler
+app.config.errorHandler = (err, vm, info) => {
+  console.error("Global error:", err, info)
+}
+
+// Global warning handler
+app.config.warnHandler = (msg, vm, trace) => {
+  console.warn("Global warning:", msg, trace)
+}
+
 app.mount("#app")

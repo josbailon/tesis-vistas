@@ -9,12 +9,21 @@ export default defineConfig({
       "@": resolve(__dirname, "src"),
     },
   },
-  server: {
-    port: 3000,
-    open: true,
-  },
   build: {
     outDir: "dist",
-    sourcemap: true,
+    assetsDir: "assets",
+    sourcemap: false,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          vendor: ["vue", "vue-router", "pinia"],
+          ui: ["lucide-vue-next"],
+        },
+      },
+    },
+  },
+  server: {
+    port: 3000,
+    host: true,
   },
 })
