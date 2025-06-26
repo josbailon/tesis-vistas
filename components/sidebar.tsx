@@ -68,7 +68,10 @@ export const dashboardConfig: DashboardConfig = {
   getNavigationItems: (role: string | undefined) => {
     let navigationItems: SidebarNavItem[] = []
 
-    if (role === "admin") {
+    // Normalize role for consistent checking
+    const normalizedRole = role?.toLowerCase()
+
+    if (normalizedRole === "admin" || normalizedRole === "administrator") {
       navigationItems = [
         {
           title: "Dashboard",
@@ -136,7 +139,7 @@ export const dashboardConfig: DashboardConfig = {
           description: "Logs y seguridad",
         },
       ]
-    } else if (role === "profesor") {
+    } else if (normalizedRole === "profesor" || normalizedRole === "teacher") {
       navigationItems = [
         {
           title: "Dashboard",
@@ -192,7 +195,7 @@ export const dashboardConfig: DashboardConfig = {
           description: "Seguimiento académico",
         },
       ]
-    } else if (role === "estudiante") {
+    } else if (normalizedRole === "estudiante" || normalizedRole === "student") {
       navigationItems = [
         {
           title: "Dashboard",
@@ -248,7 +251,7 @@ export const dashboardConfig: DashboardConfig = {
           description: "Información personal",
         },
       ]
-    } else if (role === "paciente") {
+    } else if (normalizedRole === "paciente" || normalizedRole === "patient") {
       navigationItems = [
         {
           title: "Dashboard",
@@ -280,7 +283,7 @@ export const dashboardConfig: DashboardConfig = {
           description: "Información personal",
         },
       ]
-    } else if (role === "secretario") {
+    } else if (normalizedRole === "secretario" || normalizedRole === "secretary") {
       navigationItems = [
         {
           title: "Dashboard",
@@ -337,17 +340,12 @@ export const dashboardConfig: DashboardConfig = {
         },
       ]
     } else {
+      // Default navigation for unknown roles
       navigationItems = [
         {
           title: "Dashboard",
           href: "/dashboard",
           icon: LayoutDashboard,
-        },
-        {
-          title: "Citas",
-          href: "/appointments",
-          icon: Calendar,
-          description: "Gestión de citas médicas",
         },
       ]
     }

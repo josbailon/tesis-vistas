@@ -217,13 +217,15 @@ export default function StudentPatientsPage() {
   const activePatients = patients.filter((p) => p.status === "active")
 
   return (
-    <ProtectedRoute requiredRoles={["estudiante"]}>
+    <ProtectedRoute requiredRoles={["estudiante", "student"]}>
       <div className="space-y-6">
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Mis Pacientes</h1>
-            <p className="text-muted-foreground">Gestiona los pacientes asignados a tu cuidado</p>
+            <p className="text-muted-foreground">
+              Gestiona los pacientes asignados a tu cuidado - Usuario: {user?.name} ({user?.role})
+            </p>
           </div>
           <Button>
             <Plus className="mr-2 h-4 w-4" />

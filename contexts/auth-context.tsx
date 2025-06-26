@@ -1,212 +1,149 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react"
+import type React from "react"
+import { createContext, useState, useEffect, type ReactNode, useContext } from "react"
 
-export interface User {
+interface User {
   id: string
-  email: string
   name: string
+  email: string
   role: string
-  specialty?: string
 }
 
-interface AuthContextType {
+interface AuthContextProps {
   user: User | null
-  isLoading: boolean
-  isInitialized: boolean
-  login: (user: User) => void
+  login: (email: string, password: string) => Promise<{ success: boolean; user?: User; error?: string }>
   logout: () => void
+  isLoading: boolean
+  error: string | null
 }
 
-// Export TEST_USERS for testing and development
-export const TEST_USERS = [
-  {
-    id: "1",
-    email: "admin@clinica.com",
-    name: "Dr. Admin",
-    role: "admin",
-    password: "admin",
-  },
-  {
-    id: "2",
-    email: "profesor@clinica.com",
-    name: "Dr. María González",
-    role: "professor",
-    specialty: "Endodoncia",
-    password: "profesor",
-  },
-  {
-    id: "3",
-    email: "estudiante@clinica.com",
-    name: "Juan Pérez",
-    role: "student",
-    password: "estudiante",
-  },
-  {
-    id: "4",
-    email: "paciente@clinica.com",
-    name: "Ana López",
-    role: "patient",
-    password: "paciente",
-  },
-  {
-    id: "5",
-    email: "endodoncia@clinica.com",
-    name: "Dr. Carlos Ruiz",
-    role: "professor",
-    specialty: "Endodoncia",
-    password: "endodoncia",
-  },
-  {
-    id: "6",
-    email: "ortodoncia@clinica.com",
-    name: "Dra. Laura Martín",
-    role: "professor",
-    specialty: "Ortodoncia",
-    password: "ortodoncia",
-  },
-  {
-    id: "7",
-    email: "cirugia@clinica.com",
-    name: "Dr. Roberto Silva",
-    role: "professor",
-    specialty: "Cirugía Oral",
-    password: "cirugia",
-  },
-  {
-    id: "8",
-    email: "pediatria@clinica.com",
-    name: "Dra. Carmen Vega",
-    role: "professor",
-    specialty: "Odontopediatría",
-    password: "pediatria",
-  },
-]
+const AuthContext = createContext<AuthContextProps>({
+  user: null,
+  login: async () => ({ success: false, error: "Not implemented" }),
+  logout: () => {},
+  isLoading: false,
+  error: null,
+})
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
-
-// Global state to prevent multiple initializations
-const globalAuthState = {
-  user: null as User | null,
-  isInitialized: false,
-  isLoading: true,
-  hasInitialized: false,
+interface AuthProviderProps {
+  children: ReactNode
 }
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(globalAuthState.user)
-  const [isLoading, setIsLoading] = useState(globalAuthState.isLoading)
-  const [isInitialized, setIsInitialized] = useState(globalAuthState.isInitialized)
-  const initRef = useRef(false)
+// Add role normalization function at the top of the file
+const normalizeRole = (role: string): string => {
+  const roleMap: { [key: string]: string } = {
+    student: "estudiante",
+    teacher: "profesor",
+    admin: "admin",
+    administrator: "admin",
+    secretary: "secretario",
+    patient: "paciente",
+  }
 
-  // Single initialization effect
-  useEffect(() => {
-    if (initRef.current || globalAuthState.hasInitialized) {
-      // If already initialized, sync with global state
-      setUser(globalAuthState.user)
+  const normalizedRole = roleMap[role.toLowerCase()] || role.toLowerCase()
+  console.log(`🔄 Role normalized: ${role} -> ${normalizedRole}`)
+  return normalizedRole
+}
+
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [isInitialized, setIsInitialized] = useState(false)
+
+  // Update the login function to normalize roles
+  const login = async (email: string, password: string) => {
+    try {
+      setIsLoading(true)
+      setError(null)
+
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || "Error en el login")
+      }
+
+      // Normalize the role before setting the user
+      const normalizedUser = {
+        ...data.user,
+        role: normalizeRole(data.user.role),
+      }
+
+      setUser(normalizedUser)
+      console.log("✅ Login successful:", normalizedUser)
+
+      return { success: true, user: normalizedUser }
+    } catch (error) {
+      console.error("❌ Login error:", error)
+      const errorMessage = error instanceof Error ? error.message : "Error desconocido"
+      setError(errorMessage)
+      return { success: false, error: errorMessage }
+    } finally {
       setIsLoading(false)
-      setIsInitialized(true)
-      return
     }
+  }
 
-    initRef.current = true
-    globalAuthState.hasInitialized = true
+  const logout = () => {
+    setUser(null)
+    // Remove the session cookie by making a request to the logout endpoint
+    fetch("/api/auth/logout", { method: "POST" })
+      .then(() => {
+        console.log("User logged out")
+      })
+      .catch((error) => {
+        console.error("Logout error:", error)
+      })
+  }
 
+  // Update the session restoration to normalize roles
+  useEffect(() => {
     const initializeAuth = async () => {
+      if (isInitialized) return
+
+      console.log("🔄 Initializing authentication (single instance)...")
+
       try {
-        console.log("🔄 Initializing authentication (single instance)...")
+        const response = await fetch("/api/auth/session", {
+          credentials: "include",
+        })
 
-        const savedUser = localStorage.getItem("clinic_user")
-        const savedExpiry = localStorage.getItem("clinic_expiry")
-
-        if (savedUser && savedExpiry) {
-          const expiry = Number.parseInt(savedExpiry)
-          if (Date.now() < expiry) {
-            const userData = JSON.parse(savedUser)
-            globalAuthState.user = userData
-            setUser(userData)
-            console.log("✅ User restored:", userData.role, userData.name)
-          } else {
-            console.log("⚠️ Session expired, cleaning up")
-            localStorage.removeItem("clinic_user")
-            localStorage.removeItem("clinic_expiry")
-            globalAuthState.user = null
-            setUser(null)
+        if (response.ok) {
+          const data = await response.json()
+          if (data.user) {
+            // Normalize the role when restoring session
+            const normalizedUser = {
+              ...data.user,
+              role: normalizeRole(data.user.role),
+            }
+            setUser(normalizedUser)
+            console.log("✅ User restored:", normalizedUser.name, "Role:", normalizedUser.role)
           }
-        } else {
-          console.log("ℹ️ No saved session found")
-          globalAuthState.user = null
-          setUser(null)
         }
       } catch (error) {
-        console.error("❌ Auth initialization error:", error)
-        localStorage.removeItem("clinic_user")
-        localStorage.removeItem("clinic_expiry")
-        globalAuthState.user = null
-        setUser(null)
+        console.error("❌ Session restoration failed:", error)
       } finally {
-        globalAuthState.isLoading = false
-        globalAuthState.isInitialized = true
-        setIsLoading(false)
         setIsInitialized(true)
         console.log("✅ Auth initialization complete")
       }
     }
 
     initializeAuth()
-  }, [])
+  }, [isInitialized])
 
-  const login = (userData: User) => {
-    try {
-      console.log("🔐 Logging in user:", userData.role, userData.name)
+  const value = { user, login, logout, isLoading, error }
 
-      // Update global state
-      globalAuthState.user = userData
-      setUser(userData)
-
-      // Save to localStorage
-      localStorage.setItem("clinic_user", JSON.stringify(userData))
-      localStorage.setItem("clinic_expiry", (Date.now() + 24 * 60 * 60 * 1000).toString())
-
-      console.log("✅ Login successful")
-    } catch (error) {
-      console.error("❌ Login error:", error)
-    }
-  }
-
-  const logout = () => {
-    console.log("🚪 Logging out user")
-
-    // Update global state
-    globalAuthState.user = null
-    setUser(null)
-
-    // Clear localStorage
-    localStorage.removeItem("clinic_user")
-    localStorage.removeItem("clinic_expiry")
-
-    console.log("✅ Logout complete")
-  }
-
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isInitialized,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export const useAuth = () => {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider")
-  }
-  return context
+  return useContext(AuthContext)
 }

@@ -1,83 +1,78 @@
 "use client"
 
-import type { ReactNode } from "react"
+import type React from "react"
+
 import { useEffect } from "react"
-import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
+import { LoadingSpinner } from "@/components/loading-spinner"
 
 interface ProtectedRouteProps {
-  children: ReactNode
+  children: React.ReactNode
   requiredRoles?: string[]
-  fallbackPath?: string
 }
 
-export function ProtectedRoute({ children, requiredRoles = [], fallbackPath = "/login" }: ProtectedRouteProps) {
+export function ProtectedRoute({ children, requiredRoles = [] }: ProtectedRouteProps) {
   const { user, isLoading, isInitialized } = useAuth()
-  const router = useRouter()
 
   useEffect(() => {
-    // Only redirect after auth is initialized
-    if (isInitialized && !isLoading) {
-      if (!user) {
-        console.log("🔄 No user found, redirecting to:", fallbackPath)
-        router.replace(fallbackPath)
-        return
-      }
-
-      if (requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
-        console.log("🔄 Insufficient permissions, redirecting to dashboard")
-        router.replace("/dashboard")
-        return
-      }
+    if (isInitialized && !isLoading && !user) {
+      console.log("🔄 No user found, redirecting to login")
+      window.location.href = "/login"
     }
-  }, [user, isLoading, isInitialized, requiredRoles, router, fallbackPath])
+  }, [user, isLoading, isInitialized])
 
-  // Show loading while initializing
+  // Show loading during initialization
   if (!isInitialized || isLoading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-green-50">
-        <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-200 border-t-green-600 mx-auto mb-4"></div>
-          <p className="text-lg font-medium text-green-800">Verificando acceso...</p>
-          <p className="text-sm text-green-600 mt-2">Inicializando autenticación</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Verificando permisos..." />
   }
 
-  // Show unauthorized if no user after initialization
+  // Redirect if no user
   if (!user) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-green-50">
-        <div className="text-center">
-          <div className="h-12 w-12 animate-spin rounded-full border-4 border-green-200 border-t-green-600 mx-auto mb-4"></div>
-          <p className="text-lg font-medium text-green-800">Redirigiendo...</p>
-        </div>
-      </div>
-    )
+    return <LoadingSpinner message="Redirigiendo al login..." />
   }
 
-  // Show access denied for insufficient permissions
-  if (requiredRoles.length > 0 && !requiredRoles.includes(user.role)) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center p-6 bg-green-50">
-        <div className="w-full max-w-md text-center">
-          <div className="rounded-lg border border-red-200 bg-red-50 p-6">
-            <h2 className="text-lg font-semibold text-red-800 mb-2">Acceso Denegado</h2>
-            <p className="text-red-600 mb-4">No tienes permisos para acceder a esta página.</p>
-            <p className="text-sm text-red-500 mb-4">
-              Rol requerido: {requiredRoles.join(", ")} | Tu rol: {user.role}
+  // Check role permissions if required roles are specified
+  if (requiredRoles.length > 0) {
+    const userRole = user.role?.toLowerCase()
+    const hasPermission = requiredRoles.some((role) => {
+      const requiredRole = role.toLowerCase()
+      // Handle role variations
+      if (requiredRole === "estudiante" && (userRole === "student" || userRole === "estudiante")) {
+        return true
+      }
+      if (requiredRole === "profesor" && (userRole === "teacher" || userRole === "profesor")) {
+        return true
+      }
+      if (requiredRole === "admin" && (userRole === "admin" || userRole === "administrator")) {
+        return true
+      }
+      if (requiredRole === "secretario" && (userRole === "secretary" || userRole === "secretario")) {
+        return true
+      }
+      if (requiredRole === "paciente" && (userRole === "patient" || userRole === "paciente")) {
+        return true
+      }
+      return requiredRole === userRole
+    })
+
+    if (!hasPermission) {
+      console.log(`🔄 Insufficient permissions. User role: ${userRole}, Required: ${requiredRoles.join(", ")}`)
+      return (
+        <div className="flex items-center justify-center h-96">
+          <div className="text-center">
+            <div className="text-6xl mb-4">🚫</div>
+            <h2 className="text-xl font-semibold text-gray-800 mb-2">Acceso Denegado</h2>
+            <p className="text-gray-600 mb-4">No tienes permisos para acceder a esta página.</p>
+            <p className="text-sm text-gray-500">
+              Tu rol: <span className="font-medium">{user.role}</span>
             </p>
-            <button
-              onClick={() => router.replace("/dashboard")}
-              className="rounded-md bg-green-600 px-4 py-2 text-sm font-medium text-white hover:bg-green-700"
-            >
-              Ir al Dashboard
-            </button>
+            <p className="text-sm text-gray-500">
+              Roles requeridos: <span className="font-medium">{requiredRoles.join(", ")}</span>
+            </p>
           </div>
         </div>
-      </div>
-    )
+      )
+    }
   }
 
   return <>{children}</>

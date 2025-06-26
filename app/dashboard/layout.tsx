@@ -13,6 +13,7 @@ export default function DashboardLayout({
   const { user, isLoading, isInitialized } = useAuth()
   const redirectHandled = useRef(false)
 
+  // Update the user check and role handling
   useEffect(() => {
     if (isInitialized && !isLoading && !user && !redirectHandled.current) {
       redirectHandled.current = true
@@ -31,6 +32,11 @@ export default function DashboardLayout({
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mx-auto mb-4"></div>
           <p className="text-primary-800 font-medium">Cargando dashboard...</p>
+          {user && (
+            <p className="text-sm text-primary-600 mt-2">
+              Usuario: {user.name} ({user.role})
+            </p>
+          )}
         </div>
       </div>
     )
@@ -47,6 +53,8 @@ export default function DashboardLayout({
       </div>
     )
   }
+
+  console.log("✅ Dashboard rendering for user:", user.name, "Role:", user.role)
 
   return (
     <div className="flex h-screen bg-soft-gradient">
