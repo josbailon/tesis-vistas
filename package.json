@@ -6,9 +6,7 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start",
-    "test": "jest",
-    "test:watch": "jest --watch"
+    "start": "next start"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
@@ -41,8 +39,11 @@
     "@radix-ui/react-toggle-group": "latest",
     "@radix-ui/react-tooltip": "latest",
     "@testing-library/dom": "latest",
+    "@testing-library/jest-dom": "latest",
+    "@testing-library/react": "latest",
     "@testing-library/user-event": "latest",
     "@vitejs/plugin-vue": "latest",
+    "autoprefixer": "^10.4.20",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "latest",
@@ -50,6 +51,7 @@
     "embla-carousel-react": "latest",
     "framer-motion": "latest",
     "input-otp": "latest",
+    "jest": "latest",
     "jiti": "latest",
     "less": "latest",
     "lightningcss": "latest",
@@ -59,6 +61,7 @@
     "node-notifier": "latest",
     "path": "latest",
     "pinia": "latest",
+    "postcss": "^8.4.49",
     "react": "^18",
     "react-day-picker": "latest",
     "react-dom": "^18",
@@ -71,6 +74,7 @@
     "stylus": "latest",
     "sugarss": "latest",
     "tailwind-merge": "^2.5.5",
+    "tailwindcss": "^3.4.17",
     "tailwindcss-animate": "^1.0.7",
     "terser": "latest",
     "tsx": "latest",
@@ -81,19 +85,12 @@
     "yaml": "latest"
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.1.0",
-    "@types/jest": "^29.5.14",
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "autoprefixer": "^10.4.20",
     "eslint": "^8.57.1",
     "eslint-config-next": "14.2.18",
-    "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.7.0",
     "postcss": "^8.5",
-    "tailwindcss": "^3.4.17",
     "typescript": "^5"
   }
 }

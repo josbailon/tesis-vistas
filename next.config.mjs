@@ -4,13 +4,6 @@ const nextConfig = {
     optimizePackageImports: ['lucide-react']
   },
   transpilePackages: ['lucide-react'],
-  webpack: (config) => {
-    config.resolve.alias = {
-      ...config.resolve.alias,
-      '@': '.',
-    }
-    return config
-  },
   eslint: {
     ignoreDuringBuilds: true,
   },
