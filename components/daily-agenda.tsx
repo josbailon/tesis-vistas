@@ -1,13 +1,9 @@
 "use client"
 
-import { format, addDays, subDays, isSameDay } from "date-fns"
-import { es } from "date-fns/locale"
-import { ChevronLeft, ChevronRight, Calendar, Clock, User, MoreVertical } from "lucide-react"
+import { useState } from "react"
+import { Calendar, Clock, User, MapPin } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { useAppointments } from "@/contexts/appointment-context"
 
 interface DailyAgendaProps {
   selectedDate: Date
@@ -15,143 +11,139 @@ interface DailyAgendaProps {
 }
 
 export function DailyAgenda({ selectedDate, onDateChange }: DailyAgendaProps) {
-  const { appointments, updateAppointmentStatus } = useAppointments()
+  const [appointments] = useState([
+    {
+      id: "1",
+      time: "09:00",
+      duration: 30,
+      patientName: "María García",
+      type: "Consulta General",
+      status: "confirmada",
+      room: "Consultorio 1",
+    },
+    {
+      id: "2",
+      time: "10:30",
+      duration: 45,
+      patientName: "Juan Pérez",
+      type: "Limpieza Dental",
+      status: "pendiente",
+      room: "Consultorio 2",
+    },
+    {
+      id: "3",
+      time: "14:00",
+      duration: 60,
+      patientName: "Ana López",
+      type: "Tratamiento de Conducto",
+      status: "confirmada",
+      room: "Consultorio 3",
+    },
+  ])
 
-  const dayAppointments = appointments
-    .filter((apt) => isSameDay(new Date(`${apt.date}T${apt.time}`), selectedDate))
-    .sort((a, b) => a.time.localeCompare(b.time))
+  const formatDate = (date: Date) => {
+    return date.toLocaleDateString("es-ES", {
+      weekday: "long",
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "programada":
-        return "bg-blue-100 text-blue-800"
       case "confirmada":
         return "bg-green-100 text-green-800"
-      case "completada":
-        return "bg-gray-100 text-gray-800"
+      case "pendiente":
+        return "bg-yellow-100 text-yellow-800"
       case "cancelada":
         return "bg-red-100 text-red-800"
-      case "no-asistio":
-        return "bg-orange-100 text-orange-800"
       default:
         return "bg-gray-100 text-gray-800"
     }
   }
 
-  const timeSlots = Array.from({ length: 20 }, (_, i) => {
-    const hour = 8 + Math.floor(i / 2)
-    const minute = i % 2 === 0 ? "00" : "30"
-    return `${hour.toString().padStart(2, "0")}:${minute}`
-  })
-
   return (
     <div className="space-y-6">
-      {/* Date Navigation */}
+      {/* Date Header */}
       <Card>
         <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="flex items-center gap-2">
-                <Calendar className="h-5 w-5" />
-                Agenda Diaria
-              </CardTitle>
-              <CardDescription>{format(selectedDate, "EEEE, d 'de' MMMM 'de' yyyy", { locale: es })}</CardDescription>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="outline" size="sm" onClick={() => onDateChange(subDays(selectedDate, 1))}>
-                <ChevronLeft className="h-4 w-4" />
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => onDateChange(new Date())}>
-                Hoy
-              </Button>
-              <Button variant="outline" size="sm" onClick={() => onDateChange(addDays(selectedDate, 1))}>
-                <ChevronRight className="h-4 w-4" />
-              </Button>
-            </div>
-          </div>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Agenda para {formatDate(selectedDate)}
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>{dayAppointments.length} citas programadas</span>
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                <span>Programada</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <span>Confirmada</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <div className="w-3 h-3 bg-gray-500 rounded-full"></div>
-                <span>Completada</span>
-              </div>
-            </div>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => onDateChange(new Date(selectedDate.getTime() - 24 * 60 * 60 * 1000))}
+            >
+              Día Anterior
+            </Button>
+            <Button variant="outline" onClick={() => onDateChange(new Date())}>
+              Hoy
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => onDateChange(new Date(selectedDate.getTime() + 24 * 60 * 60 * 1000))}
+            >
+              Día Siguiente
+            </Button>
           </div>
         </CardContent>
       </Card>
 
-      {/* Time Slots */}
-      <Card>
-        <CardContent className="p-0">
-          <div className="divide-y">
-            {timeSlots.map((timeSlot) => {
-              const appointment = dayAppointments.find((apt) => apt.time === timeSlot)
-
-              return (
-                <div key={timeSlot} className="flex items-center p-4 hover:bg-gray-50">
-                  <div className="w-20 text-sm font-medium text-gray-600">{timeSlot}</div>
-
-                  {appointment ? (
-                    <div className="flex-1 flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div>
-                          <h4 className="font-medium">{appointment.title}</h4>
-                          <div className="flex items-center space-x-2 text-sm text-gray-600">
-                            <User className="h-3 w-3" />
-                            <span>{appointment.patientName}</span>
-                            <Clock className="h-3 w-3 ml-2" />
-                            <span>{appointment.duration} min</span>
-                          </div>
-                          {appointment.notes && <p className="text-sm text-gray-500 mt-1">{appointment.notes}</p>}
-                        </div>
-                      </div>
-
-                      <div className="flex items-center space-x-2">
-                        <Badge className={getStatusColor(appointment.status)}>{appointment.status}</Badge>
-
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="sm">
-                              <MoreVertical className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "confirmada")}>
-                              Marcar como Confirmada
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "completada")}>
-                              Marcar como Completada
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "cancelada")}>
-                              Cancelar Cita
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => updateAppointmentStatus(appointment.id, "no-asistio")}>
-                              Marcar como No Asistió
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
+      {/* Appointments List */}
+      <div className="space-y-4">
+        {appointments.length === 0 ? (
+          <Card>
+            <CardContent className="pt-6">
+              <div className="text-center py-8">
+                <Calendar className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+                <p className="text-gray-500">No hay citas programadas para este día</p>
+              </div>
+            </CardContent>
+          </Card>
+        ) : (
+          appointments.map((appointment) => (
+            <Card key={appointment.id} className="hover:shadow-md transition-shadow">
+              <CardContent className="pt-6">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center space-x-4">
+                    <div className="flex items-center text-sm text-gray-500">
+                      <Clock className="h-4 w-4 mr-1" />
+                      {appointment.time}
                     </div>
-                  ) : (
-                    <div className="flex-1 text-gray-400 text-sm">Disponible</div>
-                  )}
+                    <div className="flex items-center text-sm text-gray-500">
+                      <User className="h-4 w-4 mr-1" />
+                      {appointment.patientName}
+                    </div>
+                    <div className="flex items-center text-sm text-gray-500">
+                      <MapPin className="h-4 w-4 mr-1" />
+                      {appointment.room}
+                    </div>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <span
+                      className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(appointment.status)}`}
+                    >
+                      {appointment.status}
+                    </span>
+                    <Button variant="outline" size="sm">
+                      Ver Detalles
+                    </Button>
+                  </div>
                 </div>
-              )
-            })}
-          </div>
-        </CardContent>
-      </Card>
+                <div className="mt-2">
+                  <p className="font-medium">{appointment.type}</p>
+                  <p className="text-sm text-gray-500">Duración: {appointment.duration} minutos</p>
+                </div>
+              </CardContent>
+            </Card>
+          ))
+        )}
+      </div>
     </div>
   )
 }
