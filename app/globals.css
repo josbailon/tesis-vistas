@@ -120,6 +120,33 @@ body {
   }
 }
 
+/* Medical theme colors */
+:root {
+  --medical-blue: #2563eb;
+  --medical-green: #059669;
+  --medical-red: #dc2626;
+  --medical-orange: #ea580c;
+  --medical-gray: #6b7280;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f5f9;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
 @layer components {
   .traffic-light-glow {
     box-shadow: 0 0 10px currentColor;
