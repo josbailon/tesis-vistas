@@ -1,246 +1,251 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
-import { UleamBranding } from "@/components/uleam-branding"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Stethoscope, Users, GraduationCap, Shield, Heart, CheckCircle } from "lucide-react"
-import { LoginForm } from "@/app/login/login-form"
+import { Button } from "@/components/ui/button"
+import { UleamBranding } from "@/components/uleam-branding"
+import { Heart, Users, GraduationCap, Stethoscope, Calendar, FileText, ArrowRight, Shield, Clock } from "lucide-react"
 
 export default function HomePage() {
   const { user, isLoading, isInitialized } = useAuth()
   const router = useRouter()
-  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
-
-  useEffect(() => {
-    if (mounted && user && isInitialized) {
-      router.replace("/dashboard")
+    if (isInitialized && user) {
+      router.push("/dashboard")
     }
-  }, [user, isInitialized, mounted, router])
+  }, [user, isInitialized, router])
 
-  // Show loading while auth is initializing
-  if (!mounted || !isInitialized || isLoading) {
+  if (isLoading || !isInitialized) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-blue-800 font-medium">Cargando sistema...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600 mx-auto mb-4"></div>
+          <p className="text-green-800 font-medium">Cargando...</p>
         </div>
       </div>
     )
   }
 
-  // If user is logged in, show redirect message
   if (user) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-blue-50">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto mb-4"></div>
-          <p className="text-blue-800 font-medium">Redirigiendo al dashboard...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600 mx-auto mb-4"></div>
+          <p className="text-green-800 font-medium">Redirigiendo al dashboard...</p>
         </div>
       </div>
     )
   }
 
-  // Show login page
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex">
-      {/* Left side - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8">
-        <div className="w-full max-w-md space-y-8">
-          <div className="text-center">
-            <UleamBranding variant="full" />
-            <h2 className="mt-6 text-3xl font-bold text-gray-900">Iniciar Sesión</h2>
-            <p className="mt-2 text-sm text-gray-600">Accede a la plataforma de la Clínica Dental Universitaria</p>
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50">
+      {/* Header */}
+      <header className="bg-white/80 backdrop-blur-sm border-b border-green-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center py-6">
+            <UleamBranding variant="compact" />
+            <div className="flex gap-4">
+              <Button
+                variant="outline"
+                onClick={() => router.push("/login")}
+                className="border-green-600 text-green-600 hover:bg-green-50"
+              >
+                Iniciar Sesión
+              </Button>
+              <Button onClick={() => router.push("/register")} className="bg-green-600 hover:bg-green-700 text-white">
+                Registrarse
+              </Button>
+            </div>
           </div>
-
-          <Card className="border-gray-200 shadow-lg">
-            <CardHeader>
-              <CardTitle className="text-center text-gray-900">Bienvenido</CardTitle>
-              <CardDescription className="text-center text-gray-600">
-                Ingresa tus credenciales para continuar
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <LoginForm />
-            </CardContent>
-          </Card>
-
-          {/* Demo Credentials */}
-          <Card className="border-blue-200 bg-blue-50">
-            <CardHeader>
-              <CardTitle className="text-sm text-blue-800">👥 Todos los Usuarios Disponibles</CardTitle>
-              <CardDescription className="text-xs text-blue-600">
-                Selecciona cualquier usuario para probar el sistema
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid gap-3 max-h-64 overflow-y-auto">
-                {/* Administrador */}
-                <div className="p-3 bg-white rounded-lg border border-red-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Shield className="h-4 w-4 text-red-600" />
-                    <span className="text-sm font-semibold text-red-800">Administrador</span>
-                  </div>
-                  <div className="text-xs space-y-1">
-                    <p>
-                      <span className="font-medium">Email:</span> admin@clinica.com
-                    </p>
-                    <p>
-                      <span className="font-medium">Contraseña:</span> admin
-                    </p>
-                    <p className="text-red-600 italic">Dr. Admin - Control total del sistema</p>
-                  </div>
-                </div>
-
-                {/* Profesores */}
-                <div className="p-3 bg-white rounded-lg border border-blue-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Stethoscope className="h-4 w-4 text-blue-600" />
-                    <span className="text-sm font-semibold text-blue-800">Profesores Especialistas</span>
-                  </div>
-                  <div className="text-xs space-y-2">
-                    <div className="border-l-2 border-blue-300 pl-2">
-                      <p>
-                        <span className="font-medium">Email:</span> profesor@clinica.com
-                      </p>
-                      <p>
-                        <span className="font-medium">Pass:</span> profesor
-                      </p>
-                      <p className="text-blue-600">Dra. María González - Endodoncia</p>
-                    </div>
-                    <div className="border-l-2 border-blue-300 pl-2">
-                      <p>
-                        <span className="font-medium">Email:</span> endodoncia@clinica.com
-                      </p>
-                      <p>
-                        <span className="font-medium">Pass:</span> endodoncia
-                      </p>
-                      <p className="text-blue-600">Dr. Carlos Ruiz - Endodoncia</p>
-                    </div>
-                    <div className="border-l-2 border-blue-300 pl-2">
-                      <p>
-                        <span className="font-medium">Email:</span> ortodoncia@clinica.com
-                      </p>
-                      <p>
-                        <span className="font-medium">Pass:</span> ortodoncia
-                      </p>
-                      <p className="text-blue-600">Dra. Laura Martín - Ortodoncia</p>
-                    </div>
-                    <div className="border-l-2 border-blue-300 pl-2">
-                      <p>
-                        <span className="font-medium">Email:</span> cirugia@clinica.com
-                      </p>
-                      <p>
-                        <span className="font-medium">Pass:</span> cirugia
-                      </p>
-                      <p className="text-blue-600">Dr. Roberto Silva - Cirugía Oral</p>
-                    </div>
-                    <div className="border-l-2 border-blue-300 pl-2">
-                      <p>
-                        <span className="font-medium">Email:</span> pediatria@clinica.com
-                      </p>
-                      <p>
-                        <span className="font-medium">Pass:</span> pediatria
-                      </p>
-                      <p className="text-blue-600">Dra. Carmen Vega - Odontopediatría</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Estudiante */}
-                <div className="p-3 bg-white rounded-lg border border-green-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <GraduationCap className="h-4 w-4 text-green-600" />
-                    <span className="text-sm font-semibold text-green-800">Estudiante</span>
-                  </div>
-                  <div className="text-xs space-y-1">
-                    <p>
-                      <span className="font-medium">Email:</span> estudiante@clinica.com
-                    </p>
-                    <p>
-                      <span className="font-medium">Contraseña:</span> estudiante
-                    </p>
-                    <p className="text-green-600 italic">Juan Pérez - Estudiante de Odontología</p>
-                  </div>
-                </div>
-
-                {/* Paciente */}
-                <div className="p-3 bg-white rounded-lg border border-purple-200 shadow-sm">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Users className="h-4 w-4 text-purple-600" />
-                    <span className="text-sm font-semibold text-purple-800">Paciente</span>
-                  </div>
-                  <div className="text-xs space-y-1">
-                    <p>
-                      <span className="font-medium">Email:</span> paciente@clinica.com
-                    </p>
-                    <p>
-                      <span className="font-medium">Contraseña:</span> paciente
-                    </p>
-                    <p className="text-purple-600 italic">Ana López - Paciente registrado</p>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-center pt-2 border-t border-blue-200">
-                <p className="text-xs text-blue-700 font-medium">
-                  💡 Tip: Copia y pega las credenciales para acceso rápido
-                </p>
-              </div>
-            </CardContent>
-          </Card>
         </div>
-      </div>
+      </header>
 
-      {/* Right side - Information */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-blue-600 to-indigo-700 text-white p-8 items-center justify-center">
-        <div className="max-w-lg space-y-8">
-          <div className="text-center">
-            <Heart className="h-16 w-16 mx-auto mb-4 text-white" />
-            <h3 className="text-2xl font-bold mb-4">Clínica Dental Universitaria ULEAM</h3>
-            <p className="text-blue-100 leading-relaxed">
-              Plataforma integral para la gestión de la clínica dental universitaria, conectando estudiantes,
-              profesores, pacientes y administradores.
+      {/* Hero Section */}
+      <section className="py-20 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <div className="mb-8">
+            <Heart className="h-20 w-20 mx-auto text-green-600 mb-6" />
+            <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+              Clínica Dental
+              <span className="block text-green-600">Universitaria ULEAM</span>
+            </h1>
+            <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+              Plataforma integral de gestión para estudiantes, profesores, pacientes y administradores. Servicios
+              odontológicos gratuitos con la más alta calidad académica.
             </p>
           </div>
 
-          <div className="space-y-4">
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-blue-200" />
-              <span className="text-blue-100">Servicios odontológicos gratuitos</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-blue-200" />
-              <span className="text-blue-100">Atención supervisada por especialistas</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-blue-200" />
-              <span className="text-blue-100">Tecnología de última generación</span>
-            </div>
-            <div className="flex items-center gap-3">
-              <CheckCircle className="h-5 w-5 text-blue-200" />
-              <span className="text-blue-100">Formación práctica de excelencia</span>
-            </div>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              size="lg"
+              onClick={() => router.push("/login")}
+              className="bg-green-600 hover:bg-green-700 text-white px-8 py-4 text-lg"
+            >
+              Acceder al Sistema
+              <ArrowRight className="ml-2 h-5 w-5" />
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => router.push("/register")}
+              className="border-green-600 text-green-600 hover:bg-green-50 px-8 py-4 text-lg"
+            >
+              Registrarse como Paciente
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="py-20 bg-white/50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">¿Qué ofrecemos?</h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Una plataforma completa que conecta a toda la comunidad de la clínica dental universitaria
+            </p>
           </div>
 
-          <div className="grid grid-cols-2 gap-4 pt-8">
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">4</div>
-              <div className="text-sm text-blue-200">Especialidades</div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <Card className="text-center border-green-200 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <Users className="h-12 w-12 mx-auto text-green-600 mb-4" />
+                <CardTitle className="text-green-800">Para Pacientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-600">
+                  Agenda citas gratuitas, consulta tu historial médico y recibe atención de calidad
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-blue-200 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <GraduationCap className="h-12 w-12 mx-auto text-blue-600 mb-4" />
+                <CardTitle className="text-blue-800">Para Estudiantes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-600">
+                  Gestiona pacientes, realiza tratamientos supervisados y desarrolla habilidades clínicas
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-purple-200 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <Stethoscope className="h-12 w-12 mx-auto text-purple-600 mb-4" />
+                <CardTitle className="text-purple-800">Para Profesores</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-600">
+                  Supervisa estudiantes, evalúa casos clínicos y gestiona el proceso académico
+                </CardDescription>
+              </CardContent>
+            </Card>
+
+            <Card className="text-center border-red-200 hover:shadow-lg transition-shadow">
+              <CardHeader>
+                <Shield className="h-12 w-12 mx-auto text-red-600 mb-4" />
+                <CardTitle className="text-red-800">Para Administradores</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-gray-600">
+                  Control total del sistema, gestión de usuarios y análisis de datos
+                </CardDescription>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Services Section */}
+      <section className="py-20">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold text-gray-900 mb-4">Servicios Disponibles</h2>
+            <p className="text-lg text-gray-600">Atención odontológica integral completamente gratuita</p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <div className="bg-white rounded-lg p-6 shadow-lg border border-green-200">
+              <Calendar className="h-10 w-10 text-green-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Endodoncia</h3>
+              <p className="text-gray-600">Tratamientos de conducto y terapia pulpar</p>
             </div>
-            <div className="text-center">
-              <div className="text-3xl font-bold text-white">100%</div>
-              <div className="text-sm text-blue-200">Gratuito</div>
+
+            <div className="bg-white rounded-lg p-6 shadow-lg border border-blue-200">
+              <FileText className="h-10 w-10 text-blue-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Ortodoncia</h3>
+              <p className="text-gray-600">Corrección de malposiciones dentales</p>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 shadow-lg border border-purple-200">
+              <Clock className="h-10 w-10 text-purple-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Cirugía Oral</h3>
+              <p className="text-gray-600">Extracciones y procedimientos quirúrgicos</p>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 shadow-lg border border-red-200">
+              <Heart className="h-10 w-10 text-red-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Odontopediatría</h3>
+              <p className="text-gray-600">Atención dental especializada para niños</p>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 shadow-lg border border-green-200">
+              <Users className="h-10 w-10 text-green-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Operatoria Dental</h3>
+              <p className="text-gray-600">Restauraciones y tratamientos conservadores</p>
+            </div>
+
+            <div className="bg-white rounded-lg p-6 shadow-lg border border-blue-200">
+              <Stethoscope className="h-10 w-10 text-blue-600 mb-4" />
+              <h3 className="text-xl font-semibold text-gray-900 mb-2">Periodoncia</h3>
+              <p className="text-gray-600">Tratamiento de encías y tejidos de soporte</p>
             </div>
           </div>
         </div>
-      </div>
+      </section>
+
+      {/* CTA Section */}
+      <section className="py-20 bg-gradient-to-r from-green-600 to-blue-600 text-white">
+        <div className="max-w-4xl mx-auto text-center px-4 sm:px-6 lg:px-8">
+          <h2 className="text-3xl font-bold mb-4">¿Listo para comenzar?</h2>
+          <p className="text-xl mb-8 text-green-100">
+            Únete a nuestra comunidad y accede a servicios odontológicos de calidad
+          </p>
+          <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <Button
+              size="lg"
+              onClick={() => router.push("/login")}
+              className="bg-white text-green-600 hover:bg-gray-100 px-8 py-4 text-lg"
+            >
+              Iniciar Sesión
+            </Button>
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => router.push("/register")}
+              className="border-white text-white hover:bg-white/10 px-8 py-4 text-lg"
+            >
+              Registrarse
+            </Button>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-900 text-white py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <UleamBranding variant="compact" className="mb-4" />
+            <p className="text-gray-400 mb-4">Universidad Laica Eloy Alfaro de Manabí - Clínica Dental Universitaria</p>
+            <p className="text-gray-500 text-sm">© 2024 ULEAM. Todos los derechos reservados.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
