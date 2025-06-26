@@ -6,7 +6,7 @@
   "devCommand": "npm run dev",
   "functions": {
     "app/api/**/*.ts": {
-      "runtime": "nodejs18.x"
+      "runtime": "@vercel/node@3.0.7"
     }
   },
   "rewrites": [
@@ -37,5 +37,9 @@
         }
       ]
     }
-  ]
+  ],
+  "regions": ["iad1"],
+  "env": {
+    "NODE_ENV": "production"
+  }
 }
