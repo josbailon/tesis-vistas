@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button"
 import { useAuth } from "@/contexts/auth-context"
 
 export function AuthDebug() {
-  const { user, isAuthenticated, checkAuth, logout } = useAuth()
+  const { user, isAuthenticated, checkAuth, logout, isLoading, isInitialized } = useAuth()
   const [showDebug, setShowDebug] = useState(false)
   const [storageData, setStorageData] = useState<any>(null)
 
@@ -70,6 +70,13 @@ export function AuthDebug() {
           </div>
           <div>
             <strong>¿Expirada?</strong> {storageData?.isExpired ? "Sí" : "No"}
+          </div>
+          <div>
+            <strong>Auth Status:</strong>
+            <div>User: {user?.name || "None"}</div>
+            <div>Role: {user?.role || "None"}</div>
+            <div>Loading: {isLoading ? "Yes" : "No"}</div>
+            <div>Initialized: {isInitialized ? "Yes" : "No"}</div>
           </div>
         </CardContent>
         <CardFooter className="pt-0 flex justify-between">

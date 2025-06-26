@@ -1,15 +1,12 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef } from "react"
+import { useEffect, useRef, Suspense } from "react"
 import { Sidebar } from "@/components/sidebar"
 import { useAuth } from "@/contexts/auth-context"
+import { AuthDebug } from "@/components/auth-debug"
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+function DashboardContent({ children }: { children: React.ReactNode }) {
   const { user, isLoading, isInitialized } = useAuth()
   const redirectHandled = useRef(false)
 
@@ -66,6 +63,25 @@ export default function DashboardLayout({
           </div>
         </main>
       </div>
+      <AuthDebug />
     </div>
+  )
+}
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-screen items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
+        </div>
+      }
+    >
+      <DashboardContent>{children}</DashboardContent>
+    </Suspense>
   )
 }

@@ -18,6 +18,9 @@ interface AuthContextType {
   logout: () => void
 }
 
+// Create context with undefined as default
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
+
 // Export TEST_USERS for testing and development
 export const TEST_USERS = [
   {
@@ -89,8 +92,6 @@ export const TEST_USERS = [
     password: "secretario",
   },
 ]
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 // Global state to prevent multiple initializations
 const globalAuthState = {
@@ -212,8 +213,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
   const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error("useAuth must be used within AuthProvider")
+  if (context === undefined) {
+    throw new Error(
+      "useAuth must be used within an AuthProvider. Make sure your component is wrapped with <AuthProvider>.",
+    )
   }
   return context
 }
