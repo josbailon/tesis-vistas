@@ -9,8 +9,6 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAppointments } from "@/contexts/appointment-context"
-import { useToast } from "@/hooks/use-toast"
 
 interface AppointmentFormProps {
   onClose: () => void
@@ -19,9 +17,6 @@ interface AppointmentFormProps {
 }
 
 export function AppointmentForm({ onClose, onSuccess, editingAppointment }: AppointmentFormProps) {
-  const { addAppointment, updateAppointment } = useAppointments()
-  const { toast } = useToast()
-
   const [formData, setFormData] = useState({
     title: editingAppointment?.title || "",
     patientName: editingAppointment?.patientName || "",
@@ -78,26 +73,11 @@ export function AppointmentForm({ onClose, onSuccess, editingAppointment }: Appo
     }
 
     try {
-      if (editingAppointment) {
-        updateAppointment(appointmentData)
-        toast({
-          title: "Cita Actualizada",
-          description: "La cita ha sido actualizada exitosamente.",
-        })
-      } else {
-        addAppointment(appointmentData)
-        toast({
-          title: "Cita Creada",
-          description: "La cita ha sido programada exitosamente.",
-        })
-      }
+      // Here you would typically save to your backend
+      console.log("Saving appointment:", appointmentData)
       onSuccess()
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Error al guardar la cita. Intenta nuevamente.",
-        variant: "destructive",
-      })
+      console.error("Error saving appointment:", error)
     }
   }
 
