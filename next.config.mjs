@@ -1,5 +1,16 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  experimental: {
+    optimizePackageImports: ['lucide-react']
+  },
+  transpilePackages: ['lucide-react'],
+  webpack: (config) => {
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@': '.',
+    }
+    return config
+  },
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -7,10 +18,7 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ['placeholder.svg'],
-  },
-  experimental: {
-    // Remove appDir as it's no longer needed in Next.js 14
+    unoptimized: true,
   },
 }
 
