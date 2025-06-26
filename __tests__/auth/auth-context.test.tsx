@@ -2,6 +2,7 @@
 import { render, screen, waitFor } from "@testing-library/react"
 import userEvent from "@testing-library/user-event"
 import { AuthProvider, useAuth, TEST_USERS } from "@/contexts/auth-context"
+import jest from "jest" // Import jest to fix the undeclared variable error
 
 // Test component to access auth context
 function TestComponent() {

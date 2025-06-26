@@ -1,5 +1,6 @@
 "use client"
 
+import { jest } from "@jest/globals"
 import "@testing-library/jest-dom"
 
 // Mock Next.js router

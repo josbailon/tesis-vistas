@@ -2,6 +2,7 @@ import type React from "react"
 import type { ReactElement } from "react"
 import { render, type RenderOptions } from "@testing-library/react"
 import { AuthProvider, type User } from "@/contexts/auth-context"
+import { expect } from "@jest/globals" // Import expect from jest globals
 
 // Mock user data for different roles
 export const mockUsers = {

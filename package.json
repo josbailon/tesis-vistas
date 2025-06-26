@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
+    "@jest/globals": "latest",
     "@radix-ui/react-avatar": "latest",
     "@radix-ui/react-checkbox": "latest",
     "@radix-ui/react-dropdown-menu": "latest",
@@ -37,6 +38,7 @@
     "lucide-react": "^0.454.0",
     "next": "14.2.16",
     "next-themes": "latest",
+    "node-notifier": "latest",
     "path": "latest",
     "pinia": "latest",
     "react": "^18",
