@@ -1,183 +1,237 @@
-# Sistema de Gestión de Clínica Dental ULEAM
+# Dental Clinic Management System
 
-Un sistema completo de gestión para clínicas dentales universitarias desarrollado con Next.js, React y TypeScript.
+A comprehensive dental clinic management system built with Next.js, React, and TypeScript. This application provides a complete solution for managing dental appointments, patient records, and clinic operations.
 
-## 🚀 Características
+## Features
 
-### Roles de Usuario
-- **Administrador**: Gestión completa del sistema, usuarios y configuración
-- **Profesor**: Supervisión de estudiantes, aprobación de trabajos, gestión de especialidades
-- **Estudiante**: Gestión de pacientes, casos clínicos, progreso académico
-- **Paciente**: Agendamiento de citas, historial médico, perfil personal
-- **Secretario**: Gestión de citas, registro de pacientes, reportes
+### 🏥 Multi-Role Support
+- **Patients**: Book appointments, view medical records, manage profile
+- **Students**: Access clinical cases, manage patient assignments, track progress
+- **Professors**: Supervise student work, approve treatments, manage specialties
+- **Administrators**: Full system control, user management, analytics
+- **Secretaries**: Appointment scheduling, patient registration, daily agenda
 
-### Funcionalidades Principales
-- ✅ **Autenticación y Autorización** - Sistema seguro basado en roles
-- ✅ **Gestión de Citas** - Agendamiento y seguimiento completo
-- ✅ **Historiales Médicos** - Registros detallados de tratamientos
-- ✅ **Casos Clínicos** - Creación y seguimiento de casos académicos
-- ✅ **Sistema de Aprobaciones** - Workflow profesor-estudiante
-- ✅ **Dashboard Personalizado** - Interfaces específicas por rol
-- ✅ **Reportes y Analytics** - Métricas y análisis del sistema
-- ✅ **Responsive Design** - Optimizado para todos los dispositivos
+### 🦷 Dental Specialties
+- Endodoncia (Endodontics)
+- Ortodoncia (Orthodontics)
+- Cirugía Oral (Oral Surgery)
+- Odontopediatría (Pediatric Dentistry)
+- Odontología General (General Dentistry)
 
-## 🛠️ Tecnologías
+### 📱 Key Functionality
+- **Appointment Management**: Complete booking and scheduling system
+- **Patient Records**: Digital medical history and treatment tracking
+- **Academic Integration**: Student-professor workflow for dental education
+- **Real-time Dashboard**: Role-based dashboards with relevant metrics
+- **Responsive Design**: Mobile-first approach for all devices
 
-- **Frontend**: Next.js 14, React 18, TypeScript
-- **Styling**: Tailwind CSS, shadcn/ui
-- **Testing**: Jest, React Testing Library
-- **Deployment**: Vercel
-- **Icons**: Lucide React
-- **Forms**: React Hook Form
-- **State Management**: React Context
+## Technology Stack
 
-## 📋 Requisitos Previos
+### Frontend
+- **Next.js 14** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first CSS framework
+- **Radix UI** - Accessible component primitives
+- **Lucide React** - Beautiful icons
 
-- Node.js 18+ 
-- npm o yarn
-- Git
+### UI Components
+- Custom component library built on Radix UI
+- Consistent design system with medical theme
+- Accessible and responsive components
+- Dark mode support
 
-## 🚀 Instalación y Desarrollo
+### Development Tools
+- **ESLint** - Code linting
+- **Jest** - Testing framework
+- **React Testing Library** - Component testing
+- **TypeScript** - Static type checking
 
-### 1. Clonar el repositorio
+## Getting Started
+
+### Prerequisites
+- Node.js 18.0 or later
+- npm or yarn package manager
+
+### Installation
+
+1. **Clone the repository**
 \`\`\`bash
-git clone <repository-url>
+git clone https://github.com/your-username/dental-clinic-management.git
 cd dental-clinic-management
 \`\`\`
 
-### 2. Instalar dependencias
+2. **Install dependencies**
 \`\`\`bash
 npm install
+# or
+yarn install
 \`\`\`
 
-### 3. Ejecutar en modo desarrollo
+3. **Run the development server**
 \`\`\`bash
 npm run dev
+# or
+yarn dev
 \`\`\`
 
-La aplicación estará disponible en `http://localhost:3000`
+4. **Open your browser**
+Navigate to [http://localhost:3000](http://localhost:3000)
 
-## 🧪 Testing
+### Build for Production
 
-### Ejecutar todos los tests
+\`\`\`bash
+npm run build
+npm start
+\`\`\`
+
+## Project Structure
+
+\`\`\`
+dental-clinic-management/
+├── app/                    # Next.js App Router pages
+│   ├── dashboard/         # Dashboard pages for all roles
+│   ├── login/            # Authentication pages
+│   ├── api/              # API routes
+│   └── globals.css       # Global styles
+├── components/            # Reusable components
+│   ├── ui/               # Base UI components
+│   └── ...               # Feature-specific components
+├── lib/                  # Utility functions
+├── hooks/                # Custom React hooks
+├── contexts/             # React contexts
+├── types/                # TypeScript type definitions
+└── public/               # Static assets
+\`\`\`
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+- `npm run test` - Run tests
+- `npm run test:watch` - Run tests in watch mode
+
+## User Roles & Permissions
+
+### 👤 Patient
+- Book and manage appointments
+- View personal medical records
+- Update profile information
+- Access treatment history
+
+### 🎓 Student
+- View assigned patients
+- Access clinical cases
+- Submit treatment plans
+- Track academic progress
+
+### 👨‍🏫 Professor
+- Supervise student work
+- Approve treatment plans
+- Manage specialty areas
+- Review clinical cases
+
+### 👨‍💼 Administrator
+- Full system access
+- User management
+- System configuration
+- Analytics and reports
+
+### 👩‍💼 Secretary
+- Appointment scheduling
+- Patient registration
+- Daily agenda management
+- Communication handling
+
+## Features in Detail
+
+### Appointment System
+- Real-time availability checking
+- Automated confirmation emails
+- Reminder notifications
+- Rescheduling capabilities
+
+### Medical Records
+- Digital patient files
+- Treatment history tracking
+- Prescription management
+- Image and document storage
+
+### Academic Integration
+- Student-patient assignments
+- Progress tracking
+- Evaluation system
+- Clinical case studies
+
+### Dashboard Analytics
+- Appointment statistics
+- Patient demographics
+- Treatment outcomes
+- Financial reporting
+
+## Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## Testing
+
+Run the test suite:
+
 \`\`\`bash
 npm run test
 \`\`\`
 
-### Ejecutar tests en modo watch
+Run tests in watch mode:
+
 \`\`\`bash
 npm run test:watch
 \`\`\`
 
-### Generar reporte de cobertura
-\`\`\`bash
-npm run test:coverage
-\`\`\`
+## Deployment
 
-### Tests para CI/CD
-\`\`\`bash
-npm run test:ci
-\`\`\`
+### Vercel (Recommended)
 
-## 🏗️ Build y Deployment
+1. Connect your GitHub repository to Vercel
+2. Configure environment variables
+3. Deploy automatically on push to main branch
 
-### Build para producción
+### Manual Deployment
+
+1. Build the application:
 \`\`\`bash
 npm run build
 \`\`\`
 
-### Iniciar servidor de producción
+2. Start the production server:
 \`\`\`bash
 npm start
 \`\`\`
 
-### Deploy a Vercel
-\`\`\`bash
-vercel --prod
-\`\`\`
+## Environment Variables
 
-## 👥 Usuarios de Prueba
+Create a `.env.local` file in the root directory:
 
-| Rol | Email | Contraseña |
-|-----|-------|------------|
-| Admin | admin@clinica.com | admin |
-| Profesor | profesor@clinica.com | profesor |
-| Estudiante | estudiante@clinica.com | estudiante |
-| Paciente | paciente@clinica.com | paciente |
-| Secretario | secretario@clinica.com | secretario |
-
-## 📁 Estructura del Proyecto
-
-\`\`\`
-dental-clinic-management/
-├── app/                    # Next.js App Router
-│   ├── api/               # API Routes
-│   ├── dashboard/         # Dashboard pages
-│   ├── login/            # Authentication
-│   └── globals.css       # Global styles
-├── components/            # React components
-│   ├── ui/               # shadcn/ui components
-│   └── ...               # Custom components
-├── contexts/             # React contexts
-├── lib/                  # Utility functions
-├── __tests__/            # Test files
-├── public/               # Static assets
-└── types/                # TypeScript types
-\`\`\`
-
-## 🔒 Seguridad
-
-- ✅ **CSRF Protection** - Protección contra ataques CSRF
-- ✅ **XSS Protection** - Headers de seguridad configurados
-- ✅ **Content Security Policy** - Políticas de contenido seguro
-- ✅ **Session Management** - Gestión segura de sesiones
-- ✅ **Input Validation** - Validación de datos de entrada
-- ✅ **Error Handling** - Manejo seguro de errores
-
-## 📊 Métricas de Calidad
-
-- **Test Coverage**: 80%+ en todas las métricas
-- **Performance**: Optimizado para Core Web Vitals
-- **Accessibility**: Cumple estándares WCAG 2.1
-- **SEO**: Optimizado para motores de búsqueda
-
-## 🚀 Deployment
-
-### Vercel (Recomendado)
-1. Conectar repositorio a Vercel
-2. Configurar variables de entorno
-3. Deploy automático en cada push
-
-### Variables de Entorno
 \`\`\`env
-NODE_ENV=production
-NEXT_PUBLIC_APP_URL=https://your-domain.com
+# Add your environment variables here
+NEXT_PUBLIC_APP_URL=http://localhost:3000
 \`\`\`
 
-## 🤝 Contribución
+## License
 
-1. Fork el proyecto
-2. Crear una rama para tu feature (`git checkout -b feature/AmazingFeature`)
-3. Commit tus cambios (`git commit -m 'Add some AmazingFeature'`)
-4. Push a la rama (`git push origin feature/AmazingFeature`)
-5. Abrir un Pull Request
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
-## 📝 Licencia
+## Support
 
-Este proyecto está bajo la Licencia MIT. Ver `LICENSE` para más detalles.
+For support, email support@dentalclinic.com or create an issue in the GitHub repository.
 
-## 👨‍💻 Desarrolladores
+## Acknowledgments
 
-- **ULEAM Development Team**
-- **Franklin Jostin Bailon Palma** - [@josbailon](https://github.com/josbailon)
-
-## 📞 Soporte
-
-Para soporte técnico o preguntas:
-- Email: soporte@uleam.edu.ec
-- Issues: [GitHub Issues](https://github.com/your-repo/issues)
-
----
-
-**Universidad Laica Eloy Alfaro de Manabí (ULEAM)**  
-*Innovación en Educación Odontológica*
+- Built with [Next.js](https://nextjs.org/)
+- UI components from [Radix UI](https://www.radix-ui.com/)
+- Styled with [Tailwind CSS](https://tailwindcss.com/)
+- Icons from [Lucide](https://lucide.dev/)
