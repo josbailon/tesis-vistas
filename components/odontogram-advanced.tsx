@@ -7,11 +7,19 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -29,6 +37,7 @@ import {
   ZoomIn,
   ZoomOut,
   Download,
+  Upload,
   Eye,
   Layers,
   MousePointer,
@@ -37,6 +46,9 @@ import {
   Camera,
   History,
   Settings,
+  CheckCircle,
+  X,
+  Plus,
   MoreVertical,
   Search,
   Stethoscope,
@@ -223,18 +235,18 @@ const TOOTH_SURFACES = {
   posterior: ["mesial", "distal", "vestibular", "lingual", "oclusal"],
 }
 
-export function OdontogramAdvanced({ 
-  patientId, 
-  patientName, 
-  patientAge, 
-  mode, 
-  onSave, 
-  onToothUpdate, 
-  readOnly = false 
+export function OdontogramAdvanced({
+  patientId,
+  patientName,
+  patientAge,
+  mode,
+  onSave,
+  onToothUpdate,
+  readOnly = false,
 }: OdontogramProps) {
   const { toast } = useToast()
   const canvasRef = useRef<HTMLCanvasElement>(null)
-  
+
   // State management
   const [selectedCondition, setSelectedCondition] = useState<string>("healthy")
   const [selectedTool, setSelectedTool] = useState<"select" | "paint" | "annotate" | "measure">("select")
@@ -271,10 +283,11 @@ export function OdontogramAdvanced({
     }
   }
 
-  const filteredConditions = TOOTH_CONDITIONS.filter(condition => {
+  const filteredConditions = TOOTH_CONDITIONS.filter((condition) => {
     const matchesCategory = filterCategory === "all" || condition.category === filterCategory
-    const matchesSearch = condition.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         condition.description.toLowerCase().includes(searchTerm.toLowerCase())
+    const matchesSearch =
+      condition.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      condition.description.toLowerCase().includes(searchTerm.toLowerCase())
     return matchesCategory && matchesSearch
   })
 
@@ -296,7 +309,7 @@ export function OdontogramAdvanced({
         startAnnotation(x, y, toothNumber)
       }
     },
-    [selectedTool, selectedCondition, toothData, readOnly]
+    [selectedTool, selectedCondition, toothData, readOnly],
   )
 
   const applyConditionToTooth = useCallback(
@@ -309,7 +322,7 @@ export function OdontogramAdvanced({
         [toothNumber]: {
           ...toothData[toothNumber],
           number: toothNumber,
-          conditions: surface 
+          conditions: surface
             ? toothData[toothNumber]?.conditions || []
             : [...(toothData[toothNumber]?.conditions || []), selectedCondition],
           notes: toothData[toothNumber]?.notes || "",
@@ -345,7 +358,7 @@ export function OdontogramAdvanced({
         description: `${TOOTH_CONDITIONS.find((c) => c.id === selectedCondition)?.name} aplicada al diente ${toothNumber}${surface ? ` (${surface})` : ""}`,
       })
     },
-    [selectedCondition, selectedSurface, toothData, onToothUpdate, toast, readOnly]
+    [selectedCondition, selectedSurface, toothData, onToothUpdate, toast, readOnly],
   )
 
   const startAnnotation = (x: number, y: number, toothNumber?: number) => {
@@ -364,7 +377,7 @@ export function OdontogramAdvanced({
       newState,
       user: "current_user", // Replace with actual user
     }
-    setHistory(prev => [...prev, historyEntry].slice(-50)) // Keep last 50 entries
+    setHistory((prev) => [...prev, historyEntry].slice(-50)) // Keep last 50 entries
   }
 
   const getToothColor = (toothNumber: number) => {
@@ -380,11 +393,11 @@ export function OdontogramAdvanced({
   const getToothBorderColor = (toothNumber: number) => {
     const tooth = toothData[toothNumber]
     if (!tooth) return "#d1d5db"
-    
-    if (tooth.conditions.some(c => TOOTH_CONDITIONS.find(tc => tc.id === c)?.severity === "severe")) {
+
+    if (tooth.conditions.some((c) => TOOTH_CONDITIONS.find((tc) => tc.id === c)?.severity === "severe")) {
       return "#dc2626" // Red for severe conditions
     }
-    if (tooth.conditions.some(c => TOOTH_CONDITIONS.find(tc => tc.id === c)?.severity === "moderate")) {
+    if (tooth.conditions.some((c) => TOOTH_CONDITIONS.find((tc) => tc.id === c)?.severity === "moderate")) {
       return "#f59e0b" // Orange for moderate conditions
     }
     if (tooth.conditions.length > 0) {
@@ -395,7 +408,7 @@ export function OdontogramAdvanced({
 
   const clearTooth = (toothNumber: number) => {
     if (readOnly) return
-    
+
     const previousState = toothData[toothNumber]
     const updatedToothData = { ...toothData }
     delete updatedToothData[toothNumber]
@@ -441,7 +454,7 @@ export function OdontogramAdvanced({
 
   const saveOdontogram = () => {
     if (readOnly) return
-    
+
     const odontogramData = {
       patientId,
       patientName,
@@ -472,15 +485,15 @@ export function OdontogramAdvanced({
 
   const undoLastAction = () => {
     if (history.length === 0 || readOnly) return
-    
+
     const lastAction = history[history.length - 1]
     if (lastAction.toothNumber && lastAction.previousState) {
-      setToothData(prev => ({
+      setToothData((prev) => ({
         ...prev,
-        [lastAction.toothNumber!]: lastAction.previousState
+        [lastAction.toothNumber!]: lastAction.previousState,
       }))
-      setHistory(prev => prev.slice(0, -1))
-      
+      setHistory((prev) => prev.slice(0, -1))
+
       toast({
         title: "Acción deshecha",
         description: `Se deshizo: ${lastAction.action}`,
@@ -494,7 +507,7 @@ export function OdontogramAdvanced({
 
     Object.values(toothData).forEach((tooth) => {
       tooth.conditions.forEach((conditionId) => {
-        const condition = TOOTH_CONDITIONS.find(c => c.id === conditionId)
+        const condition = TOOTH_CONDITIONS.find((c) => c.id === conditionId)
         if (condition) {
           stats[conditionId] = (stats[conditionId] || 0) + 1
           categoryStats[condition.category] = (categoryStats[condition.category] || 0) + 1
@@ -515,9 +528,9 @@ export function OdontogramAdvanced({
         <div>
           <h1 className="text-2xl lg:text-3xl font-bold tracking-tight">Odontograma Digital Avanzado</h1>
           <p className="text-muted-foreground">
-            Paciente: <span className="font-medium">{patientName}</span> • 
-            Edad: <span className="font-medium">{patientAge} años</span> • 
-            Dentición: <span className="font-medium">
+            Paciente: <span className="font-medium">{patientName}</span> • Edad:{" "}
+            <span className="font-medium">{patientAge} años</span> • Dentición:{" "}
+            <span className="font-medium">
               {mode === "adult" ? "Permanente" : mode === "child" ? "Temporal" : "Mixta"}
             </span>
           </p>
@@ -646,12 +659,14 @@ export function OdontogramAdvanced({
                     />
                     <span className="text-xs font-medium text-center leading-tight">{condition.name}</span>
                     {condition.severity && (
-                      <Badge 
-                        variant="secondary" 
+                      <Badge
+                        variant="secondary"
                         className={`text-xs absolute -top-1 -right-1 ${
-                          condition.severity === "severe" ? "bg-red-100 text-red-800" :
-                          condition.severity === "moderate" ? "bg-yellow-100 text-yellow-800" :
-                          "bg-green-100 text-green-800"
+                          condition.severity === "severe"
+                            ? "bg-red-100 text-red-800"
+                            : condition.severity === "moderate"
+                              ? "bg-yellow-100 text-yellow-800"
+                              : "bg-green-100 text-green-800"
                         }`}
                       >
                         {condition.severity === "severe" ? "!" : condition.severity === "moderate" ? "⚠" : "·"}
@@ -666,22 +681,22 @@ export function OdontogramAdvanced({
                   <div className="flex items-start gap-3">
                     <div
                       className="w-8 h-8 rounded border-2 border-white shadow-sm flex-shrink-0"
-                      style={{ backgroundColor: TOOTH_CONDITIONS.find(c => c.id === selectedCondition)?.color }}
+                      style={{ backgroundColor: TOOTH_CONDITIONS.find((c) => c.id === selectedCondition)?.color }}
                     />
                     <div>
                       <h4 className="font-medium text-blue-900">
-                        {TOOTH_CONDITIONS.find(c => c.id === selectedCondition)?.name}
+                        {TOOTH_CONDITIONS.find((c) => c.id === selectedCondition)?.name}
                       </h4>
                       <p className="text-sm text-blue-700 mt-1">
-                        {TOOTH_CONDITIONS.find(c => c.id === selectedCondition)?.description}
+                        {TOOTH_CONDITIONS.find((c) => c.id === selectedCondition)?.description}
                       </p>
                       <div className="flex gap-2 mt-2">
                         <Badge variant="outline">
-                          {TOOTH_CONDITIONS.find(c => c.id === selectedCondition)?.category}
+                          {TOOTH_CONDITIONS.find((c) => c.id === selectedCondition)?.category}
                         </Badge>
-                        {TOOTH_CONDITIONS.find(c => c.id === selectedCondition)?.severity && (
+                        {TOOTH_CONDITIONS.find((c) => c.id === selectedCondition)?.severity && (
                           <Badge variant="secondary">
-                            {TOOTH_CONDITIONS.find(c => c.id === selectedCondition)?.severity}
+                            {TOOTH_CONDITIONS.find((c) => c.id === selectedCondition)?.severity}
                           </Badge>
                         )}
                       </div>
@@ -699,18 +714,12 @@ export function OdontogramAdvanced({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setZoomLevel(prev => Math.max(0.5, prev - 0.1))}
+                      onClick={() => setZoomLevel((prev) => Math.max(0.5, prev - 0.1))}
                     >
                       <ZoomOut className="h-4 w-4" />
                     </Button>
-                    <span className="text-sm font-medium w-16 text-center">
-                      {Math.round(zoomLevel * 100)}%
-                    </span>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setZoomLevel(prev => Math.min(2, prev + 0.1))}
-                    >
+                    <span className="text-sm font-medium w-16 text-center">{Math.round(zoomLevel * 100)}%</span>
+                    <Button variant="outline" size="sm" onClick={() => setZoomLevel((prev) => Math.min(2, prev + 0.1))}>
                       <ZoomIn className="h-4 w-4" />
                     </Button>
                   </div>
@@ -720,28 +729,22 @@ export function OdontogramAdvanced({
                   <Label>Opciones de Vista</Label>
                   <div className="space-y-2">
                     <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="show-grid"
-                        checked={showGrid}
-                        onCheckedChange={setShowGrid}
-                      />
-                      <Label htmlFor="show-grid" className="text-sm">Mostrar cuadrícula</Label>
+                      <Checkbox id="show-grid" checked={showGrid} onCheckedChange={setShowGrid} />
+                      <Label htmlFor="show-grid" className="text-sm">
+                        Mostrar cuadrícula
+                      </Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="show-surfaces"
-                        checked={showSurfaces}
-                        onCheckedChange={setShowSurfaces}
-                      />
-                      <Label htmlFor="show-surfaces" className="text-sm">Mostrar superficies</Label>
+                      <Checkbox id="show-surfaces" checked={showSurfaces} onCheckedChange={setShowSurfaces} />
+                      <Label htmlFor="show-surfaces" className="text-sm">
+                        Mostrar superficies
+                      </Label>
                     </div>
                     <div className="flex items-center space-x-2">
-                      <Checkbox
-                        id="show-annotations"
-                        checked={showAnnotations}
-                        onCheckedChange={setShowAnnotations}
-                      />
-                      <Label htmlFor="show-annotations" className="text-sm">Mostrar anotaciones</Label>
+                      <Checkbox id="show-annotations" checked={showAnnotations} onCheckedChange={setShowAnnotations} />
+                      <Label htmlFor="show-annotations" className="text-sm">
+                        Mostrar anotaciones
+                      </Label>
                     </div>
                   </div>
                 </div>
@@ -767,19 +770,20 @@ export function OdontogramAdvanced({
                 <div className="space-y-2">
                   <Label>Historial</Label>
                   <div className="max-h-32 overflow-y-auto space-y-1">
-                    {history.slice(-5).reverse().map((entry) => (
-                      <div key={entry.id} className="text-xs p-2 bg-gray-50 rounded">
-                        <div className="font-medium">{entry.action}</div>
-                        <div className="text-muted-foreground">
-                          {entry.toothNumber && `Diente ${entry.toothNumber} • `}
-                          {new Date(entry.timestamp).toLocaleTimeString()}
+                    {history
+                      .slice(-5)
+                      .reverse()
+                      .map((entry) => (
+                        <div key={entry.id} className="text-xs p-2 bg-gray-50 rounded">
+                          <div className="font-medium">{entry.action}</div>
+                          <div className="text-muted-foreground">
+                            {entry.toothNumber && `Diente ${entry.toothNumber} • `}
+                            {new Date(entry.timestamp).toLocaleTimeString()}
+                          </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
                     {history.length === 0 && (
-                      <div className="text-xs text-muted-foreground p-2">
-                        No hay acciones registradas
-                      </div>
+                      <div className="text-xs text-muted-foreground p-2">No hay acciones registradas</div>
                     )}
                   </div>
                 </div>
@@ -795,14 +799,11 @@ export function OdontogramAdvanced({
                   <CardContent>
                     <div className="space-y-3">
                       {Object.entries(conditionStats).map(([conditionId, count]) => {
-                        const condition = TOOTH_CONDITIONS.find(c => c.id === conditionId)
+                        const condition = TOOTH_CONDITIONS.find((c) => c.id === conditionId)
                         return (
                           <div key={conditionId} className="flex items-center justify-between">
                             <div className="flex items-center gap-2">
-                              <div
-                                className="w-4 h-4 rounded border"
-                                style={{ backgroundColor: condition?.color }}
-                              />
+                              <div className="w-4 h-4 rounded border" style={{ backgroundColor: condition?.color }} />
                               <span className="text-sm">{condition?.name}</span>
                             </div>
                             <Badge variant="secondary">{count}</Badge>
@@ -844,31 +845,37 @@ export function OdontogramAdvanced({
                   <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="text-center p-4 bg-green-50 rounded-lg">
                       <div className="text-2xl font-bold text-green-600">
-                        {Object.keys(toothData).filter(tooth => 
-                          toothData[Number.parseInt(tooth)]?.conditions.some(c => 
-                            TOOTH_CONDITIONS.find(tc => tc.id === c)?.category === "health"
-                          )
-                        ).length}
+                        {
+                          Object.keys(toothData).filter((tooth) =>
+                            toothData[Number.parseInt(tooth)]?.conditions.some(
+                              (c) => TOOTH_CONDITIONS.find((tc) => tc.id === c)?.category === "health",
+                            ),
+                          ).length
+                        }
                       </div>
                       <p className="text-sm text-green-700">Dientes Sanos</p>
                     </div>
                     <div className="text-center p-4 bg-yellow-50 rounded-lg">
                       <div className="text-2xl font-bold text-yellow-600">
-                        {Object.keys(toothData).filter(tooth => 
-                          toothData[Number.parseInt(tooth)]?.conditions.some(c => 
-                            TOOTH_CONDITIONS.find(tc => tc.id === c)?.category === "pathology"
-                          )
-                        ).length}
+                        {
+                          Object.keys(toothData).filter((tooth) =>
+                            toothData[Number.parseInt(tooth)]?.conditions.some(
+                              (c) => TOOTH_CONDITIONS.find((tc) => tc.id === c)?.category === "pathology",
+                            ),
+                          ).length
+                        }
                       </div>
                       <p className="text-sm text-yellow-700">Con Patología</p>
                     </div>
                     <div className="text-center p-4 bg-blue-50 rounded-lg">
                       <div className="text-2xl font-bold text-blue-600">
-                        {Object.keys(toothData).filter(tooth => 
-                          toothData[Number.parseInt(tooth)]?.conditions.some(c => 
-                            TOOTH_CONDITIONS.find(tc => tc.id === c)?.category === "treatment"
-                          )
-                        ).length}
+                        {
+                          Object.keys(toothData).filter((tooth) =>
+                            toothData[Number.parseInt(tooth)]?.conditions.some(
+                              (c) => TOOTH_CONDITIONS.find((tc) => tc.id === c)?.category === "treatment",
+                            ),
+                          ).length
+                        }
                       </div>
                       <p className="text-sm text-blue-700">Con Tratamiento</p>
                     </div>
@@ -901,13 +908,15 @@ export function OdontogramAdvanced({
           </CardTitle>
           <CardDescription>
             {selectedTool === "select" && "Haz clic en un diente para ver/editar detalles"}
-            {selectedTool === "paint" && selectedCondition && `Haz clic en los dientes para aplicar: ${TOOTH_CONDITIONS.find(c => c.id === selectedCondition)?.name}`}
+            {selectedTool === "paint" &&
+              selectedCondition &&
+              `Haz clic en los dientes para aplicar: ${TOOTH_CONDITIONS.find((c) => c.id === selectedCondition)?.name}`}
             {selectedTool === "annotate" && "Haz clic en cualquier lugar para agregar una anotación"}
             {selectedTool === "measure" && "Haz clic y arrastra para medir distancias"}
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div 
+          <div
             className="relative bg-white border rounded-lg p-8 overflow-auto"
             style={{ transform: `scale(${zoomLevel})`, transformOrigin: "top left" }}
           >
@@ -916,7 +925,7 @@ export function OdontogramAdvanced({
                 <svg width="100%" height="100%">
                   <defs>
                     <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="1"/>
+                      <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#e5e7eb" strokeWidth="1" />
                     </pattern>
                   </defs>
                   <rect width="100%" height="100%" fill="url(#grid)" />
@@ -941,9 +950,9 @@ export function OdontogramAdvanced({
                               ${selectedTooth === toothNumber ? "ring-2 ring-blue-500" : ""}
                               ${readOnly ? "cursor-default" : "cursor-pointer"}
                             `}
-                            style={{ 
+                            style={{
                               backgroundColor: getToothColor(toothNumber),
-                              borderColor: getToothBorderColor(toothNumber)
+                              borderColor: getToothBorderColor(toothNumber),
                             }}
                             onClick={(e) => handleToothClick(toothNumber, e)}
                             title={`Diente ${toothNumber}${readOnly ? " (Solo lectura)" : ""}`}
@@ -951,19 +960,19 @@ export function OdontogramAdvanced({
                           >
                             <span className="text-xs font-medium">{toothNumber}</span>
                           </button>
-                          
+
                           {/* Condition indicators */}
                           {toothData[toothNumber]?.conditions && toothData[toothNumber].conditions.length > 1 && (
                             <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">
                               {toothData[toothNumber].conditions.length}
                             </div>
                           )}
-                          
+
                           {/* Notes indicator */}
                           {toothData[toothNumber]?.notes && (
                             <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full" />
                           )}
-                          
+
                           {/* Images indicator */}
                           {toothData[toothNumber]?.images && toothData[toothNumber].images.length > 0 && (
                             <div className="absolute -top-1 -left-1 w-3 h-3 bg-purple-500 rounded-full" />
@@ -996,7 +1005,7 @@ export function OdontogramAdvanced({
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Quick actions */}
                         {!readOnly && toothData[toothNumber]?.conditions.length > 0 && (
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-1">
@@ -1041,9 +1050,9 @@ export function OdontogramAdvanced({
                               ${selectedTooth === toothNumber ? "ring-2 ring-blue-500" : ""}
                               ${readOnly ? "cursor-default" : "cursor-pointer"}
                             `}
-                            style={{ 
+                            style={{
                               backgroundColor: getToothColor(toothNumber),
-                              borderColor: getToothBorderColor(toothNumber)
+                              borderColor: getToothBorderColor(toothNumber),
                             }}
                             onClick={(e) => handleToothClick(toothNumber, e)}
                             title={`Diente ${toothNumber}${readOnly ? " (Solo lectura)" : ""}`}
@@ -1051,19 +1060,19 @@ export function OdontogramAdvanced({
                           >
                             <span className="text-xs font-medium">{toothNumber}</span>
                           </button>
-                          
+
                           {/* Condition indicators */}
                           {toothData[toothNumber]?.conditions && toothData[toothNumber].conditions.length > 1 && (
                             <div className="absolute -top-1 -right-1 w-4 h-4 bg-blue-500 text-white rounded-full flex items-center justify-center text-xs">
                               {toothData[toothNumber].conditions.length}
                             </div>
                           )}
-                          
+
                           {/* Notes indicator */}
                           {toothData[toothNumber]?.notes && (
                             <div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 rounded-full" />
                           )}
-                          
+
                           {/* Images indicator */}
                           {toothData[toothNumber]?.images && toothData[toothNumber].images.length > 0 && (
                             <div className="absolute -top-1 -left-1 w-3 h-3 bg-purple-500 rounded-full" />
@@ -1096,7 +1105,7 @@ export function OdontogramAdvanced({
                             </div>
                           )}
                         </div>
-                        
+
                         {/* Quick actions */}
                         {!readOnly && toothData[toothNumber]?.conditions.length > 0 && (
                           <div className="opacity-0 group-hover:opacity-100 transition-opacity mt-1">
@@ -1121,7 +1130,7 @@ export function OdontogramAdvanced({
                             </DropdownMenu>
                           </div>
                         )}
-                        
+
                         <div className="text-xs text-gray-500 mt-2">{toothNumber}</div>
                       </div>
                     ))}
@@ -1198,11 +1207,9 @@ export function OdontogramAdvanced({
               <Stethoscope className="h-5 w-5" />
               Detalles del Diente {selectedTooth}
             </DialogTitle>
-            <DialogDescription>
-              Información completa y gestión del diente seleccionado
-            </DialogDescription>
+            <DialogDescription>Información completa y gestión del diente seleccionado</DialogDescription>
           </DialogHeader>
-          
+
           {selectedTooth && (
             <Tabs defaultValue="general" className="w-full">
               <TabsList className="grid w-full grid-cols-4">
@@ -1218,4 +1225,476 @@ export function OdontogramAdvanced({
                     <CardHeader>
                       <CardTitle className="text-lg">Información Básica</CardTitle>
                     </CardHeader>
-                    <CardContent\
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <Label className="text-sm font-medium">Número</Label>
+                          <p className="text-2xl font-bold text-blue-600">{selectedTooth}</p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Tipo</Label>
+                          <p className="text-sm">
+                            {selectedTooth.toString().length === 1 || selectedTooth < 20 ? "Temporal" : "Permanente"}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Cuadrante</Label>
+                          <p className="text-sm">
+                            {Math.floor(selectedTooth / 10) === 1
+                              ? "Superior Derecho"
+                              : Math.floor(selectedTooth / 10) === 2
+                                ? "Superior Izquierdo"
+                                : Math.floor(selectedTooth / 10) === 3
+                                  ? "Inferior Izquierdo"
+                                  : Math.floor(selectedTooth / 10) === 4
+                                    ? "Inferior Derecho"
+                                    : Math.floor(selectedTooth / 10) === 5
+                                      ? "Superior Derecho (Temporal)"
+                                      : Math.floor(selectedTooth / 10) === 6
+                                        ? "Superior Izquierdo (Temporal)"
+                                        : Math.floor(selectedTooth / 10) === 7
+                                          ? "Inferior Izquierdo (Temporal)"
+                                          : "Inferior Derecho (Temporal)"}
+                          </p>
+                        </div>
+                        <div>
+                          <Label className="text-sm font-medium">Estado</Label>
+                          <div className="flex items-center gap-2">
+                            {toothData[selectedTooth]?.conditions.length > 0 ? (
+                              <Badge variant="secondary">Con condiciones</Badge>
+                            ) : (
+                              <Badge variant="outline">Sin condiciones</Badge>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <Label className="text-sm font-medium">Última modificación</Label>
+                        <p className="text-sm text-muted-foreground">
+                          {toothData[selectedTooth]?.lastModified
+                            ? new Date(toothData[selectedTooth].lastModified).toLocaleString()
+                            : "Sin modificaciones"}
+                        </p>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Notas Clínicas</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <Textarea
+                          placeholder="Agregar notas sobre este diente..."
+                          value={toothNotes}
+                          onChange={(e) => setToothNotes(e.target.value)}
+                          rows={6}
+                          disabled={readOnly}
+                        />
+                        {!readOnly && (
+                          <Button onClick={saveToothNotes} className="w-full">
+                            <Save className="h-4 w-4 mr-2" />
+                            Guardar Notas
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+
+              <TabsContent value="conditions" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Condiciones Aplicadas</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {toothData[selectedTooth]?.conditions.map((conditionId, index) => {
+                        const condition = TOOTH_CONDITIONS.find((c) => c.id === conditionId)
+                        return (
+                          <div
+                            key={`${conditionId}-${index}`}
+                            className="flex items-center justify-between p-3 border rounded-lg"
+                          >
+                            <div className="flex items-center gap-3">
+                              <div
+                                className="w-6 h-6 rounded border-2 border-white shadow-sm"
+                                style={{ backgroundColor: condition?.color }}
+                              />
+                              <div>
+                                <div className="font-medium">{condition?.name}</div>
+                                <div className="text-sm text-muted-foreground">{condition?.description}</div>
+                                <div className="flex gap-2 mt-1">
+                                  <Badge variant="outline" className="text-xs">
+                                    {condition?.category}
+                                  </Badge>
+                                  {condition?.severity && (
+                                    <Badge
+                                      variant="secondary"
+                                      className={`text-xs ${
+                                        condition.severity === "severe"
+                                          ? "bg-red-100 text-red-800"
+                                          : condition.severity === "moderate"
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-green-100 text-green-800"
+                                      }`}
+                                    >
+                                      {condition.severity}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                            {!readOnly && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  const updatedConditions = toothData[selectedTooth].conditions.filter(
+                                    (_, i) => i !== index,
+                                  )
+                                  const updatedToothData = {
+                                    ...toothData,
+                                    [selectedTooth]: {
+                                      ...toothData[selectedTooth],
+                                      conditions: updatedConditions,
+                                    },
+                                  }
+                                  setToothData(updatedToothData)
+                                  onToothUpdate(updatedToothData[selectedTooth])
+                                }}
+                                className="text-red-600 hover:text-red-700"
+                              >
+                                <X className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
+                        )
+                      })}
+                      {(!toothData[selectedTooth]?.conditions || toothData[selectedTooth].conditions.length === 0) && (
+                        <div className="text-center py-8 text-muted-foreground">
+                          <CheckCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                          <p>No hay condiciones aplicadas</p>
+                          <p className="text-sm">Este diente está marcado como sano</p>
+                        </div>
+                      )}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="surfaces" className="space-y-4">
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Superficies Dentales</CardTitle>
+                    <CardDescription>Gestión detallada por superficie del diente</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                      {(selectedTooth.toString().endsWith("1") ||
+                      selectedTooth.toString().endsWith("2") ||
+                      selectedTooth.toString().endsWith("3")
+                        ? TOOTH_SURFACES.anterior
+                        : TOOTH_SURFACES.posterior
+                      ).map((surface) => (
+                        <Card key={surface} className="p-4">
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between">
+                              <h4 className="font-medium capitalize">{surface}</h4>
+                              {toothData[selectedTooth]?.surfaces[surface]?.conditions.length > 0 && (
+                                <Badge variant="secondary">
+                                  {toothData[selectedTooth].surfaces[surface].conditions.length} condición(es)
+                                </Badge>
+                              )}
+                            </div>
+
+                            <div className="space-y-2">
+                              {toothData[selectedTooth]?.surfaces[surface]?.conditions.map((conditionId, index) => {
+                                const condition = TOOTH_CONDITIONS.find((c) => c.id === conditionId)
+                                return (
+                                  <div key={index} className="flex items-center gap-2 text-sm">
+                                    <div
+                                      className="w-3 h-3 rounded border"
+                                      style={{ backgroundColor: condition?.color }}
+                                    />
+                                    <span>{condition?.name}</span>
+                                  </div>
+                                )
+                              })}
+                              {(!toothData[selectedTooth]?.surfaces[surface]?.conditions ||
+                                toothData[selectedTooth].surfaces[surface].conditions.length === 0) && (
+                                <p className="text-sm text-muted-foreground">Sin condiciones</p>
+                              )}
+                            </div>
+
+                            {!readOnly && (
+                              <div className="flex gap-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => {
+                                    setSelectedSurface(surface)
+                                    if (selectedCondition) {
+                                      applyConditionToTooth(selectedTooth, surface)
+                                    }
+                                  }}
+                                  disabled={!selectedCondition}
+                                >
+                                  <Plus className="h-3 w-3 mr-1" />
+                                  Aplicar
+                                </Button>
+                                {toothData[selectedTooth]?.surfaces[surface]?.conditions.length > 0 && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => {
+                                      const updatedSurfaces = { ...toothData[selectedTooth].surfaces }
+                                      updatedSurfaces[surface] = {
+                                        ...updatedSurfaces[surface],
+                                        conditions: [],
+                                      }
+                                      const updatedToothData = {
+                                        ...toothData,
+                                        [selectedTooth]: {
+                                          ...toothData[selectedTooth],
+                                          surfaces: updatedSurfaces,
+                                        },
+                                      }
+                                      setToothData(updatedToothData)
+                                      onToothUpdate(updatedToothData[selectedTooth])
+                                    }}
+                                    className="text-red-600 hover:text-red-700"
+                                  >
+                                    <Eraser className="h-3 w-3 mr-1" />
+                                    Limpiar
+                                  </Button>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                        </Card>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              </TabsContent>
+
+              <TabsContent value="clinical" className="space-y-4">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Datos Clínicos</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <Label htmlFor="mobility">Movilidad (0-3)</Label>
+                          <Input
+                            id="mobility"
+                            type="number"
+                            min="0"
+                            max="3"
+                            value={toothData[selectedTooth]?.mobility || 0}
+                            onChange={(e) => {
+                              if (!readOnly) {
+                                const updatedToothData = {
+                                  ...toothData,
+                                  [selectedTooth]: {
+                                    ...toothData[selectedTooth],
+                                    number: selectedTooth,
+                                    mobility: Number.parseInt(e.target.value),
+                                    conditions: toothData[selectedTooth]?.conditions || [],
+                                    notes: toothData[selectedTooth]?.notes || "",
+                                    surfaces: toothData[selectedTooth]?.surfaces || {},
+                                    annotations: toothData[selectedTooth]?.annotations || [],
+                                    images: toothData[selectedTooth]?.images || [],
+                                    lastModified: new Date().toISOString(),
+                                  },
+                                }
+                                setToothData(updatedToothData)
+                              }
+                            }}
+                            disabled={readOnly}
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="pocket">Profundidad de Bolsa (mm)</Label>
+                          <Input
+                            id="pocket"
+                            type="number"
+                            min="0"
+                            max="15"
+                            value={toothData[selectedTooth]?.pocket || 0}
+                            onChange={(e) => {
+                              if (!readOnly) {
+                                const updatedToothData = {
+                                  ...toothData,
+                                  [selectedTooth]: {
+                                    ...toothData[selectedTooth],
+                                    number: selectedTooth,
+                                    pocket: Number.parseInt(e.target.value),
+                                    conditions: toothData[selectedTooth]?.conditions || [],
+                                    notes: toothData[selectedTooth]?.notes || "",
+                                    surfaces: toothData[selectedTooth]?.surfaces || {},
+                                    annotations: toothData[selectedTooth]?.annotations || [],
+                                    images: toothData[selectedTooth]?.images || [],
+                                    lastModified: new Date().toISOString(),
+                                  },
+                                }
+                                setToothData(updatedToothData)
+                              }
+                            }}
+                            disabled={readOnly}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="bleeding"
+                            checked={toothData[selectedTooth]?.bleeding || false}
+                            onCheckedChange={(checked) => {
+                              if (!readOnly) {
+                                const updatedToothData = {
+                                  ...toothData,
+                                  [selectedTooth]: {
+                                    ...toothData[selectedTooth],
+                                    number: selectedTooth,
+                                    bleeding: checked as boolean,
+                                    conditions: toothData[selectedTooth]?.conditions || [],
+                                    notes: toothData[selectedTooth]?.notes || "",
+                                    surfaces: toothData[selectedTooth]?.surfaces || {},
+                                    annotations: toothData[selectedTooth]?.annotations || [],
+                                    images: toothData[selectedTooth]?.images || [],
+                                    lastModified: new Date().toISOString(),
+                                  },
+                                }
+                                setToothData(updatedToothData)
+                              }
+                            }}
+                            disabled={readOnly}
+                          />
+                          <Label htmlFor="bleeding">Sangrado al sondaje</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <Checkbox
+                            id="plaque"
+                            checked={toothData[selectedTooth]?.plaque || false}
+                            onCheckedChange={(checked) => {
+                              if (!readOnly) {
+                                const updatedToothData = {
+                                  ...toothData,
+                                  [selectedTooth]: {
+                                    ...toothData[selectedTooth],
+                                    number: selectedTooth,
+                                    plaque: checked as boolean,
+                                    conditions: toothData[selectedTooth]?.conditions || [],
+                                    notes: toothData[selectedTooth]?.notes || "",
+                                    surfaces: toothData[selectedTooth]?.surfaces || {},
+                                    annotations: toothData[selectedTooth]?.annotations || [],
+                                    images: toothData[selectedTooth]?.images || [],
+                                    lastModified: new Date().toISOString(),
+                                  },
+                                }
+                                setToothData(updatedToothData)
+                              }
+                            }}
+                            disabled={readOnly}
+                          />
+                          <Label htmlFor="plaque">Presencia de placa</Label>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+
+                  <Card>
+                    <CardHeader>
+                      <CardTitle className="text-lg">Imágenes</CardTitle>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        {toothData[selectedTooth]?.images && toothData[selectedTooth].images.length > 0 ? (
+                          <div className="grid grid-cols-2 gap-2">
+                            {toothData[selectedTooth].images.map((image, index) => (
+                              <div key={index} className="relative">
+                                <img
+                                  src={image || "/placeholder.svg"}
+                                  alt={`Imagen ${index + 1} del diente ${selectedTooth}`}
+                                  className="w-full h-24 object-cover rounded border"
+                                />
+                                {!readOnly && (
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="absolute top-1 right-1 h-6 w-6 p-0 bg-white/80"
+                                    onClick={() => {
+                                      const updatedImages = toothData[selectedTooth].images.filter(
+                                        (_, i) => i !== index,
+                                      )
+                                      const updatedToothData = {
+                                        ...toothData,
+                                        [selectedTooth]: {
+                                          ...toothData[selectedTooth],
+                                          images: updatedImages,
+                                        },
+                                      }
+                                      setToothData(updatedToothData)
+                                    }}
+                                  >
+                                    <X className="h-3 w-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center py-8 text-muted-foreground">
+                            <Camera className="h-12 w-12 mx-auto mb-4 opacity-50" />
+                            <p>No hay imágenes</p>
+                          </div>
+                        )}
+
+                        {!readOnly && (
+                          <Button variant="outline" className="w-full bg-transparent">
+                            <Upload className="h-4 w-4 mr-2" />
+                            Subir Imagen
+                          </Button>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              </TabsContent>
+            </Tabs>
+          )}
+
+          <DialogFooter className="flex flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setIsToothDialogOpen(false)}>
+              Cerrar
+            </Button>
+            {!readOnly && selectedTooth && (
+              <>
+                <Button
+                  variant="outline"
+                  onClick={() => clearTooth(selectedTooth)}
+                  className="text-red-600 hover:text-red-700"
+                >
+                  <Eraser className="h-4 w-4 mr-2" />
+                  Limpiar Diente
+                </Button>
+                <Button onClick={saveToothNotes}>
+                  <Save className="h-4 w-4 mr-2" />
+                  Guardar Cambios
+                </Button>
+              </>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
