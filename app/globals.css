@@ -5,17 +5,17 @@
 /* CSS Custom Properties for Enhanced Color System */
 :root {
   /* Medical Brand Colors */
-  --medical-50: #f0f9ff;
-  --medical-100: #e0f2fe;
-  --medical-200: #bae6fd;
-  --medical-300: #7dd3fc;
-  --medical-400: #38bdf8;
-  --medical-500: #0ea5e9;
-  --medical-600: #0284c7;
-  --medical-700: #0369a1;
-  --medical-800: #075985;
-  --medical-900: #0c4a6e;
-  --medical-950: #082f49;
+  --medical-50: 210 100% 98%;
+  --medical-100: 210 100% 95%;
+  --medical-200: 210 100% 90%;
+  --medical-300: 210 100% 82%;
+  --medical-400: 210 100% 70%;
+  --medical-500: 210 100% 56%;
+  --medical-600: 210 100% 47%;
+  --medical-700: 210 100% 39%;
+  --medical-800: 210 100% 31%;
+  --medical-900: 210 100% 24%;
+  --medical-950: 210 100% 15%;
 
   /* Emerald Accent Colors */
   --emerald-50: #ecfdf5;
@@ -169,6 +169,16 @@
   --animation-slow: 500ms;
   --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
   --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
+
+  /* Dental Condition Colors */
+  --healthy: 142 76% 36%;
+  --caries: 0 84% 60%;
+  --restoration: 43 96% 56%;
+  --missing: 0 0% 45%;
+  --crown: 262 83% 58%;
+  --implant: 221 83% 53%;
+  --bridge: 25 95% 53%;
+  --extraction: 348 83% 47%;
 }
 
 /* Dark Mode Support */
@@ -187,6 +197,33 @@
 
     --glass-bg: rgba(0, 0, 0, 0.2);
     --glass-border: rgba(255, 255, 255, 0.1);
+  }
+
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 217.2 91.2% 59.8%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 224.3 76.3% 94.1%;
+    --chart-1: 220 70% 50%;
+    --chart-2: 160 60% 45%;
+    --chart-3: 30 80% 55%;
+    --chart-4: 280 65% 60%;
+    --chart-5: 340 75% 55%;
   }
 }
 
@@ -387,6 +424,56 @@
   .status-info {
     @apply bg-gradient-to-r from-info-50 to-blue-100 text-info-700 border-info-200;
   }
+
+  /* Dental condition colors */
+  .tooth-healthy {
+    @apply bg-green-100 border-green-300 text-green-800;
+  }
+
+  .tooth-caries {
+    @apply bg-red-100 border-red-300 text-red-800;
+  }
+
+  .tooth-restoration {
+    @apply bg-yellow-100 border-yellow-300 text-yellow-800;
+  }
+
+  .tooth-missing {
+    @apply bg-gray-100 border-gray-300 text-gray-800;
+  }
+
+  .tooth-crown {
+    @apply bg-purple-100 border-purple-300 text-purple-800;
+  }
+
+  .tooth-implant {
+    @apply bg-blue-100 border-blue-300 text-blue-800;
+  }
+
+  .tooth-bridge {
+    @apply bg-orange-100 border-orange-300 text-orange-800;
+  }
+
+  .tooth-extraction {
+    @apply bg-pink-100 border-pink-300 text-pink-800;
+  }
+
+  /* Professional medical interface */
+  .medical-header {
+    @apply bg-gradient-to-r from-blue-600 to-blue-700 text-white;
+  }
+
+  .medical-card {
+    @apply bg-white border border-gray-200 rounded-lg shadow-sm;
+  }
+
+  .medical-button {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-md transition-colors;
+  }
+
+  .medical-input {
+    @apply border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
 }
 
 /* Utility Classes */
@@ -508,13 +595,10 @@
 @keyframes float {
   0%,
   100% {
-    transform: translateY(0px) rotate(0deg);
+    transform: translateY(0px);
   }
-  33% {
-    transform: translateY(-10px) rotate(1deg);
-  }
-  66% {
-    transform: translateY(5px) rotate(-1deg);
+  50% {
+    transform: translateY(-20px);
   }
 }
 
@@ -573,11 +657,7 @@
     display: none !important;
   }
 
-  .print-break-before {
-    break-before: page;
-  }
-
-  .print-break-after {
-    break-after: page;
+  .print-break {
+    page-break-after: always;
   }
 }
