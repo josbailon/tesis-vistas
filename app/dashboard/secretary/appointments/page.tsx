@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { useRouter } from "next/navigation"
 
 interface Appointment {
   id: string
@@ -92,6 +93,8 @@ export default function SecretaryAppointmentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [dateFilter, setDateFilter] = useState<string>("all")
 
+  const router = useRouter()
+
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
       appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -120,7 +123,10 @@ export default function SecretaryAppointmentsPage() {
           <h1 className="text-3xl font-bold text-gray-900">Gestión de Citas</h1>
           <p className="text-gray-600">Administra las citas de la clínica dental</p>
         </div>
-        <Button className="bg-blue-600 hover:bg-blue-700">
+        <Button
+          className="bg-blue-600 hover:bg-blue-700"
+          onClick={() => router.push("/dashboard/secretary/appointments/create")}
+        >
           <Plus className="mr-2 h-4 w-4" />
           Nueva Cita
         </Button>
