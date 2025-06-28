@@ -1,63 +1,63 @@
+"use client"
+
+import { memo } from "react"
 import { cn } from "@/lib/utils"
-import { GraduationCap, Heart } from "lucide-react"
 
 interface UleamBrandingProps {
-  variant?: "full" | "compact" | "icon"
+  variant?: "light" | "dark"
+  size?: "sm" | "md" | "lg"
   className?: string
+  showText?: boolean
 }
 
-export function UleamBranding({ variant = "full", className }: UleamBrandingProps) {
-  if (variant === "icon") {
-    return (
-      <div className={cn("flex items-center justify-center", className)}>
-        <div className="relative">
-          <div className="w-12 h-12 bg-gradient-to-br from-blue-600 to-teal-600 rounded-full flex items-center justify-center">
-            <Heart className="h-6 w-6 text-white" />
-          </div>
-          <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-to-br from-teal-500 to-blue-500 rounded-full flex items-center justify-center">
-            <GraduationCap className="h-3 w-3 text-white" />
-          </div>
-        </div>
-      </div>
-    )
+const UleamBranding = memo(function UleamBranding({
+  variant = "dark",
+  size = "md",
+  className,
+  showText = true,
+}: UleamBrandingProps) {
+  const sizeClasses = {
+    sm: "h-8 w-8",
+    md: "h-12 w-12",
+    lg: "h-16 w-16",
   }
 
-  if (variant === "compact") {
-    return (
-      <div className={cn("flex items-center gap-3", className)}>
-        <div className="relative">
-          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-teal-600 rounded-full flex items-center justify-center">
-            <Heart className="h-5 w-5 text-white" />
-          </div>
-          <div className="absolute -top-1 -right-1 w-5 h-5 bg-gradient-to-br from-teal-500 to-blue-500 rounded-full flex items-center justify-center">
-            <GraduationCap className="h-2.5 w-2.5 text-white" />
-          </div>
-        </div>
-        <div>
-          <h2 className="text-lg font-bold text-gray-900">ULEAM</h2>
-          <p className="text-xs text-gray-600">Clínica Dental</p>
-        </div>
-      </div>
-    )
+  const textSizeClasses = {
+    sm: "text-lg",
+    md: "text-2xl",
+    lg: "text-3xl",
   }
+
+  const subtextSizeClasses = {
+    sm: "text-xs",
+    md: "text-sm",
+    lg: "text-base",
+  }
+
+  const textColor = variant === "light" ? "text-white" : "text-gray-900"
+  const subtextColor = variant === "light" ? "text-blue-100" : "text-gray-600"
 
   return (
-    <div className={cn("text-center", className)}>
-      <div className="flex items-center justify-center mb-4">
-        <div className="relative">
-          <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-teal-600 rounded-full flex items-center justify-center shadow-lg">
-            <Heart className="h-8 w-8 text-white" />
-          </div>
-          <div className="absolute -top-2 -right-2 w-8 h-8 bg-gradient-to-br from-teal-500 to-blue-500 rounded-full flex items-center justify-center shadow-md">
-            <GraduationCap className="h-4 w-4 text-white" />
+    <div className={cn("flex items-center space-x-3", className)}>
+      <div className="relative">
+        <div className={cn("rounded-xl bg-gradient-to-br from-blue-600 to-teal-600 p-2 shadow-lg", sizeClasses[size])}>
+          <div className="w-full h-full bg-white rounded-lg flex items-center justify-center">
+            <span className="font-bold text-blue-600 text-sm">U</span>
           </div>
         </div>
+        <div className="absolute -top-1 -right-1 w-3 h-3 bg-teal-500 rounded-full border-2 border-white" />
       </div>
-      <div>
-        <h1 className="text-2xl font-bold text-gray-900 mb-1">ULEAM</h1>
-        <p className="text-sm text-gray-600 mb-1">Universidad Laica Eloy Alfaro de Manabí</p>
-        <p className="text-xs text-gray-500">Clínica Dental Universitaria</p>
-      </div>
+
+      {showText && (
+        <div className="flex flex-col">
+          <h1 className={cn("font-bold leading-tight", textSizeClasses[size], textColor)}>ULEAM</h1>
+          <p className={cn("leading-tight", subtextSizeClasses[size], subtextColor)}>Clínica Dental</p>
+        </div>
+      )}
     </div>
   )
-}
+})
+
+UleamBranding.displayName = "UleamBranding"
+
+export { UleamBranding }

@@ -1,42 +1,77 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useMemo } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Calendar } from "lucide-react"
+import { Calendar, Users, FileText, Activity } from "lucide-react"
+import { LoadingSpinner } from "@/components/loading-spinner"
 
 export default function DashboardPage() {
-  const { user } = useAuth()
+  const { user, loading } = useAuth()
   const router = useRouter()
 
-  // Redirigir según el rol solo desde la página principal del dashboard
+  // Memoize role-based redirects to prevent unnecessary re-calculations
+  const roleRedirects = useMemo(
+    () => ({
+      patient: "/dashboard/my-appointments",
+      estudiante: "/dashboard/patients",
+      profesor: "/dashboard/teacher",
+      admin: "/dashboard/admin",
+      secretario: "/dashboard/secretary",
+    }),
+    [],
+  )
+
+  // Redirect based on user role
   useEffect(() => {
-    if (user) {
-      switch (user.role) {
-        case "patient":
-          router.replace("/dashboard/my-appointments")
-          break
-        case "student":
-          router.replace("/dashboard/patients")
-          break
-        case "professor":
-          router.replace("/dashboard/teacher")
-          break
-        case "admin":
-          router.replace("/dashboard/admin")
-          break
+    if (user && !loading) {
+      const redirectPath = roleRedirects[user.role as keyof typeof roleRedirects]
+      if (redirectPath) {
+        router.replace(redirectPath)
       }
     }
-  }, [user, router])
+  }, [user, loading, router, roleRedirects])
 
-  if (!user) {
+  // Memoize dashboard stats to prevent recalculation
+  const dashboardStats = useMemo(
+    () => [
+      {
+        title: "Citas Hoy",
+        value: "12",
+        icon: Calendar,
+        color: "text-blue-600",
+        bgColor: "bg-blue-50",
+      },
+      {
+        title: "Pacientes Activos",
+        value: "48",
+        icon: Users,
+        color: "text-green-600",
+        bgColor: "bg-green-50",
+      },
+      {
+        title: "Casos Clínicos",
+        value: "23",
+        icon: FileText,
+        color: "text-purple-600",
+        bgColor: "bg-purple-50",
+      },
+      {
+        title: "Actividad",
+        value: "95%",
+        icon: Activity,
+        color: "text-orange-600",
+        bgColor: "bg-orange-50",
+      },
+    ],
+    [],
+  )
+
+  if (loading || !user) {
     return (
       <div className="flex items-center justify-center h-96">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600 mx-auto mb-4"></div>
-          <p className="text-green-800">Cargando dashboard...</p>
-        </div>
+        <LoadingSpinner size="lg" text="Cargando dashboard..." variant="medical" />
       </div>
     )
   }
@@ -44,22 +79,40 @@ export default function DashboardPage() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold text-green-800">Dashboard</h1>
-        <p className="text-green-600">Bienvenido, {user.name}</p>
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-600">Bienvenido, {user.name}</p>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        <Card className="border-green-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-800">Redirigiendo...</CardTitle>
-            <Calendar className="h-4 w-4 text-green-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-700">Cargando</div>
-            <p className="text-xs text-green-600">Preparando tu dashboard</p>
-          </CardContent>
-        </Card>
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+        {dashboardStats.map((stat, index) => {
+          const Icon = stat.icon
+          return (
+            <Card key={index} className="border-0 shadow-md hover:shadow-lg transition-shadow">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-gray-600">{stat.title}</CardTitle>
+                <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                  <Icon className={`h-4 w-4 ${stat.color}`} />
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-900">{stat.value}</div>
+                <p className="text-xs text-gray-500 mt-1">Redirigiendo a tu dashboard...</p>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
+
+      <Card className="border-0 shadow-md">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-gray-900">Preparando tu espacio de trabajo</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center justify-center py-8">
+            <LoadingSpinner size="md" text="Configurando dashboard personalizado..." variant="medical" />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

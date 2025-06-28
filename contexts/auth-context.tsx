@@ -1,8 +1,10 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import type React from "react"
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react"
+import { useRouter } from "next/navigation"
 
-export interface User {
+interface User {
   id: string
   name: string
   email: string
@@ -10,267 +12,201 @@ export interface User {
   specialty?: string
   avatar?: string
   phone?: string
-  department?: string
-  semester?: number
-  studentId?: string
-  professorId?: string
-  permissions?: string[]
-  preferences?: {
-    theme: "light" | "dark"
-    language: "es" | "en"
-    notifications: boolean
-  }
+  cedula?: string
+  isActive: boolean
 }
 
 interface AuthContextType {
   user: User | null
-  login: (user: User) => void
-  logout: () => void
-  updateUser: (updates: Partial<User>) => void
-  isLoading: boolean
+  loading: boolean
+  login: (email: string, password: string) => Promise<boolean>
+  logout: () => Promise<void>
+  updateUser: (userData: Partial<User>) => void
   hasPermission: (permission: string) => boolean
   isRole: (role: string) => boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-export const TEST_USERS: (User & { password: string })[] = [
+// Mock users data - optimized with memoization
+const MOCK_USERS: User[] = [
   {
-    id: "admin1",
-    name: "Dr. María González",
+    id: "1",
+    name: "Dr. Carlos Administrador",
     email: "admin@uleam.edu.ec",
-    password: "admin123",
     role: "admin",
     phone: "+593 99 123 4567",
-    department: "Administración",
-    permissions: ["all"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
+    cedula: "1234567890",
+    isActive: true,
+    avatar: "/placeholder-user.jpg",
   },
   {
-    id: "prof1",
+    id: "2",
     name: "Dr. Carlos Ruiz",
     email: "carlos.ruiz@uleam.edu.ec",
-    password: "prof123",
     role: "profesor",
-    specialty: "endodoncia",
+    specialty: "Endodoncia",
     phone: "+593 99 234 5678",
-    department: "Endodoncia",
-    permissions: ["manage_students", "approve_treatments", "create_assignments"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
+    cedula: "2345678901",
+    isActive: true,
+    avatar: "/placeholder-user.jpg",
   },
   {
-    id: "prof2",
-    name: "Dra. Laura Martín",
-    email: "laura.martin@uleam.edu.ec",
-    password: "prof123",
-    role: "profesor",
-    specialty: "ortodoncia",
-    phone: "+593 99 345 6789",
-    department: "Ortodoncia",
-    permissions: ["manage_students", "approve_treatments", "create_assignments"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
-  },
-  {
-    id: "prof3",
-    name: "Dr. Roberto Silva",
-    email: "roberto.silva@uleam.edu.ec",
-    password: "prof123",
-    role: "profesor",
-    specialty: "cirugia",
-    phone: "+593 99 456 7890",
-    department: "Cirugía Oral",
-    permissions: ["manage_students", "approve_treatments", "create_assignments"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
-  },
-  {
-    id: "prof4",
-    name: "Dra. Carmen Vega",
-    email: "carmen.vega@uleam.edu.ec",
-    password: "prof123",
-    role: "profesor",
-    specialty: "pediatria",
-    phone: "+593 99 567 8901",
-    department: "Odontopediatría",
-    permissions: ["manage_students", "approve_treatments", "create_assignments"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
-  },
-  {
-    id: "est1",
+    id: "3",
     name: "Juan Pérez",
     email: "juan.perez@uleam.edu.ec",
-    password: "est123",
     role: "estudiante",
-    specialty: "endodoncia",
-    semester: 8,
-    studentId: "2021-001",
-    professorId: "prof1",
-    phone: "+593 99 456 7890",
-    permissions: ["view_patients", "create_cases", "submit_assignments"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
+    phone: "+593 99 345 6789",
+    cedula: "3456789012",
+    isActive: true,
+    avatar: "/placeholder-user.jpg",
   },
   {
-    id: "est2",
-    name: "María González",
-    email: "maria.gonzalez@uleam.edu.ec",
-    password: "est123",
-    role: "estudiante",
-    specialty: "ortodoncia",
-    semester: 7,
-    studentId: "2021-002",
-    professorId: "prof2",
-    phone: "+593 99 567 8901",
-    permissions: ["view_patients", "create_cases", "submit_assignments"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
-  },
-  {
-    id: "est3",
-    name: "Carlos Mendoza",
-    email: "carlos.mendoza@uleam.edu.ec",
-    password: "est123",
-    role: "estudiante",
-    specialty: "cirugia",
-    semester: 9,
-    studentId: "2020-003",
-    professorId: "prof3",
-    phone: "+593 99 678 9012",
-    permissions: ["view_patients", "create_cases", "submit_assignments"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
-  },
-  {
-    id: "pac1",
+    id: "4",
     name: "Ana Rodríguez",
     email: "ana.rodriguez@gmail.com",
-    password: "pac123",
     role: "paciente",
-    phone: "+593 99 678 9012",
-    permissions: ["view_appointments", "view_records"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
+    phone: "+593 99 456 7890",
+    cedula: "4567890123",
+    isActive: true,
+    avatar: "/placeholder-user.jpg",
   },
   {
-    id: "pac2",
-    name: "Luis Morales",
-    email: "luis.morales@gmail.com",
-    password: "pac123",
-    role: "paciente",
-    phone: "+593 99 789 0123",
-    permissions: ["view_appointments", "view_records"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
-  },
-  {
-    id: "sec1",
-    name: "Carmen Secretaria",
+    id: "5",
+    name: "María Secretaria",
     email: "secretaria@uleam.edu.ec",
-    password: "sec123",
     role: "secretario",
-    phone: "+593 99 789 0123",
-    department: "Administración",
-    permissions: ["manage_appointments", "register_patients", "view_schedules"],
-    preferences: {
-      theme: "light",
-      language: "es",
-      notifications: true,
-    },
+    phone: "+593 99 567 8901",
+    cedula: "5678901234",
+    isActive: true,
+    avatar: "/placeholder-user.jpg",
   },
 ]
 
-export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+// Role permissions mapping - optimized
+const ROLE_PERMISSIONS = {
+  admin: ["*"], // All permissions
+  profesor: ["view_students", "manage_assignments", "approve_treatments", "view_clinical_cases"],
+  estudiante: ["view_patients", "create_clinical_cases", "view_assignments", "manage_appointments"],
+  paciente: ["view_appointments", "view_medical_records", "book_appointments"],
+  secretario: ["manage_appointments", "register_patients", "view_schedules", "manage_communications"],
+} as const
 
-  useEffect(() => {
-    // Check for existing session
-    const savedUser = localStorage.getItem("dental_clinic_user")
-    if (savedUser) {
-      try {
-        const parsedUser = JSON.parse(savedUser)
-        setUser(parsedUser)
-      } catch (error) {
-        console.error("Error parsing saved user:", error)
-        localStorage.removeItem("dental_clinic_user")
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [loading, setLoading] = useState(true)
+  const router = useRouter()
+
+  // Optimized session check with useCallback
+  const checkSession = useCallback(async () => {
+    try {
+      const savedUser = localStorage.getItem("dental_clinic_user")
+      if (savedUser) {
+        const userData = JSON.parse(savedUser)
+        setUser(userData)
       }
+    } catch (error) {
+      console.error("Error checking session:", error)
+      localStorage.removeItem("dental_clinic_user")
+    } finally {
+      setLoading(false)
     }
-    setIsLoading(false)
   }, [])
 
-  const login = (userData: User) => {
-    setUser(userData)
-    localStorage.setItem("dental_clinic_user", JSON.stringify(userData))
-  }
+  // Initialize session check
+  useEffect(() => {
+    checkSession()
+  }, [checkSession])
 
-  const logout = () => {
-    setUser(null)
-    localStorage.removeItem("dental_clinic_user")
-  }
+  // Optimized login function
+  const login = useCallback(async (email: string, password: string): Promise<boolean> => {
+    setLoading(true)
 
-  const updateUser = (updates: Partial<User>) => {
-    if (user) {
-      const updatedUser = { ...user, ...updates }
-      setUser(updatedUser)
-      localStorage.setItem("dental_clinic_user", JSON.stringify(updatedUser))
+    try {
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 500))
+
+      // Mock authentication - in production, this would be an API call
+      const mockPasswords: Record<string, string> = {
+        "admin@uleam.edu.ec": "admin123",
+        "carlos.ruiz@uleam.edu.ec": "prof123",
+        "juan.perez@uleam.edu.ec": "est123",
+        "ana.rodriguez@gmail.com": "pac123",
+        "secretaria@uleam.edu.ec": "sec123",
+      }
+
+      if (mockPasswords[email] === password) {
+        const foundUser = MOCK_USERS.find((u) => u.email === email)
+        if (foundUser) {
+          setUser(foundUser)
+          localStorage.setItem("dental_clinic_user", JSON.stringify(foundUser))
+          return true
+        }
+      }
+
+      return false
+    } catch (error) {
+      console.error("Login error:", error)
+      return false
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [])
 
-  const hasPermission = (permission: string): boolean => {
-    if (!user) return false
-    if (user.permissions?.includes("all")) return true
-    return user.permissions?.includes(permission) || false
-  }
+  // Optimized logout function
+  const logout = useCallback(async (): Promise<void> => {
+    try {
+      setUser(null)
+      localStorage.removeItem("dental_clinic_user")
+      router.push("/login")
+    } catch (error) {
+      console.error("Logout error:", error)
+    }
+  }, [router])
 
-  const isRole = (role: string): boolean => {
-    return user?.role === role
-  }
+  // Optimized user update function
+  const updateUser = useCallback((userData: Partial<User>) => {
+    setUser((prevUser) => {
+      if (!prevUser) return null
+      const updatedUser = { ...prevUser, ...userData }
+      localStorage.setItem("dental_clinic_user", JSON.stringify(updatedUser))
+      return updatedUser
+    })
+  }, [])
 
-  const value: AuthContextType = {
-    user,
-    login,
-    logout,
-    updateUser,
-    isLoading,
-    hasPermission,
-    isRole,
-  }
+  // Optimized permission checking
+  const hasPermission = useCallback(
+    (permission: string): boolean => {
+      if (!user) return false
+      const userPermissions = ROLE_PERMISSIONS[user.role] || []
+      return userPermissions.includes("*") || userPermissions.includes(permission)
+    },
+    [user],
+  )
 
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+  // Optimized role checking
+  const isRole = useCallback(
+    (role: string): boolean => {
+      return user?.role === role
+    },
+    [user],
+  )
+
+  // Memoize context value to prevent unnecessary re-renders
+  const contextValue = useMemo(
+    () => ({
+      user,
+      loading,
+      login,
+      logout,
+      updateUser,
+      hasPermission,
+      isRole,
+    }),
+    [user, loading, login, logout, updateUser, hasPermission, isRole],
+  )
+
+  return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

@@ -1,87 +1,83 @@
 "use client"
 
 import type React from "react"
-import { useEffect, useRef, Suspense } from "react"
-import { Sidebar } from "@/components/sidebar"
+
+import { Suspense, lazy } from "react"
 import { useAuth } from "@/contexts/auth-context"
-import { AuthDebug } from "@/components/auth-debug"
+import { LoadingSpinner } from "@/components/loading-spinner"
+import { redirect } from "next/navigation"
 
-function DashboardContent({ children }: { children: React.ReactNode }) {
-  const { user, isLoading, isInitialized } = useAuth()
-  const redirectHandled = useRef(false)
+// Lazy load heavy components
+const Sidebar = lazy(() => import("@/components/sidebar").then((module) => ({ default: module.Sidebar })))
 
-  // Update the user check and role handling
-  useEffect(() => {
-    if (isInitialized && !isLoading && !user && !redirectHandled.current) {
-      redirectHandled.current = true
-      console.log("🔄 Dashboard: No user found, redirecting to login")
-
-      setTimeout(() => {
-        window.location.href = "/login"
-      }, 500)
-    }
-  }, [user, isLoading, isInitialized])
-
-  // Show loading during initialization
-  if (!isInitialized || isLoading) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-soft-gradient">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mx-auto mb-4"></div>
-          <p className="text-primary-800 font-medium">Cargando dashboard...</p>
-          {user && (
-            <p className="text-sm text-primary-600 mt-2">
-              Usuario: {user.name} ({user.role})
-            </p>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  // Show loading if no user (redirecting)
-  if (!user) {
-    return (
-      <div className="flex h-screen items-center justify-center bg-soft-gradient">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary-200 border-t-primary-600 mx-auto mb-4"></div>
-          <p className="text-primary-800 font-medium">Verificando acceso...</p>
-        </div>
-      </div>
-    )
-  }
-
-  console.log("✅ Dashboard rendering for user:", user.name, "Role:", user.role)
-
-  return (
-    <div className="flex h-screen bg-soft-gradient">
-      <Sidebar />
-      <div className="flex-grow overflow-y-auto">
-        <main className="p-6">
-          <div className="bg-white rounded-xl shadow-soft-lg border border-primary-200/50 min-h-full p-6 backdrop-blur-sm">
-            {children}
-          </div>
-        </main>
-      </div>
-      <AuthDebug />
-    </div>
-  )
+interface DashboardLayoutProps {
+  children: React.ReactNode
 }
 
-export default function DashboardLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DashboardLayout({ children }: DashboardLayoutProps) {
+  const { user, loading } = useAuth()
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner size="lg" text="Cargando dashboard..." variant="medical" />
+      </div>
+    )
+  }
+
+  if (!user) {
+    redirect("/login")
+  }
+
   return (
-    <Suspense
-      fallback={
-        <div className="flex h-screen items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-blue-600"></div>
+    <div className="min-h-screen bg-gray-50">
+      <div className="flex h-screen">
+        {/* Sidebar with Suspense for lazy loading */}
+        <Suspense
+          fallback={
+            <div className="w-64 bg-white border-r border-gray-200 flex items-center justify-center">
+              <LoadingSpinner size="md" variant="minimal" />
+            </div>
+          }
+        >
+          <Sidebar />
+        </Suspense>
+
+        {/* Main Content */}
+        <div className="flex-1 flex flex-col overflow-hidden">
+          {/* Header */}
+          <header className="bg-white border-b border-gray-200 px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h1 className="text-2xl font-semibold text-gray-900">Dashboard</h1>
+                <p className="text-sm text-gray-600">Bienvenido, {user.name}</p>
+              </div>
+              <div className="flex items-center space-x-4">
+                <div className="text-right">
+                  <p className="text-sm font-medium text-gray-900">{user.name}</p>
+                  <p className="text-xs text-gray-500 capitalize">{user.role}</p>
+                </div>
+                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
+                  <span className="text-blue-600 font-semibold text-sm">{user.name.charAt(0)}</span>
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Page Content */}
+          <main className="flex-1 overflow-y-auto p-6">
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center h-64">
+                  <LoadingSpinner size="lg" text="Cargando contenido..." variant="medical" />
+                </div>
+              }
+            >
+              {children}
+            </Suspense>
+          </main>
         </div>
-      }
-    >
-      <DashboardContent>{children}</DashboardContent>
-    </Suspense>
+      </div>
+    </div>
   )
 }
