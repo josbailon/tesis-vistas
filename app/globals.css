@@ -2,371 +2,535 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Enhanced CSS Custom Properties for comprehensive color system */
+/* CSS Custom Properties for Enhanced Color System */
 :root {
-  /* Base Colors */
-  --background: 0 0% 100%;
-  --foreground: 222.2 84% 4.9%;
-  --card: 0 0% 100%;
-  --card-foreground: 222.2 84% 4.9%;
-  --popover: 0 0% 100%;
-  --popover-foreground: 222.2 84% 4.9%;
-  --muted: 210 40% 96%;
-  --muted-foreground: 215.4 16.3% 46.9%;
-  --accent: 210 40% 96%;
-  --accent-foreground: 222.2 84% 4.9%;
-  --border: 214.3 31.8% 91.4%;
-  --input: 214.3 31.8% 91.4%;
-  --ring: 221.2 83.2% 53.3%;
-  --radius: 0.75rem;
+  /* Medical Brand Colors */
+  --medical-50: #f0f9ff;
+  --medical-100: #e0f2fe;
+  --medical-200: #bae6fd;
+  --medical-300: #7dd3fc;
+  --medical-400: #38bdf8;
+  --medical-500: #0ea5e9;
+  --medical-600: #0284c7;
+  --medical-700: #0369a1;
+  --medical-800: #075985;
+  --medical-900: #0c4a6e;
+  --medical-950: #082f49;
 
-  /* Primary Brand Colors - Blue to Emerald Gradient System */
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --primary-50: 219 100% 97%;
-  --primary-100: 218 100% 94%;
-  --primary-200: 221 83% 87%;
-  --primary-300: 221 83% 74%;
-  --primary-400: 221 83% 61%;
-  --primary-500: 221 83% 53%;
-  --primary-600: 221 83% 45%;
-  --primary-700: 221 83% 37%;
-  --primary-800: 221 83% 29%;
-  --primary-900: 221 83% 21%;
+  /* Emerald Accent Colors */
+  --emerald-50: #ecfdf5;
+  --emerald-100: #d1fae5;
+  --emerald-200: #a7f3d0;
+  --emerald-300: #6ee7b7;
+  --emerald-400: #34d399;
+  --emerald-500: #10b981;
+  --emerald-600: #059669;
+  --emerald-700: #047857;
+  --emerald-800: #065f46;
+  --emerald-900: #064e3b;
+  --emerald-950: #022c22;
 
-  /* Secondary Colors - Emerald System */
-  --secondary: 142 76% 36%;
-  --secondary-foreground: 210 40% 98%;
-  --secondary-50: 151 81% 96%;
-  --secondary-100: 149 80% 90%;
-  --secondary-200: 152 76% 80%;
-  --secondary-300: 156 72% 67%;
-  --secondary-400: 158 64% 52%;
-  --secondary-500: 160 84% 39%;
-  --secondary-600: 161 94% 30%;
-  --secondary-700: 163 94% 24%;
-  --secondary-800: 163 88% 20%;
-  --secondary-900: 164 86% 16%;
+  /* Specialty Colors */
+  --endodoncia-50: #faf5ff;
+  --endodoncia-100: #f3e8ff;
+  --endodoncia-200: #e9d5ff;
+  --endodoncia-300: #d8b4fe;
+  --endodoncia-400: #c084fc;
+  --endodoncia-500: #a855f7;
+  --endodoncia-600: #9333ea;
+  --endodoncia-700: #7c3aed;
+  --endodoncia-800: #6b21a8;
+  --endodoncia-900: #581c87;
 
-  /* Accent Colors - Purple System */
-  --accent-purple: 262 83% 58%;
-  --accent-purple-50: 270 100% 98%;
-  --accent-purple-100: 269 100% 95%;
-  --accent-purple-200: 269 100% 92%;
-  --accent-purple-300: 269 87% 85%;
-  --accent-purple-400: 270 95% 75%;
-  --accent-purple-500: 271 91% 65%;
-  --accent-purple-600: 271 81% 56%;
-  --accent-purple-700: 272 72% 47%;
-  --accent-purple-800: 272 67% 39%;
-  --accent-purple-900: 273 67% 32%;
+  --ortodoncia-50: #eff6ff;
+  --ortodoncia-100: #dbeafe;
+  --ortodoncia-200: #bfdbfe;
+  --ortodoncia-300: #93c5fd;
+  --ortodoncia-400: #60a5fa;
+  --ortodoncia-500: #3b82f6;
+  --ortodoncia-600: #2563eb;
+  --ortodoncia-700: #1d4ed8;
+  --ortodoncia-800: #1e40af;
+  --ortodoncia-900: #1e3a8a;
+
+  --cirugia-50: #fef2f2;
+  --cirugia-100: #fee2e2;
+  --cirugia-200: #fecaca;
+  --cirugia-300: #fca5a5;
+  --cirugia-400: #f87171;
+  --cirugia-500: #ef4444;
+  --cirugia-600: #dc2626;
+  --cirugia-700: #b91c1c;
+  --cirugia-800: #991b1b;
+  --cirugia-900: #7f1d1d;
+
+  --odontopediatria-50: #fff7ed;
+  --odontopediatria-100: #ffedd5;
+  --odontopediatria-200: #fed7aa;
+  --odontopediatria-300: #fdba74;
+  --odontopediatria-400: #fb923c;
+  --odontopediatria-500: #f97316;
+  --odontopediatria-600: #ea580c;
+  --odontopediatria-700: #c2410c;
+  --odontopediatria-800: #9a3412;
+  --odontopediatria-900: #7c2d12;
+
+  --periodoncia-50: #f0fdf4;
+  --periodoncia-100: #dcfce7;
+  --periodoncia-200: #bbf7d0;
+  --periodoncia-300: #86efac;
+  --periodoncia-400: #4ade80;
+  --periodoncia-500: #22c55e;
+  --periodoncia-600: #16a34a;
+  --periodoncia-700: #15803d;
+  --periodoncia-800: #166534;
+  --periodoncia-900: #14532d;
+
+  --protesis-50: #f0fdfa;
+  --protesis-100: #ccfbf1;
+  --protesis-200: #99f6e4;
+  --protesis-300: #5eead4;
+  --protesis-400: #2dd4bf;
+  --protesis-500: #14b8a6;
+  --protesis-600: #0d9488;
+  --protesis-700: #0f766e;
+  --protesis-800: #115e59;
+  --protesis-900: #134e4a;
+
+  /* Role-based Colors */
+  --admin-50: #fef2f2;
+  --admin-500: #ef4444;
+  --admin-600: #dc2626;
+  --admin-700: #b91c1c;
+
+  --profesor-50: #faf5ff;
+  --profesor-500: #a855f7;
+  --profesor-600: #9333ea;
+  --profesor-700: #7c3aed;
+
+  --estudiante-50: #f0fdf4;
+  --estudiante-500: #22c55e;
+  --estudiante-600: #16a34a;
+  --estudiante-700: #15803d;
+
+  --paciente-50: #eff6ff;
+  --paciente-500: #3b82f6;
+  --paciente-600: #2563eb;
+  --paciente-700: #1d4ed8;
+
+  --secretario-50: #f8fafc;
+  --secretario-500: #6366f1;
+  --secretario-600: #4f46e5;
+  --secretario-700: #4338ca;
 
   /* Status Colors */
-  --success: 142 76% 36%;
-  --success-foreground: 210 40% 98%;
-  --warning: 38 92% 50%;
-  --warning-foreground: 48 96% 89%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
-  --info: 199 89% 48%;
-  --info-foreground: 210 40% 98%;
+  --success-50: #f0fdf4;
+  --success-500: #22c55e;
+  --success-600: #16a34a;
 
-  /* Medical Theme Colors - Enhanced */
-  --medical-primary: 199 89% 48%;
-  --medical-secondary: 142 76% 36%;
-  --medical-accent: 262 83% 58%;
-  --medical-success: 142 76% 36%;
-  --medical-warning: 38 92% 50%;
-  --medical-error: 0 84% 60%;
-  --medical-info: 199 89% 48%;
+  --warning-50: #fffbeb;
+  --warning-500: #f59e0b;
+  --warning-600: #d97706;
 
-  /* Dental Specialty Colors - Enhanced */
-  --endodoncia: 262 83% 58%;
-  --endodoncia-light: 262 83% 85%;
-  --endodoncia-dark: 262 83% 35%;
+  --error-50: #fef2f2;
+  --error-500: #ef4444;
+  --error-600: #dc2626;
 
-  --ortodoncia: 221 83% 53%;
-  --ortodoncia-light: 221 83% 85%;
-  --ortodoncia-dark: 221 83% 35%;
+  --info-50: #eff6ff;
+  --info-500: #3b82f6;
+  --info-600: #2563eb;
 
-  --cirugia: 0 84% 60%;
-  --cirugia-light: 0 84% 85%;
-  --cirugia-dark: 0 84% 40%;
+  /* Surface Colors */
+  --surface-50: #f8fafc;
+  --surface-100: #f1f5f9;
+  --surface-200: #e2e8f0;
+  --surface-300: #cbd5e1;
+  --surface-400: #94a3b8;
+  --surface-500: #64748b;
+  --surface-600: #475569;
+  --surface-700: #334155;
+  --surface-800: #1e293b;
+  --surface-900: #0f172a;
 
-  --odontopediatria: 38 92% 50%;
-  --odontopediatria-light: 38 92% 85%;
-  --odontopediatria-dark: 38 92% 35%;
+  /* Glass Effect Variables */
+  --glass-bg: rgba(255, 255, 255, 0.1);
+  --glass-border: rgba(255, 255, 255, 0.2);
+  --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 
-  --periodoncia: 142 76% 36%;
-  --periodoncia-light: 142 76% 85%;
-  --periodoncia-dark: 142 76% 25%;
+  /* Shadow System */
+  --shadow-soft: 0 2px 8px rgba(0, 0, 0, 0.04);
+  --shadow-medium: 0 4px 16px rgba(0, 0, 0, 0.08);
+  --shadow-large: 0 8px 32px rgba(0, 0, 0, 0.12);
+  --shadow-colored: 0 4px 16px rgba(14, 165, 233, 0.15);
 
-  --protesis: 180 84% 40%;
-  --protesis-light: 180 84% 85%;
-  --protesis-dark: 180 84% 25%;
-
-  /* Role-based Colors - Enhanced */
-  --admin: 0 84% 60%;
-  --admin-light: 0 84% 85%;
-  --admin-dark: 0 84% 40%;
-
-  --profesor: 262 83% 58%;
-  --profesor-light: 262 83% 85%;
-  --profesor-dark: 262 83% 35%;
-
-  --estudiante: 142 76% 36%;
-  --estudiante-light: 142 76% 85%;
-  --estudiante-dark: 142 76% 25%;
-
-  --paciente: 199 89% 48%;
-  --paciente-light: 199 89% 85%;
-  --paciente-dark: 199 89% 35%;
-
-  --secretario: 262 83% 58%;
-  --secretario-light: 262 83% 85%;
-  --secretario-dark: 262 83% 35%;
-
-  /* UI Enhancement Colors */
-  --surface: 0 0% 100%;
-  --surface-variant: 210 40% 96%;
-  --on-surface: 222.2 84% 4.9%;
-  --on-surface-variant: 215.4 16.3% 46.9%;
-  --outline: 214.3 31.8% 91.4%;
-  --outline-variant: 220 13% 91%;
-  --shadow: 220 43% 11%;
-  --scrim: 0 0% 0%;
+  /* Animation Variables */
+  --animation-fast: 150ms;
+  --animation-normal: 300ms;
+  --animation-slow: 500ms;
+  --ease-out-cubic: cubic-bezier(0.33, 1, 0.68, 1);
+  --ease-in-out-cubic: cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-.dark {
-  --background: 222.2 84% 4.9%;
-  --foreground: 210 40% 98%;
-  --card: 222.2 84% 4.9%;
-  --card-foreground: 210 40% 98%;
-  --popover: 222.2 84% 4.9%;
-  --popover-foreground: 210 40% 98%;
-  --primary: 217.2 91.2% 59.8%;
-  --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 142 76% 36%;
-  --secondary-foreground: 210 40% 98%;
-  --muted: 217.2 32.6% 17.5%;
-  --muted-foreground: 215 20.2% 65.1%;
-  --accent: 217.2 32.6% 17.5%;
-  --accent-foreground: 210 40% 98%;
-  --destructive: 0 62.8% 30.6%;
-  --destructive-foreground: 210 40% 98%;
-  --border: 217.2 32.6% 17.5%;
-  --input: 217.2 32.6% 17.5%;
-  --ring: 224.3 76.3% 94.1%;
-  --surface: 222.2 84% 4.9%;
-  --surface-variant: 217.2 32.6% 17.5%;
-  --on-surface: 210 40% 98%;
-  --on-surface-variant: 215 20.2% 65.1%;
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --surface-50: #0f172a;
+    --surface-100: #1e293b;
+    --surface-200: #334155;
+    --surface-300: #475569;
+    --surface-400: #64748b;
+    --surface-500: #94a3b8;
+    --surface-600: #cbd5e1;
+    --surface-700: #e2e8f0;
+    --surface-800: #f1f5f9;
+    --surface-900: #f8fafc;
+
+    --glass-bg: rgba(0, 0, 0, 0.2);
+    --glass-border: rgba(255, 255, 255, 0.1);
+  }
 }
 
-/* Base styles with enhanced performance optimizations */
-* {
-  border-color: hsl(var(--border));
+/* Base Styles */
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-feature-settings: "rlig" 1, "calt" 1;
+  }
+
+  /* Enhanced Typography */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    @apply font-semibold tracking-tight;
+  }
+
+  h1 {
+    @apply text-4xl lg:text-5xl;
+  }
+  h2 {
+    @apply text-3xl lg:text-4xl;
+  }
+  h3 {
+    @apply text-2xl lg:text-3xl;
+  }
+  h4 {
+    @apply text-xl lg:text-2xl;
+  }
+  h5 {
+    @apply text-lg lg:text-xl;
+  }
+  h6 {
+    @apply text-base lg:text-lg;
+  }
+
+  /* Improved Focus Styles */
+  :focus-visible {
+    @apply outline-none ring-2 ring-medical-500 ring-offset-2 ring-offset-background;
+  }
+
+  /* Scrollbar Styling */
+  ::-webkit-scrollbar {
+    @apply w-2;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-surface-100;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-surface-300 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-surface-400;
+  }
 }
 
-body {
-  color: hsl(var(--foreground));
-  background: hsl(var(--background));
-  font-feature-settings: "rlig" 1, "calt" 1;
-  /* Enhanced hardware acceleration */
-  transform: translateZ(0);
-  /* Improved text rendering */
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-rendering: optimizeLegibility;
-  /* Better font loading */
-  font-display: swap;
+/* Component Styles */
+@layer components {
+  /* Glass Morphism */
+  .glass {
+    background: var(--glass-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+  }
+
+  .glass-strong {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+  }
+
+  /* Enhanced Shadows */
+  .shadow-soft {
+    box-shadow: var(--shadow-soft);
+  }
+  .shadow-medium {
+    box-shadow: var(--shadow-medium);
+  }
+  .shadow-large {
+    box-shadow: var(--shadow-large);
+  }
+  .shadow-colored {
+    box-shadow: var(--shadow-colored);
+  }
+
+  /* Gradient Backgrounds */
+  .bg-medical-gradient {
+    @apply bg-gradient-to-br from-medical-500 to-emerald-500;
+  }
+
+  .bg-specialty-gradient {
+    @apply bg-gradient-to-br from-medical-400 via-emerald-400 to-medical-500;
+  }
+
+  /* Interactive States */
+  .interactive {
+    @apply transition-all duration-300 ease-out-cubic;
+  }
+
+  .interactive:hover {
+    @apply transform scale-105 shadow-large;
+  }
+
+  .interactive:active {
+    @apply transform scale-95;
+  }
+
+  /* Button Variants */
+  .btn-medical {
+    @apply bg-gradient-to-r from-medical-500 to-emerald-500 hover:from-medical-600 hover:to-emerald-600 text-white font-semibold shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-200;
+  }
+
+  .btn-specialty {
+    @apply bg-gradient-to-r from-medical-400 to-medical-500 hover:from-medical-500 hover:to-medical-600 text-white font-medium shadow-md hover:shadow-lg transform hover:scale-102 transition-all duration-200;
+  }
+
+  /* Card Variants */
+  .card-glass {
+    @apply glass rounded-xl p-6;
+  }
+
+  .card-elevated {
+    @apply bg-white shadow-large rounded-xl border border-surface-200 hover:shadow-xl transition-shadow duration-300;
+  }
+
+  /* Specialty Cards */
+  .specialty-endodoncia {
+    @apply bg-gradient-to-br from-endodoncia-50 to-endodoncia-100 border-endodoncia-200 hover:border-endodoncia-300;
+  }
+
+  .specialty-ortodoncia {
+    @apply bg-gradient-to-br from-ortodoncia-50 to-ortodoncia-100 border-ortodoncia-200 hover:border-ortodoncia-300;
+  }
+
+  .specialty-cirugia {
+    @apply bg-gradient-to-br from-cirugia-50 to-cirugia-100 border-cirugia-200 hover:border-cirugia-300;
+  }
+
+  .specialty-odontopediatria {
+    @apply bg-gradient-to-br from-odontopediatria-50 to-odontopediatria-100 border-odontopediatria-200 hover:border-odontopediatria-300;
+  }
+
+  .specialty-periodoncia {
+    @apply bg-gradient-to-br from-periodoncia-50 to-periodoncia-100 border-periodoncia-200 hover:border-periodoncia-300;
+  }
+
+  .specialty-protesis {
+    @apply bg-gradient-to-br from-protesis-50 to-protesis-100 border-protesis-200 hover:border-protesis-300;
+  }
+
+  /* Role-based Styles */
+  .role-admin {
+    @apply bg-gradient-to-br from-admin-50 to-red-100 border-admin-500/20;
+  }
+
+  .role-profesor {
+    @apply bg-gradient-to-br from-profesor-50 to-purple-100 border-profesor-500/20;
+  }
+
+  .role-estudiante {
+    @apply bg-gradient-to-br from-estudiante-50 to-green-100 border-estudiante-500/20;
+  }
+
+  .role-paciente {
+    @apply bg-gradient-to-br from-paciente-50 to-blue-100 border-paciente-500/20;
+  }
+
+  .role-secretario {
+    @apply bg-gradient-to-br from-secretario-50 to-indigo-100 border-secretario-500/20;
+  }
+
+  /* Status Indicators */
+  .status-success {
+    @apply bg-gradient-to-r from-success-50 to-green-100 text-success-700 border-success-200;
+  }
+
+  .status-warning {
+    @apply bg-gradient-to-r from-warning-50 to-yellow-100 text-warning-700 border-warning-200;
+  }
+
+  .status-error {
+    @apply bg-gradient-to-r from-error-50 to-red-100 text-error-700 border-error-200;
+  }
+
+  .status-info {
+    @apply bg-gradient-to-r from-info-50 to-blue-100 text-info-700 border-info-200;
+  }
 }
 
-/* Enhanced utility classes */
+/* Utility Classes */
 @layer utilities {
-  /* Animation utilities */
+  /* Animation Utilities */
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-float-delayed {
+    animation: float 6s ease-in-out infinite 2s;
+  }
+
+  .animate-pulse-slow {
+    animation: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
   .animate-fade-in {
-    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: fadeIn 0.5s ease-out forwards;
   }
 
   .animate-slide-up {
-    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: slideUp 0.5s ease-out forwards;
   }
 
   .animate-scale-in {
-    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+    animation: scaleIn 0.3s ease-out forwards;
   }
 
-  .animate-bounce-gentle {
-    animation: bounceGentle 2s infinite;
+  .animate-bounce-in {
+    animation: bounceIn 0.6s ease-out forwards;
   }
 
-  /* Hardware acceleration utilities */
+  /* Transform Utilities */
   .transform-gpu {
     transform: translateZ(0);
     will-change: transform;
   }
 
-  /* Enhanced shadow utilities */
-  .shadow-soft {
-    box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1), 0 4px 16px -4px rgba(0, 0, 0, 0.1);
-  }
-
-  .shadow-soft-lg {
-    box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.1), 0 8px 32px -8px rgba(0, 0, 0, 0.1);
-  }
-
-  .shadow-soft-xl {
-    box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.12), 0 16px 64px -16px rgba(0, 0, 0, 0.12);
-  }
-
-  .shadow-colored-blue {
-    box-shadow: 0 4px 16px -4px rgba(59, 130, 246, 0.3), 0 8px 32px -8px rgba(59, 130, 246, 0.15);
-  }
-
-  .shadow-colored-emerald {
-    box-shadow: 0 4px 16px -4px rgba(16, 185, 129, 0.3), 0 8px 32px -8px rgba(16, 185, 129, 0.15);
-  }
-
-  /* Enhanced gradient utilities */
-  .bg-medical-gradient {
-    background: linear-gradient(135deg, hsl(var(--medical-primary)) 0%, hsl(var(--medical-secondary)) 100%);
-  }
-
-  .bg-medical-gradient-soft {
-    background: linear-gradient(135deg, hsl(var(--medical-primary) / 0.1) 0%, hsl(var(--medical-secondary) / 0.1) 100%);
-  }
-
-  .bg-primary-gradient {
-    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
-  }
-
-  .bg-primary-gradient-soft {
-    background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--secondary) / 0.1) 100%);
-  }
-
-  /* Enhanced pattern utilities */
-  .bg-grid-pattern {
-    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
-    background-size: 20px 20px;
-  }
-
-  .bg-dot-pattern {
-    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.05) 2px, transparent 2px);
-    background-size: 24px 24px;
-  }
-
-  /* Enhanced specialty color utilities */
-  .specialty-endodoncia {
-    background-color: hsl(var(--endodoncia-light));
-    color: hsl(var(--endodoncia-dark));
-    border-color: hsl(var(--endodoncia) / 0.3);
-  }
-
-  .specialty-ortodoncia {
-    background-color: hsl(var(--ortodoncia-light));
-    color: hsl(var(--ortodoncia-dark));
-    border-color: hsl(var(--ortodoncia) / 0.3);
-  }
-
-  .specialty-cirugia {
-    background-color: hsl(var(--cirugia-light));
-    color: hsl(var(--cirugia-dark));
-    border-color: hsl(var(--cirugia) / 0.3);
-  }
-
-  .specialty-odontopediatria {
-    background-color: hsl(var(--odontopediatria-light));
-    color: hsl(var(--odontopediatria-dark));
-    border-color: hsl(var(--odontopediatria) / 0.3);
-  }
-
-  .specialty-periodoncia {
-    background-color: hsl(var(--periodoncia-light));
-    color: hsl(var(--periodoncia-dark));
-    border-color: hsl(var(--periodoncia) / 0.3);
-  }
-
-  .specialty-protesis {
-    background-color: hsl(var(--protesis-light));
-    color: hsl(var(--protesis-dark));
-    border-color: hsl(var(--protesis) / 0.3);
-  }
-
-  /* Enhanced role color utilities */
-  .role-admin {
-    background-color: hsl(var(--admin-light));
-    color: hsl(var(--admin-dark));
-    border-color: hsl(var(--admin) / 0.3);
-  }
-
-  .role-profesor {
-    background-color: hsl(var(--profesor-light));
-    color: hsl(var(--profesor-dark));
-    border-color: hsl(var(--profesor) / 0.3);
-  }
-
-  .role-estudiante {
-    background-color: hsl(var(--estudiante-light));
-    color: hsl(var(--estudiante-dark));
-    border-color: hsl(var(--estudiante) / 0.3);
-  }
-
-  .role-paciente {
-    background-color: hsl(var(--paciente-light));
-    color: hsl(var(--paciente-dark));
-    border-color: hsl(var(--paciente) / 0.3);
-  }
-
-  .role-secretario {
-    background-color: hsl(var(--secretario-light));
-    color: hsl(var(--secretario-dark));
-    border-color: hsl(var(--secretario) / 0.3);
-  }
-
-  /* Glass morphism utilities */
-  .glass {
-    backdrop-filter: blur(16px) saturate(180%);
-    background-color: rgba(255, 255, 255, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.125);
-  }
-
-  .glass-dark {
-    backdrop-filter: blur(16px) saturate(180%);
-    background-color: rgba(17, 25, 40, 0.75);
-    border: 1px solid rgba(255, 255, 255, 0.125);
-  }
-
-  /* Interactive utilities */
-  .interactive-scale {
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .interactive-scale:hover {
+  .scale-102 {
     transform: scale(1.02);
   }
 
-  .interactive-scale:active {
-    transform: scale(0.98);
+  /* Transition Utilities */
+  .transition-fast {
+    transition-duration: var(--animation-fast);
+  }
+
+  .transition-normal {
+    transition-duration: var(--animation-normal);
+  }
+
+  .transition-slow {
+    transition-duration: var(--animation-slow);
+  }
+
+  .ease-out-cubic {
+    transition-timing-function: var(--ease-out-cubic);
+  }
+
+  .ease-in-out-cubic {
+    transition-timing-function: var(--ease-in-out-cubic);
+  }
+
+  /* Backdrop Utilities */
+  .backdrop-blur-xs {
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+  }
+
+  .backdrop-blur-sm {
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .backdrop-blur-md {
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  .backdrop-blur-lg {
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+  }
+
+  .backdrop-blur-xl {
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  /* Text Utilities */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+
+  /* Reduced Motion Support */
+  @media (prefers-reduced-motion: reduce) {
+    .animate-float,
+    .animate-float-delayed,
+    .animate-pulse-slow,
+    .animate-fade-in,
+    .animate-slide-up,
+    .animate-scale-in,
+    .animate-bounce-in {
+      animation: none;
+    }
+
+    .interactive:hover {
+      transform: none;
+    }
   }
 }
 
-/* Enhanced keyframes */
+/* Keyframe Animations */
+@keyframes float {
+  0%,
+  100% {
+    transform: translateY(0px) rotate(0deg);
+  }
+  33% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+  66% {
+    transform: translateY(5px) rotate(-1deg);
+  }
+}
+
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(16px);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
   }
 }
 
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(24px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -385,103 +549,35 @@ body {
   }
 }
 
-@keyframes bounceGentle {
-  0%,
-  100% {
-    transform: translateY(0);
+@keyframes bounceIn {
+  0% {
+    opacity: 0;
+    transform: scale(0.3);
   }
   50% {
-    transform: translateY(-8px);
+    opacity: 1;
+    transform: scale(1.05);
+  }
+  70% {
+    transform: scale(0.9);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
   }
 }
 
-/* Enhanced scrollbar styling */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: hsl(var(--muted));
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb {
-  background: linear-gradient(135deg, hsl(var(--primary) / 0.6), hsl(var(--secondary) / 0.6));
-  border-radius: 4px;
-  transition: background 0.2s ease;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: linear-gradient(135deg, hsl(var(--primary) / 0.8), hsl(var(--secondary) / 0.8));
-}
-
-/* Enhanced focus styles for accessibility */
-.focus-visible:focus-visible {
-  outline: 2px solid hsl(var(--ring));
-  outline-offset: 2px;
-  border-radius: 4px;
-}
-
-/* Enhanced selection styles */
-::selection {
-  background-color: hsl(var(--primary) / 0.2);
-  color: hsl(var(--primary-foreground));
-}
-
-/* Print styles */
+/* Print Styles */
 @media print {
   .no-print {
     display: none !important;
   }
 
-  * {
-    -webkit-print-color-adjust: exact !important;
-    color-adjust: exact !important;
+  .print-break-before {
+    break-before: page;
   }
 
-  body {
-    background: white !important;
-    color: black !important;
-  }
-}
-
-/* Reduced motion preferences */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-
-/* High contrast mode support */
-@media (prefers-contrast: high) {
-  :root {
-    --border: 0 0% 30%;
-    --ring: 0 0% 30%;
-    --outline: 0 0% 30%;
-  }
-}
-
-/* Enhanced responsive typography */
-@media (max-width: 640px) {
-  html {
-    font-size: 14px;
-  }
-}
-
-@media (min-width: 1024px) {
-  html {
-    font-size: 16px;
-  }
-}
-
-@media (min-width: 1280px) {
-  html {
-    font-size: 18px;
+  .print-break-after {
+    break-after: page;
   }
 }
