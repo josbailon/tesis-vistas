@@ -12,16 +12,13 @@ export default function HomePage() {
   useEffect(() => {
     if (!loading) {
       if (user) {
-        // Redirect authenticated users to their dashboard
-        router.replace("/dashboard")
+        router.push("/dashboard")
       } else {
-        // Redirect unauthenticated users to login
-        router.replace("/login")
+        router.push("/login")
       }
     }
   }, [user, loading, router])
 
-  // Show loading spinner while checking authentication
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-teal-50">
       <LoadingSpinner />

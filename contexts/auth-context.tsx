@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react"
-import { useRouter } from "next/navigation"
 
 interface User {
   id: string
@@ -28,7 +27,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Mock users data - optimized with memoization
 const MOCK_USERS: User[] = [
   {
     id: "1",
@@ -83,9 +81,8 @@ const MOCK_USERS: User[] = [
   },
 ]
 
-// Role permissions mapping - optimized
 const ROLE_PERMISSIONS = {
-  admin: ["*"], // All permissions
+  admin: ["*"],
   profesor: ["view_students", "manage_assignments", "approve_treatments", "view_clinical_cases"],
   estudiante: ["view_patients", "create_clinical_cases", "view_assignments", "manage_appointments"],
   paciente: ["view_appointments", "view_medical_records", "book_appointments"],
@@ -95,9 +92,7 @@ const ROLE_PERMISSIONS = {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const router = useRouter()
 
-  // Optimized session check with useCallback
   const checkSession = useCallback(async () => {
     try {
       const savedUser = localStorage.getItem("dental_clinic_user")
@@ -113,20 +108,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Initialize session check
   useEffect(() => {
     checkSession()
   }, [checkSession])
 
-  // Optimized login function
   const login = useCallback(async (email: string, password: string): Promise<boolean> => {
     setLoading(true)
 
     try {
-      // Simulate API delay
       await new Promise((resolve) => setTimeout(resolve, 500))
 
-      // Mock authentication - in production, this would be an API call
       const mockPasswords: Record<string, string> = {
         "admin@uleam.edu.ec": "admin123",
         "carlos.ruiz@uleam.edu.ec": "prof123",
@@ -153,18 +144,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  // Optimized logout function
   const logout = useCallback(async (): Promise<void> => {
     try {
       setUser(null)
       localStorage.removeItem("dental_clinic_user")
-      router.push("/login")
     } catch (error) {
       console.error("Logout error:", error)
     }
-  }, [router])
+  }, [])
 
-  // Optimized user update function
   const updateUser = useCallback((userData: Partial<User>) => {
     setUser((prevUser) => {
       if (!prevUser) return null
@@ -174,7 +162,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })
   }, [])
 
-  // Optimized permission checking
   const hasPermission = useCallback(
     (permission: string): boolean => {
       if (!user) return false
@@ -184,7 +171,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user],
   )
 
-  // Optimized role checking
   const isRole = useCallback(
     (role: string): boolean => {
       return user?.role === role
@@ -192,7 +178,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [user],
   )
 
-  // Memoize context value to prevent unnecessary re-renders
   const contextValue = useMemo(
     () => ({
       user,

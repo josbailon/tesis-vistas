@@ -1,13 +1,11 @@
 "use client"
 
 import type React from "react"
-
-import { Suspense, lazy } from "react"
+import { Suspense, lazy, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { LoadingSpinner } from "@/components/loading-spinner"
-import { redirect } from "next/navigation"
 
-// Lazy load heavy components
 const Sidebar = lazy(() => import("@/components/sidebar").then((module) => ({ default: module.Sidebar })))
 
 interface DashboardLayoutProps {
@@ -16,6 +14,13 @@ interface DashboardLayoutProps {
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { user, loading } = useAuth()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push("/login")
+    }
+  }, [user, loading, router])
 
   if (loading) {
     return (
@@ -26,13 +31,16 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }
 
   if (!user) {
-    redirect("/login")
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <LoadingSpinner size="lg" text="Verificando acceso..." variant="medical" />
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="flex h-screen">
-        {/* Sidebar with Suspense for lazy loading */}
         <Suspense
           fallback={
             <div className="w-64 bg-white border-r border-gray-200 flex items-center justify-center">
@@ -43,9 +51,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           <Sidebar />
         </Suspense>
 
-        {/* Main Content */}
         <div className="flex-1 flex flex-col overflow-hidden">
-          {/* Header */}
           <header className="bg-white border-b border-gray-200 px-6 py-4">
             <div className="flex items-center justify-between">
               <div>
@@ -64,7 +70,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </header>
 
-          {/* Page Content */}
           <main className="flex-1 overflow-y-auto p-6">
             <Suspense
               fallback={

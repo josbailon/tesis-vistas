@@ -1,461 +1,202 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
 import Link from "next/link"
-import { usePathname } from "next/navigation"
+import { usePathname, useRouter } from "next/navigation"
+import { useAuth } from "@/contexts/auth-context"
+import { cn } from "@/lib/utils"
 import {
-  LayoutDashboard,
+  Calendar,
   Users,
   FileText,
   Settings,
-  Calendar,
-  GraduationCap,
-  ChevronLeft,
-  ChevronRight,
   LogOut,
-  User,
-  ClipboardList,
-  BookOpen,
-  Stethoscope,
+  Home,
   UserCheck,
-  Clock,
+  ClipboardList,
+  Stethoscope,
+  GraduationCap,
   Shield,
-  BarChart3,
-  CheckSquare,
-  FolderOpen,
-  CalendarCheck,
-  MessageSquare,
   Phone,
-  Archive,
+  Clock,
+  UserPlus,
+  BarChart3,
+  ChevronDown,
+  ChevronRight,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
-import { useAuth } from "@/contexts/auth-context"
-import { Button } from "@/components/ui/button"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
-interface SidebarNavItem {
+interface NavItem {
   title: string
   href: string
-  icon: any
-  description?: string
+  icon: React.ComponentType<{ className?: string }>
+  roles?: string[]
+  children?: NavItem[]
 }
 
-interface MainNavItem {
-  title: string
-  href: string
-  disabled?: boolean
-}
-
-interface DashboardConfig {
-  mainNav: MainNavItem[]
-  sidebarNav: SidebarNavItem[]
-  getNavigationItems: (role: string | undefined) => SidebarNavItem[]
-}
-
-export const dashboardConfig: DashboardConfig = {
-  mainNav: [
-    {
-      title: "Documentation",
-      href: "/docs",
-    },
-    {
-      title: "Support",
-      href: "/support",
-      disabled: true,
-    },
-  ],
-  sidebarNav: [],
-  getNavigationItems: (role: string | undefined) => {
-    let navigationItems: SidebarNavItem[] = []
-
-    // Normalize role for consistent checking
-    const normalizedRole = role?.toLowerCase()
-
-    if (normalizedRole === "admin" || normalizedRole === "administrator") {
-      navigationItems = [
-        {
-          title: "Dashboard",
-          href: "/dashboard",
-          icon: LayoutDashboard,
-        },
-        {
-          title: "Gestión de Usuarios",
-          href: "/dashboard/admin/users",
-          icon: Users,
-          description: "CRUD completo de usuarios",
-        },
-        {
-          title: "Gestión de Estudiantes",
-          href: "/dashboard/admin/students",
-          icon: GraduationCap,
-          description: "CRUD de estudiantes",
-        },
-        {
-          title: "Gestión de Profesores",
-          href: "/dashboard/admin/professors",
-          icon: UserCheck,
-          description: "CRUD de profesores",
-        },
-        {
-          title: "Gestión de Pacientes",
-          href: "/dashboard/admin/patients",
-          icon: User,
-          description: "CRUD de pacientes",
-        },
-        {
-          title: "Gestión de Citas",
-          href: "/dashboard/admin/appointments",
-          icon: Calendar,
-          description: "CRUD de citas médicas",
-        },
-        {
-          title: "Historias Clínicas",
-          href: "/dashboard/admin/medical-records",
-          icon: FileText,
-          description: "Gestión de historiales",
-        },
-        {
-          title: "Casos Clínicos",
-          href: "/dashboard/admin/clinical-cases",
-          icon: Stethoscope,
-          description: "Gestión de casos",
-        },
-        {
-          title: "Configuración Sistema",
-          href: "/dashboard/admin/system-config",
-          icon: Settings,
-          description: "Configuración general",
-        },
-        {
-          title: "Reportes y Analytics",
-          href: "/dashboard/admin/analytics",
-          icon: BarChart3,
-          description: "Estadísticas del sistema",
-        },
-        {
-          title: "Seguridad",
-          href: "/dashboard/admin/security",
-          icon: Shield,
-          description: "Logs y seguridad",
-        },
-      ]
-    } else if (normalizedRole === "profesor" || normalizedRole === "teacher") {
-      navigationItems = [
-        {
-          title: "Dashboard",
-          href: "/dashboard/teacher",
-          icon: LayoutDashboard,
-        },
-        {
-          title: "Mis Estudiantes",
-          href: "/dashboard/teacher/students",
-          icon: GraduationCap,
-          description: "Ver progreso de estudiantes",
-        },
-        {
-          title: "Trabajos de Estudiantes",
-          href: "/dashboard/teacher/student-work",
-          icon: BookOpen,
-          description: "Revisar trabajos enviados",
-        },
-        {
-          title: "Asignar Tareas",
-          href: "/dashboard/teacher/assignments",
-          icon: ClipboardList,
-          description: "Crear y gestionar tareas",
-        },
-        {
-          title: "Historias Clínicas",
-          href: "/dashboard/teacher/clinical-history",
-          icon: FileText,
-          description: "Supervisar historiales",
-        },
-        {
-          title: "Casos Clínicos",
-          href: "/dashboard/teacher/clinical-cases",
-          icon: Stethoscope,
-          description: "Supervisar casos",
-        },
-        {
-          title: "Horarios Estudiantes",
-          href: "/dashboard/teacher/student-schedules",
-          icon: CalendarCheck,
-          description: "Ver horarios y citas",
-        },
-        {
-          title: "Aprobaciones",
-          href: "/dashboard/teacher/approvals",
-          icon: CheckSquare,
-          description: "Aprobar tratamientos",
-        },
-        {
-          title: "Progreso Académico",
-          href: "/dashboard/teacher/progress",
-          icon: BarChart3,
-          description: "Seguimiento académico",
-        },
-      ]
-    } else if (normalizedRole === "estudiante" || normalizedRole === "student") {
-      navigationItems = [
-        {
-          title: "Dashboard",
-          href: "/dashboard",
-          icon: LayoutDashboard,
-        },
-        {
-          title: "Mis Citas",
-          href: "/dashboard/appointments",
-          icon: Calendar,
-          description: "Gestionar mis citas",
-        },
-        {
-          title: "Mis Pacientes",
-          href: "/dashboard/patients",
-          icon: Users,
-          description: "Pacientes asignados",
-        },
-        {
-          title: "Historias Clínicas",
-          href: "/dashboard/clinical-history",
-          icon: FileText,
-          description: "Crear historiales",
-        },
-        {
-          title: "Casos Clínicos",
-          href: "/dashboard/clinical-cases",
-          icon: Stethoscope,
-          description: "Mis casos clínicos",
-        },
-        {
-          title: "Mis Tareas",
-          href: "/dashboard/assignments",
-          icon: ClipboardList,
-          description: "Tareas asignadas",
-        },
-        {
-          title: "Mi Horario",
-          href: "/dashboard/schedule",
-          icon: Clock,
-          description: "Horario académico",
-        },
-        {
-          title: "Progreso Académico",
-          href: "/dashboard/academic",
-          icon: BarChart3,
-          description: "Mi progreso",
-        },
-        {
-          title: "Mi Perfil",
-          href: "/dashboard/my-profile",
-          icon: User,
-          description: "Información personal",
-        },
-      ]
-    } else if (normalizedRole === "paciente" || normalizedRole === "patient") {
-      navigationItems = [
-        {
-          title: "Dashboard",
-          href: "/dashboard",
-          icon: LayoutDashboard,
-        },
-        {
-          title: "Mis Citas",
-          href: "/dashboard/my-appointments",
-          icon: Calendar,
-          description: "Ver y agendar citas",
-        },
-        {
-          title: "Agendar Cita",
-          href: "/dashboard/book-appointment",
-          icon: CalendarCheck,
-          description: "Nueva cita",
-        },
-        {
-          title: "Mi Historial",
-          href: "/dashboard/my-records",
-          icon: FileText,
-          description: "Historial médico",
-        },
-        {
-          title: "Mi Perfil",
-          href: "/dashboard/my-profile",
-          icon: User,
-          description: "Información personal",
-        },
-      ]
-    } else if (normalizedRole === "secretario" || normalizedRole === "secretary") {
-      navigationItems = [
-        {
-          title: "Dashboard",
-          href: "/dashboard/secretary",
-          icon: LayoutDashboard,
-        },
-        {
-          title: "Gestión de Citas",
-          href: "/dashboard/secretary/appointments",
-          icon: Calendar,
-          description: "Agendar y gestionar citas",
-        },
-        {
-          title: "Registro de Pacientes",
-          href: "/dashboard/secretary/patient-registration",
-          icon: UserCheck,
-          description: "Registrar nuevos pacientes",
-        },
-        {
-          title: "Agenda Diaria",
-          href: "/dashboard/secretary/daily-agenda",
-          icon: CalendarCheck,
-          description: "Agenda del día",
-        },
-        {
-          title: "Comunicaciones",
-          href: "/dashboard/secretary/communications",
-          icon: MessageSquare,
-          description: "Mensajes y notificaciones",
-        },
-        {
-          title: "Contactos",
-          href: "/dashboard/secretary/contacts",
-          icon: Phone,
-          description: "Directorio de contactos",
-        },
-        {
-          title: "Documentos",
-          href: "/dashboard/secretary/documents",
-          icon: FolderOpen,
-          description: "Gestión de documentos",
-        },
-        {
-          title: "Reportes",
-          href: "/dashboard/secretary/reports",
-          icon: BarChart3,
-          description: "Reportes administrativos",
-        },
-        {
-          title: "Archivo",
-          href: "/dashboard/secretary/archive",
-          icon: Archive,
-          description: "Archivo de documentos",
-        },
-      ]
-    } else {
-      // Default navigation for unknown roles
-      navigationItems = [
-        {
-          title: "Dashboard",
-          href: "/dashboard",
-          icon: LayoutDashboard,
-        },
-      ]
-    }
-
-    return navigationItems
+const navigationItems: NavItem[] = [
+  {
+    title: "Dashboard",
+    href: "/dashboard",
+    icon: Home,
+    roles: ["admin", "profesor", "estudiante", "paciente", "secretario"],
   },
-}
+  {
+    title: "Administración",
+    href: "/dashboard/admin",
+    icon: Shield,
+    roles: ["admin"],
+    children: [
+      { title: "Usuarios", href: "/dashboard/admin/users", icon: Users },
+      { title: "Estudiantes", href: "/dashboard/admin/students", icon: GraduationCap },
+      { title: "Profesores", href: "/dashboard/admin/professors", icon: UserCheck },
+      { title: "Pacientes", href: "/dashboard/admin/patients", icon: Users },
+      { title: "Analíticas", href: "/dashboard/admin/analytics", icon: BarChart3 },
+      { title: "Seguridad", href: "/dashboard/admin/security", icon: Shield },
+    ],
+  },
+  {
+    title: "Profesor",
+    href: "/dashboard/teacher",
+    icon: UserCheck,
+    roles: ["profesor"],
+    children: [
+      { title: "Estudiantes", href: "/dashboard/teacher/students", icon: GraduationCap },
+      { title: "Asignaciones", href: "/dashboard/teacher/assignments", icon: ClipboardList },
+      { title: "Aprobaciones", href: "/dashboard/teacher/approvals", icon: UserCheck },
+      { title: "Casos Clínicos", href: "/dashboard/teacher/clinical-cases", icon: FileText },
+      { title: "Progreso", href: "/dashboard/teacher/progress", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "Estudiante",
+    href: "/dashboard/academic",
+    icon: GraduationCap,
+    roles: ["estudiante"],
+    children: [
+      { title: "Mis Pacientes", href: "/dashboard/patients", icon: Users },
+      { title: "Casos Clínicos", href: "/dashboard/clinical-cases", icon: FileText },
+      { title: "Asignaciones", href: "/dashboard/assignments", icon: ClipboardList },
+      { title: "Citas", href: "/dashboard/appointments", icon: Calendar },
+      { title: "Odontograma", href: "/dashboard/odontogram", icon: Stethoscope },
+    ],
+  },
+  {
+    title: "Secretaría",
+    href: "/dashboard/secretary",
+    icon: Phone,
+    roles: ["secretario"],
+    children: [
+      { title: "Citas", href: "/dashboard/secretary/appointments", icon: Calendar },
+      { title: "Registro Pacientes", href: "/dashboard/secretary/patient-registration", icon: UserPlus },
+      { title: "Agenda Diaria", href: "/dashboard/secretary/daily-agenda", icon: Clock },
+      { title: "Comunicaciones", href: "/dashboard/secretary/communications", icon: Phone },
+      { title: "Reportes", href: "/dashboard/secretary/reports", icon: BarChart3 },
+    ],
+  },
+  {
+    title: "Paciente",
+    href: "/dashboard/my-appointments",
+    icon: Calendar,
+    roles: ["paciente"],
+    children: [
+      { title: "Mis Citas", href: "/dashboard/my-appointments", icon: Calendar },
+      { title: "Agendar Cita", href: "/dashboard/book-appointment", icon: UserPlus },
+      { title: "Mis Registros", href: "/dashboard/my-records", icon: FileText },
+    ],
+  },
+  {
+    title: "Configuración",
+    href: "/dashboard/settings",
+    icon: Settings,
+    roles: ["admin", "profesor", "estudiante", "paciente", "secretario"],
+  },
+]
 
 export function Sidebar() {
-  const [collapsed, setCollapsed] = useState(false)
-  const pathname = usePathname()
   const { user, logout } = useAuth()
-
-  const navigationItems = dashboardConfig.getNavigationItems(user?.role)
+  const pathname = usePathname()
+  const router = useRouter()
+  const [expandedItems, setExpandedItems] = useState<string[]>([])
 
   const handleLogout = async () => {
-    try {
-      await logout()
-      window.location.href = "/"
-    } catch (error) {
-      console.error("Error during logout:", error)
-    }
+    await logout()
+    router.push("/login")
+  }
+
+  const toggleExpanded = (href: string) => {
+    setExpandedItems((prev) => (prev.includes(href) ? prev.filter((item) => item !== href) : [...prev, href]))
+  }
+
+  const filteredNavigation = navigationItems.filter((item) => !item.roles || item.roles.includes(user?.role || ""))
+
+  const renderNavItem = (item: NavItem, level = 0) => {
+    const isActive = pathname === item.href
+    const isExpanded = expandedItems.includes(item.href)
+    const hasChildren = item.children && item.children.length > 0
+
+    return (
+      <div key={item.href}>
+        <div
+          className={cn(
+            "flex items-center justify-between px-3 py-2 text-sm font-medium rounded-lg transition-colors",
+            level > 0 && "ml-4",
+            isActive ? "bg-blue-100 text-blue-700" : "text-gray-700 hover:bg-gray-100 hover:text-gray-900",
+          )}
+        >
+          <Link href={item.href} className="flex items-center flex-1">
+            <item.icon className="mr-3 h-5 w-5" />
+            {item.title}
+          </Link>
+          {hasChildren && (
+            <button onClick={() => toggleExpanded(item.href)} className="p-1 hover:bg-gray-200 rounded">
+              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+            </button>
+          )}
+        </div>
+        {hasChildren && isExpanded && (
+          <div className="mt-1 space-y-1">{item.children?.map((child) => renderNavItem(child, level + 1))}</div>
+        )}
+      </div>
+    )
   }
 
   return (
-    <div
-      className={cn(
-        "flex flex-col h-screen bg-white border-r border-primary-200/50 shadow-soft-lg transition-all duration-300",
-        collapsed ? "w-16" : "w-64",
-      )}
-    >
-      {/* Header */}
-      <div className="flex items-center justify-between p-4 border-b border-primary-200/50">
-        {!collapsed && (
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">UC</span>
-            </div>
-            <div>
-              <h2 className="font-semibold text-primary-900">ULEAM</h2>
-              <p className="text-xs text-primary-600">Clínica Dental</p>
-            </div>
+    <div className="w-64 bg-white border-r border-gray-200 flex flex-col">
+      <div className="p-6 border-b border-gray-200">
+        <div className="flex items-center">
+          <div className="w-10 h-10 bg-blue-600 rounded-lg flex items-center justify-center">
+            <Stethoscope className="h-6 w-6 text-white" />
           </div>
-        )}
-        <Button variant="ghost" size="sm" onClick={() => setCollapsed(!collapsed)} className="h-8 w-8 p-0">
-          {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
-        </Button>
-      </div>
-
-      {/* User Info */}
-      <div className="p-4 border-b border-primary-200/50">
-        <div className="flex items-center space-x-3">
-          <Avatar className="h-10 w-10">
-            <AvatarFallback className="bg-primary-100 text-primary-700">
-              {user?.name?.charAt(0) || user?.email?.charAt(0) || "U"}
-            </AvatarFallback>
-          </Avatar>
-          {!collapsed && (
-            <div className="flex-1 min-w-0">
-              <p className="text-sm font-medium text-primary-900 truncate">{user?.name || "Usuario"}</p>
-              <p className="text-xs text-primary-600 truncate">{user?.role || "Sin rol"}</p>
-            </div>
-          )}
+          <div className="ml-3">
+            <h2 className="text-lg font-semibold text-gray-900">Clínica ULEAM</h2>
+            <p className="text-sm text-gray-500">Sistema Dental</p>
+          </div>
         </div>
       </div>
 
-      {/* Navigation */}
       <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
-        {navigationItems.map((item) => {
-          const Icon = item.icon
-          const isActive = pathname === item.href
-
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "flex items-center space-x-3 px-3 py-2 rounded-lg text-sm font-medium transition-colors",
-                isActive
-                  ? "bg-primary-100 text-primary-900 border border-primary-200"
-                  : "text-primary-700 hover:bg-primary-50 hover:text-primary-900",
-              )}
-              title={collapsed ? item.title : undefined}
-            >
-              <Icon className="h-5 w-5 flex-shrink-0" />
-              {!collapsed && (
-                <div className="flex-1 min-w-0">
-                  <span className="truncate">{item.title}</span>
-                  {item.description && <p className="text-xs text-primary-500 truncate mt-0.5">{item.description}</p>}
-                </div>
-              )}
-            </Link>
-          )
-        })}
+        {filteredNavigation.map((item) => renderNavItem(item))}
       </nav>
 
-      {/* Logout Button */}
-      <div className="p-4 border-t border-primary-200/50">
-        <Button
-          variant="ghost"
+      <div className="p-4 border-t border-gray-200">
+        <div className="flex items-center mb-4">
+          <div className="w-8 h-8 bg-gray-200 rounded-full flex items-center justify-center">
+            <span className="text-gray-600 font-medium text-sm">{user?.name.charAt(0)}</span>
+          </div>
+          <div className="ml-3">
+            <p className="text-sm font-medium text-gray-900">{user?.name}</p>
+            <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
+          </div>
+        </div>
+        <button
           onClick={handleLogout}
-          className={cn(
-            "w-full justify-start text-red-600 hover:text-red-700 hover:bg-red-50",
-            collapsed && "justify-center",
-          )}
-          title={collapsed ? "Cerrar Sesión" : undefined}
+          className="w-full flex items-center px-3 py-2 text-sm font-medium text-gray-700 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition-colors"
         >
-          <LogOut className="h-5 w-5" />
-          {!collapsed && <span className="ml-3">Cerrar Sesión</span>}
-        </Button>
+          <LogOut className="mr-3 h-5 w-5" />
+          Cerrar Sesión
+        </button>
       </div>
     </div>
   )

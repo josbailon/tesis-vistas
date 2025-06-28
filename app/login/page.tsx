@@ -1,11 +1,9 @@
 "use client"
 
-import { Suspense, lazy } from "react"
+import { Suspense } from "react"
 import { LoadingSpinner } from "@/components/loading-spinner"
+import { LoginForm } from "./login-form"
 import { UleamBranding } from "@/components/uleam-branding"
-
-// Lazy load the login form for better performance
-const LoginForm = lazy(() => import("./login-form"))
 
 export default function LoginPage() {
   return (
@@ -50,13 +48,7 @@ export default function LoginPage() {
               <UleamBranding variant="dark" />
             </div>
 
-            <Suspense
-              fallback={
-                <div className="bg-white rounded-2xl shadow-xl p-8 border border-gray-100">
-                  <LoadingSpinner size="lg" text="Cargando formulario de acceso..." variant="medical" />
-                </div>
-              }
-            >
+            <Suspense fallback={<LoadingSpinner size="lg" text="Cargando..." />}>
               <LoginForm />
             </Suspense>
           </div>

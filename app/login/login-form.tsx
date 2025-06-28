@@ -2,253 +2,217 @@
 
 import type React from "react"
 
-import { useState, useCallback, memo } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Eye, EyeOff, LogIn, User, Lock, Zap } from "lucide-react"
+import { useAuth } from "@/contexts/auth-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Badge } from "@/components/ui/badge"
-import { useAuth } from "@/contexts/auth-context"
+import { Stethoscope, Mail, Lock, User, GraduationCap, Shield, Phone } from "lucide-react"
 import { LoadingSpinner } from "@/components/loading-spinner"
 
-interface QuickAccessUser {
-  role: string
-  email: string
-  password: string
-  name: string
-  color: string
-  icon: string
-}
-
-const QUICK_ACCESS_USERS: QuickAccessUser[] = [
+const quickAccessUsers = [
   {
     role: "Secretaría",
     email: "secretaria@uleam.edu.ec",
     password: "sec123",
-    name: "María Secretaria",
-    color: "bg-teal-500 hover:bg-teal-600",
-    icon: "👩‍💼",
+    icon: Phone,
+    color: "bg-purple-600 hover:bg-purple-700",
   },
   {
     role: "Administrador",
     email: "admin@uleam.edu.ec",
     password: "admin123",
-    name: "Dr. Carlos Admin",
-    color: "bg-red-500 hover:bg-red-600",
-    icon: "👨‍💼",
+    icon: Shield,
+    color: "bg-red-600 hover:bg-red-700",
   },
   {
     role: "Profesor",
     email: "carlos.ruiz@uleam.edu.ec",
     password: "prof123",
-    name: "Dr. Carlos Ruiz",
-    color: "bg-purple-500 hover:bg-purple-600",
-    icon: "👨‍🏫",
+    icon: User,
+    color: "bg-blue-600 hover:bg-blue-700",
   },
   {
     role: "Estudiante",
     email: "juan.perez@uleam.edu.ec",
     password: "est123",
-    name: "Juan Pérez",
-    color: "bg-blue-500 hover:bg-blue-600",
-    icon: "👨‍🎓",
+    icon: GraduationCap,
+    color: "bg-green-600 hover:bg-green-700",
   },
 ]
 
-const LoginForm = memo(function LoginForm() {
+export function LoginForm() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
-  const [showPassword, setShowPassword] = useState(false)
   const [error, setError] = useState("")
   const [isLoading, setIsLoading] = useState(false)
-
   const { login } = useAuth()
   const router = useRouter()
 
-  const handleSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault()
-      setError("")
-      setIsLoading(true)
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setError("")
+    setIsLoading(true)
 
-      try {
-        const success = await login(email, password)
-        if (success) {
-          router.push("/dashboard")
-        } else {
-          setError("Credenciales incorrectas. Por favor, verifica tu email y contraseña.")
-        }
-      } catch (err) {
-        setError("Error de conexión. Por favor, intenta nuevamente.")
-      } finally {
-        setIsLoading(false)
+    try {
+      const success = await login(email, password)
+      if (success) {
+        router.push("/dashboard")
+      } else {
+        setError("Credenciales incorrectas. Por favor, verifica tu email y contraseña.")
       }
-    },
-    [email, password, login, router],
-  )
+    } catch (err) {
+      setError("Error al iniciar sesión. Por favor, intenta de nuevo.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
-  const handleQuickAccess = useCallback(
-    async (user: QuickAccessUser) => {
-      setError("")
-      setIsLoading(true)
-      setEmail(user.email)
-      setPassword(user.password)
+  const handleQuickAccess = async (userEmail: string, userPassword: string) => {
+    setError("")
+    setIsLoading(true)
 
-      try {
-        const success = await login(user.email, user.password)
-        if (success) {
-          router.push("/dashboard")
-        } else {
-          setError("Error en el acceso rápido. Por favor, intenta nuevamente.")
-        }
-      } catch (err) {
-        setError("Error de conexión. Por favor, intenta nuevamente.")
-      } finally {
-        setIsLoading(false)
+    try {
+      const success = await login(userEmail, userPassword)
+      if (success) {
+        router.push("/dashboard")
+      } else {
+        setError("Error en el acceso rápido.")
       }
-    },
-    [login, router],
-  )
+    } catch (err) {
+      setError("Error al iniciar sesión.")
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   return (
-    <div className="space-y-6">
-      <Card className="shadow-2xl border-0 bg-white/95 backdrop-blur-sm">
-        <CardHeader className="space-y-1 pb-6">
-          <CardTitle className="text-2xl font-bold text-center text-gray-900">Iniciar Sesión</CardTitle>
-          <CardDescription className="text-center text-gray-600">
-            Accede a tu cuenta del sistema de gestión clínica
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="space-y-6">
-          {error && (
-            <Alert className="border-red-200 bg-red-50">
-              <AlertDescription className="text-red-700">{error}</AlertDescription>
-            </Alert>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email" className="text-sm font-medium text-gray-700">
-                Correo Electrónico
-              </Label>
-              <div className="relative">
-                <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="tu.email@uleam.edu.ec"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
+    <div className="flex items-center justify-center min-h-screen p-4">
+      <div className="w-full max-w-4xl">
+        <div className="text-center mb-8">
+          <div className="flex justify-center mb-4">
+            <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+              <Stethoscope className="h-8 w-8 text-white" />
             </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="password" className="text-sm font-medium text-gray-700">
-                Contraseña
-              </Label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-                <Input
-                  id="password"
-                  type={showPassword ? "text" : "password"}
-                  placeholder="Tu contraseña"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 h-12 border-gray-200 focus:border-blue-500 focus:ring-blue-500"
-                  required
-                  disabled={isLoading}
-                />
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  className="absolute right-0 top-0 h-12 px-3 hover:bg-transparent"
-                  onClick={() => setShowPassword(!showPassword)}
-                  disabled={isLoading}
-                >
-                  {showPassword ? (
-                    <EyeOff className="h-4 w-4 text-gray-400" />
-                  ) : (
-                    <Eye className="h-4 w-4 text-gray-400" />
-                  )}
-                </Button>
-              </div>
-            </div>
-
-            <Button
-              type="submit"
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-teal-600 hover:from-blue-700 hover:to-teal-700 text-white font-medium"
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <LoadingSpinner size="sm" variant="minimal" className="mr-2" />
-              ) : (
-                <LogIn className="mr-2 h-4 w-4" />
-              )}
-              {isLoading ? "Iniciando sesión..." : "Iniciar Sesión"}
-            </Button>
-          </form>
-        </CardContent>
-      </Card>
-
-      {/* Quick Access Section */}
-      <Card className="shadow-xl border-0 bg-gradient-to-r from-teal-50 to-blue-50">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-center space-x-2">
-            <Zap className="h-5 w-5 text-teal-600" />
-            <CardTitle className="text-lg font-semibold text-gray-900">Acceso Rápido</CardTitle>
           </div>
-          <CardDescription className="text-center text-gray-600">
-            Accede directamente con credenciales de prueba
-          </CardDescription>
-        </CardHeader>
+          <h1 className="text-4xl font-bold text-gray-900 mb-2">Clínica Dental ULEAM</h1>
+          <p className="text-gray-600">Sistema de Gestión Odontológica</p>
+        </div>
 
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {QUICK_ACCESS_USERS.map((user) => (
-              <Button
-                key={user.email}
-                variant="outline"
-                className={`h-auto p-4 ${user.color} text-white border-0 hover:scale-105 transition-all duration-200`}
-                onClick={() => handleQuickAccess(user)}
-                disabled={isLoading}
-              >
-                <div className="flex flex-col items-center space-y-2">
-                  <span className="text-2xl">{user.icon}</span>
-                  <div className="text-center">
-                    <div className="font-semibold text-sm">{user.role}</div>
-                    <div className="text-xs opacity-90">{user.name}</div>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Login Form */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl">Iniciar Sesión</CardTitle>
+              <CardDescription>Ingresa tus credenciales para acceder al sistema</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">Correo Electrónico</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      id="email"
+                      type="email"
+                      placeholder="tu.email@uleam.edu.ec"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
                   </div>
                 </div>
-              </Button>
-            ))}
-          </div>
 
-          <div className="mt-4 p-3 bg-white/50 rounded-lg">
-            <p className="text-xs text-gray-600 text-center">
-              <strong>Credenciales de prueba:</strong> Usa los botones de arriba para acceso directo
-            </p>
-            <div className="flex flex-wrap justify-center gap-2 mt-2">
-              <Badge variant="outline" className="text-xs">
-                admin@uleam.edu.ec
-              </Badge>
-              <Badge variant="outline" className="text-xs">
-                secretaria@uleam.edu.ec
-              </Badge>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+                <div className="space-y-2">
+                  <Label htmlFor="password">Contraseña</Label>
+                  <div className="relative">
+                    <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      id="password"
+                      type="password"
+                      placeholder="••••••••"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      className="pl-10"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
+
+                <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700" disabled={isLoading}>
+                  {isLoading ? <LoadingSpinner size="sm" /> : "Iniciar Sesión"}
+                </Button>
+              </form>
+
+              <div className="mt-6 pt-6 border-t border-gray-200">
+                <p className="text-sm text-gray-600 text-center mb-4">Credenciales de prueba:</p>
+                <div className="text-xs text-gray-500 space-y-1">
+                  <p>
+                    <strong>Admin:</strong> admin@uleam.edu.ec / admin123
+                  </p>
+                  <p>
+                    <strong>Profesor:</strong> carlos.ruiz@uleam.edu.ec / prof123
+                  </p>
+                  <p>
+                    <strong>Estudiante:</strong> juan.perez@uleam.edu.ec / est123
+                  </p>
+                  <p>
+                    <strong>Secretaría:</strong> secretaria@uleam.edu.ec / sec123
+                  </p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Quick Access */}
+          <Card className="shadow-lg">
+            <CardHeader>
+              <CardTitle className="text-2xl">Acceso Rápido</CardTitle>
+              <CardDescription>Accede directamente con un rol específico</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {quickAccessUsers.map((user) => (
+                  <Button
+                    key={user.role}
+                    onClick={() => handleQuickAccess(user.email, user.password)}
+                    className={`w-full justify-start text-left ${user.color} text-white`}
+                    disabled={isLoading}
+                    variant="default"
+                  >
+                    <user.icon className="mr-3 h-5 w-5" />
+                    <div>
+                      <div className="font-medium">{user.role}</div>
+                      <div className="text-sm opacity-90">{user.email}</div>
+                    </div>
+                  </Button>
+                ))}
+              </div>
+
+              <div className="mt-6 p-4 bg-blue-50 rounded-lg">
+                <h3 className="font-medium text-blue-900 mb-2">Información del Sistema</h3>
+                <ul className="text-sm text-blue-700 space-y-1">
+                  <li>• Gestión completa de citas médicas</li>
+                  <li>• Control académico de estudiantes</li>
+                  <li>• Historiales clínicos digitales</li>
+                  <li>• Odontograma interactivo</li>
+                  <li>• Reportes y analíticas</li>
+                </ul>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   )
-})
-
-export default LoginForm
+}
