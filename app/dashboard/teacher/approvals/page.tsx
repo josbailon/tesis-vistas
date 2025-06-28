@@ -15,6 +15,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
+import { useToast } from "@/hooks/use-toast"
 import { CheckCircle, XCircle, Clock, FileText, User, Calendar, Eye, MessageSquare } from "lucide-react"
 
 interface ApprovalRequest {
@@ -41,12 +42,13 @@ interface ApprovalRequest {
 }
 
 export default function TeacherApprovalsPage() {
+  const { toast } = useToast()
   const [selectedRequest, setSelectedRequest] = useState<ApprovalRequest | null>(null)
   const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false)
   const [feedback, setFeedback] = useState("")
   const [reviewAction, setReviewAction] = useState<"approve" | "reject" | "revision" | null>(null)
 
-  const approvalRequests: ApprovalRequest[] = [
+  const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>([
     {
       id: "ar1",
       title: "Plan de Tratamiento - Endodoncia Molar Superior",
@@ -113,7 +115,7 @@ export default function TeacherApprovalsPage() {
       feedback: "Plan quirúrgico aprobado. Excelente evaluación de riesgos y protocolo post-operatorio bien definido.",
       lastReviewed: "2025-05-16",
     },
-  ]
+  ])
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -182,18 +184,37 @@ export default function TeacherApprovalsPage() {
     }
   }
 
-  const handleReview = (action: "approve" | "reject" | "revision") => {
+  const handleReview = (request: ApprovalRequest, action: "approve" | "reject" | "revision") => {
+    setSelectedRequest(request)
     setReviewAction(action)
+    setFeedback(request.feedback || "")
     setIsReviewDialogOpen(true)
   }
 
   const submitReview = () => {
-    // Here you would submit the review
-    console.log("Review submitted:", { action: reviewAction, feedback })
+    if (!selectedRequest || !reviewAction) return
+
+    const updatedRequest: ApprovalRequest = {
+      ...selectedRequest,
+      status: reviewAction === "approve" ? "approved" : reviewAction === "reject" ? "rejected" : "needs_revision",
+      feedback,
+      lastReviewed: new Date().toISOString().split("T")[0],
+    }
+
+    setApprovalRequests((prev) => prev.map((req) => (req.id === selectedRequest.id ? updatedRequest : req)))
+
     setIsReviewDialogOpen(false)
     setSelectedRequest(null)
     setFeedback("")
     setReviewAction(null)
+
+    const actionText =
+      reviewAction === "approve" ? "aprobada" : reviewAction === "reject" ? "rechazada" : "marcada para revisión"
+
+    toast({
+      title: "Solicitud procesada",
+      description: `La solicitud de ${selectedRequest.student.name} ha sido ${actionText}`,
+    })
   }
 
   const pendingRequests = approvalRequests.filter((req) => req.status === "pending")
@@ -278,15 +299,29 @@ export default function TeacherApprovalsPage() {
                         <Eye className="h-4 w-4 mr-1" />
                         Ver Detalles
                       </Button>
-                      <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 bg-transparent"
+                        onClick={() => handleReview(request, "reject")}
+                      >
                         <XCircle className="h-4 w-4 mr-1" />
                         Rechazar
                       </Button>
-                      <Button variant="outline" size="sm" className="text-orange-600 hover:text-orange-700">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-orange-600 hover:text-orange-700 bg-transparent"
+                        onClick={() => handleReview(request, "revision")}
+                      >
                         <FileText className="h-4 w-4 mr-1" />
                         Solicitar Revisión
                       </Button>
-                      <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                      <Button
+                        size="sm"
+                        className="bg-green-600 hover:bg-green-700"
+                        onClick={() => handleReview(request, "approve")}
+                      >
                         <CheckCircle className="h-4 w-4 mr-1" />
                         Aprobar
                       </Button>
@@ -405,11 +440,20 @@ export default function TeacherApprovalsPage() {
                     </Button>
                     {request.status === "pending" && (
                       <>
-                        <Button variant="outline" size="sm" className="text-red-600 hover:text-red-700">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="text-red-600 hover:text-red-700 bg-transparent"
+                          onClick={() => handleReview(request, "reject")}
+                        >
                           <XCircle className="h-4 w-4 mr-1" />
                           Rechazar
                         </Button>
-                        <Button size="sm" className="bg-green-600 hover:bg-green-700">
+                        <Button
+                          size="sm"
+                          className="bg-green-600 hover:bg-green-700"
+                          onClick={() => handleReview(request, "approve")}
+                        >
                           <CheckCircle className="h-4 w-4 mr-1" />
                           Aprobar
                         </Button>

@@ -6,13 +6,15 @@ import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { toast } from "@/hooks/use-toast"
-import { CalendarIcon, Clock, User, Stethoscope } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { useAppointments } from "@/contexts/appointment-context"
+import { CalendarIcon, Clock, User, Stethoscope, ArrowLeft } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
@@ -22,6 +24,7 @@ interface Patient {
   name: string
   cedula: string
   phone: string
+  email: string
 }
 
 interface Student {
@@ -34,25 +37,37 @@ interface Student {
 interface Specialty {
   id: string
   name: string
-  duration: number // in minutes
+  duration: number
 }
 
 export default function CreateAppointment() {
   const router = useRouter()
+  const { toast } = useToast()
+  const { addAppointment } = useAppointments()
+
   const [isLoading, setIsLoading] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date>()
-  const [selectedTime, setSelectedTime] = useState("")
-  const [selectedPatient, setSelectedPatient] = useState("")
-  const [selectedSpecialty, setSelectedSpecialty] = useState("")
-  const [selectedStudent, setSelectedStudent] = useState("")
-  const [notes, setNotes] = useState("")
+  const [formData, setFormData] = useState({
+    patientId: "",
+    patientName: "",
+    patientPhone: "",
+    patientEmail: "",
+    patientCedula: "",
+    specialtyId: "",
+    studentId: "",
+    time: "",
+    duration: "60",
+    type: "consulta",
+    priority: "medium",
+    notes: "",
+  })
 
   // Mock data
   const patients: Patient[] = [
-    { id: "1", name: "María González", cedula: "1234567890", phone: "+593 99 123 4567" },
-    { id: "2", name: "Carlos Ruiz", cedula: "2345678901", phone: "+593 99 234 5678" },
-    { id: "3", name: "Laura Martínez", cedula: "3456789012", phone: "+593 99 345 6789" },
-    { id: "4", name: "Roberto Díaz", cedula: "4567890123", phone: "+593 99 456 7890" },
+    { id: "1", name: "María González", cedula: "1234567890", phone: "+593 99 123 4567", email: "maria@email.com" },
+    { id: "2", name: "Carlos Ruiz", cedula: "2345678901", phone: "+593 99 234 5678", email: "carlos@email.com" },
+    { id: "3", name: "Laura Martínez", cedula: "3456789012", phone: "+593 99 345 6789", email: "laura@email.com" },
+    { id: "4", name: "Roberto Díaz", cedula: "4567890123", phone: "+593 99 456 7890", email: "roberto@email.com" },
   ]
 
   const specialties: Specialty[] = [
@@ -90,18 +105,40 @@ export default function CreateAppointment() {
     "17:30",
   ]
 
-  // Filter students by selected specialty
-  const filteredStudents = selectedSpecialty
-    ? students.filter((student) => {
-        const specialty = specialties.find((s) => s.id === selectedSpecialty)
-        return specialty && student.specialty === specialty.name
-      })
-    : students
+  const handlePatientSelect = (patientId: string) => {
+    const patient = patients.find((p) => p.id === patientId)
+    if (patient) {
+      setFormData((prev) => ({
+        ...prev,
+        patientId,
+        patientName: patient.name,
+        patientPhone: patient.phone,
+        patientEmail: patient.email,
+        patientCedula: patient.cedula,
+      }))
+    }
+  }
+
+  const handleSpecialtySelect = (specialtyId: string) => {
+    const specialty = specialties.find((s) => s.id === specialtyId)
+    setFormData((prev) => ({
+      ...prev,
+      specialtyId,
+      studentId: "", // Reset student when specialty changes
+      duration: specialty?.duration.toString() || "60",
+    }))
+  }
+
+  const getFilteredStudents = () => {
+    if (!formData.specialtyId) return []
+    const specialty = specialties.find((s) => s.id === formData.specialtyId)
+    return students.filter((student) => student.specialty === specialty?.name)
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!selectedDate || !selectedTime || !selectedPatient || !selectedSpecialty || !selectedStudent) {
+    if (!selectedDate || !formData.time || !formData.patientId || !formData.specialtyId || !formData.studentId) {
       toast({
         title: "Error",
         description: "Por favor completa todos los campos obligatorios",
@@ -113,16 +150,33 @@ export default function CreateAppointment() {
     setIsLoading(true)
 
     try {
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      const specialty = specialties.find((s) => s.id === formData.specialtyId)
+      const student = students.find((s) => s.id === formData.studentId)
 
-      const patient = patients.find((p) => p.id === selectedPatient)
-      const specialty = specialties.find((s) => s.id === selectedSpecialty)
-      const student = filteredStudents.find((s) => s.id === selectedStudent)
+      const newAppointment = {
+        id: Date.now().toString(),
+        title: `${specialty?.name} - ${formData.patientName}`,
+        patientName: formData.patientName,
+        patientPhone: formData.patientPhone,
+        patientEmail: formData.patientEmail,
+        patientCedula: formData.patientCedula,
+        date: format(selectedDate, "yyyy-MM-dd"),
+        time: formData.time,
+        duration: formData.duration,
+        type: formData.type,
+        notes: formData.notes,
+        priority: formData.priority,
+        status: "programada" as const,
+        createdAt: new Date().toISOString(),
+        studentName: student?.name || "",
+        specialty: specialty?.name || "",
+      }
+
+      addAppointment(newAppointment)
 
       toast({
         title: "Cita creada exitosamente",
-        description: `Cita para ${patient?.name} el ${format(selectedDate, "dd/MM/yyyy", { locale: es })} a las ${selectedTime}`,
+        description: `Cita para ${formData.patientName} el ${format(selectedDate, "dd/MM/yyyy", { locale: es })} a las ${formData.time}`,
       })
 
       router.push("/dashboard/secretary/appointments")
@@ -139,9 +193,15 @@ export default function CreateAppointment() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold text-gray-900">Nueva Cita</h1>
-        <p className="text-gray-600 mt-2">Programa una nueva cita para un paciente</p>
+      <div className="flex items-center gap-4">
+        <Button variant="outline" size="sm" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Volver
+        </Button>
+        <div>
+          <h1 className="text-3xl font-bold text-gray-900">Nueva Cita</h1>
+          <p className="text-gray-600 mt-1">Programa una nueva cita para un paciente</p>
+        </div>
       </div>
 
       <form onSubmit={handleSubmit}>
@@ -153,12 +213,12 @@ export default function CreateAppointment() {
                 <User className="mr-2 h-5 w-5" />
                 Información del Paciente
               </CardTitle>
-              <CardDescription>Selecciona el paciente para la cita</CardDescription>
+              <CardDescription>Selecciona o registra un paciente</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="patient">Paciente *</Label>
-                <Select value={selectedPatient} onValueChange={setSelectedPatient}>
+                <Select value={formData.patientId} onValueChange={handlePatientSelect}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona un paciente" />
                   </SelectTrigger>
@@ -167,15 +227,26 @@ export default function CreateAppointment() {
                       <SelectItem key={patient.id} value={patient.id}>
                         <div>
                           <div className="font-medium">{patient.name}</div>
-                          <div className="text-sm text-gray-500">
-                            CI: {patient.cedula} • Tel: {patient.phone}
-                          </div>
+                          <div className="text-sm text-gray-500">CI: {patient.cedula}</div>
                         </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
+              {formData.patientId && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label>Teléfono</Label>
+                    <Input value={formData.patientPhone} readOnly />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input value={formData.patientEmail} readOnly />
+                  </div>
+                </div>
+              )}
 
               <Button type="button" variant="outline" className="w-full bg-transparent">
                 + Registrar nuevo paciente
@@ -190,12 +261,12 @@ export default function CreateAppointment() {
                 <Stethoscope className="mr-2 h-5 w-5" />
                 Especialidad y Estudiante
               </CardTitle>
-              <CardDescription>Selecciona la especialidad y el estudiante asignado</CardDescription>
+              <CardDescription>Selecciona la especialidad y el estudiante</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
                 <Label htmlFor="specialty">Especialidad *</Label>
-                <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
+                <Select value={formData.specialtyId} onValueChange={handleSpecialtySelect}>
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona una especialidad" />
                   </SelectTrigger>
@@ -204,7 +275,7 @@ export default function CreateAppointment() {
                       <SelectItem key={specialty.id} value={specialty.id}>
                         <div>
                           <div className="font-medium">{specialty.name}</div>
-                          <div className="text-sm text-gray-500">Duración: {specialty.duration} minutos</div>
+                          <div className="text-sm text-gray-500">Duración: {specialty.duration} min</div>
                         </div>
                       </SelectItem>
                     ))}
@@ -214,22 +285,24 @@ export default function CreateAppointment() {
 
               <div>
                 <Label htmlFor="student">Estudiante *</Label>
-                <Select value={selectedStudent} onValueChange={setSelectedStudent} disabled={!selectedSpecialty}>
+                <Select
+                  value={formData.studentId}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, studentId: value }))}
+                  disabled={!formData.specialtyId}
+                >
                   <SelectTrigger>
                     <SelectValue
                       placeholder={
-                        selectedSpecialty ? "Selecciona un estudiante" : "Primero selecciona una especialidad"
+                        formData.specialtyId ? "Selecciona un estudiante" : "Primero selecciona una especialidad"
                       }
                     />
                   </SelectTrigger>
                   <SelectContent>
-                    {filteredStudents.map((student) => (
+                    {getFilteredStudents().map((student) => (
                       <SelectItem key={student.id} value={student.id}>
                         <div>
                           <div className="font-medium">{student.name}</div>
-                          <div className="text-sm text-gray-500">
-                            {student.specialty} • {student.semester}° Semestre
-                          </div>
+                          <div className="text-sm text-gray-500">{student.semester}° Semestre</div>
                         </div>
                       </SelectItem>
                     ))}
@@ -261,7 +334,7 @@ export default function CreateAppointment() {
                       )}
                     >
                       <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP", { locale: es }) : <span>Selecciona una fecha</span>}
+                      {selectedDate ? format(selectedDate, "PPP", { locale: es }) : "Selecciona una fecha"}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0">
@@ -278,7 +351,10 @@ export default function CreateAppointment() {
 
               <div>
                 <Label htmlFor="time">Hora *</Label>
-                <Select value={selectedTime} onValueChange={setSelectedTime}>
+                <Select
+                  value={formData.time}
+                  onValueChange={(value) => setFormData((prev) => ({ ...prev, time: value }))}
+                >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecciona una hora" />
                   </SelectTrigger>
@@ -293,6 +369,43 @@ export default function CreateAppointment() {
                     ))}
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label>Tipo de Cita</Label>
+                  <Select
+                    value={formData.type}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="consulta">Consulta</SelectItem>
+                      <SelectItem value="tratamiento">Tratamiento</SelectItem>
+                      <SelectItem value="emergencia">Emergencia</SelectItem>
+                      <SelectItem value="seguimiento">Seguimiento</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label>Prioridad</Label>
+                  <Select
+                    value={formData.priority}
+                    onValueChange={(value) => setFormData((prev) => ({ ...prev, priority: value }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Baja</SelectItem>
+                      <SelectItem value="medium">Media</SelectItem>
+                      <SelectItem value="high">Alta</SelectItem>
+                      <SelectItem value="urgent">Urgente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </CardContent>
           </Card>
@@ -309,8 +422,8 @@ export default function CreateAppointment() {
                 <Textarea
                   id="notes"
                   placeholder="Escribe cualquier información adicional sobre la cita..."
-                  value={notes}
-                  onChange={(e) => setNotes(e.target.value)}
+                  value={formData.notes}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
                   rows={4}
                 />
               </div>

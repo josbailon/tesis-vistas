@@ -28,17 +28,72 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
-import { Search, Edit, Trash2, Eye, Lock, Unlock, UserPlus, Download, Upload, Shield, Mail } from "lucide-react"
-import { professors, students, patients, admins } from "@/lib/mock-data"
+import { useToast } from "@/hooks/use-toast"
+import { Search, Edit, Trash2, Eye, Lock, Unlock, UserPlus, Download, Shield, Mail } from "lucide-react"
+
+interface User {
+  id: string
+  name: string
+  email: string
+  role: "admin" | "professor" | "student" | "patient" | "secretary"
+  specialty?: string
+  department?: string
+  phone?: string
+  status: "active" | "inactive"
+  createdAt: string
+}
 
 export default function AdminUsersPage() {
+  const { toast } = useToast()
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [selectedUser, setSelectedUser] = useState<any>(null)
+  const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [users, setUsers] = useState<User[]>([
+    {
+      id: "1",
+      name: "Dr. Carlos Mendoza",
+      email: "carlos.mendoza@uleam.edu.ec",
+      role: "professor",
+      specialty: "Endodoncia",
+      department: "Odontología",
+      phone: "+593 99 123 4567",
+      status: "active",
+      createdAt: "2024-01-15T00:00:00Z",
+    },
+    {
+      id: "2",
+      name: "Juan Pérez",
+      email: "juan.perez@uleam.edu.ec",
+      role: "student",
+      specialty: "Endodoncia",
+      phone: "+593 99 234 5678",
+      status: "active",
+      createdAt: "2024-02-01T00:00:00Z",
+    },
+    {
+      id: "3",
+      name: "María González",
+      email: "maria.gonzalez@email.com",
+      role: "patient",
+      phone: "+593 99 345 6789",
+      status: "active",
+      createdAt: "2024-02-15T00:00:00Z",
+    },
+    {
+      id: "4",
+      name: "Ana Secretaria",
+      email: "ana.secretaria@uleam.edu.ec",
+      role: "secretary",
+      phone: "+593 99 456 7890",
+      status: "active",
+      createdAt: "2024-01-20T00:00:00Z",
+    },
+  ])
+
   const [newUser, setNewUser] = useState({
     name: "",
     email: "",
@@ -50,9 +105,7 @@ export default function AdminUsersPage() {
     status: "active",
   })
 
-  const allUsers = [...professors, ...students, ...patients, ...admins]
-
-  const filteredUsers = allUsers.filter((user) => {
+  const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
@@ -68,12 +121,14 @@ export default function AdminUsersPage() {
       professor: "bg-purple-100 text-purple-800",
       student: "bg-blue-100 text-blue-800",
       patient: "bg-green-100 text-green-800",
+      secretary: "bg-orange-100 text-orange-800",
     }
     const roleLabels = {
       admin: "Administrador",
       professor: "Profesor",
       student: "Estudiante",
       patient: "Paciente",
+      secretary: "Secretario",
     }
     return (
       <Badge className={roleColors[role as keyof typeof roleColors]}>
@@ -91,7 +146,28 @@ export default function AdminUsersPage() {
   }
 
   const handleCreateUser = () => {
-    console.log("Crear usuario:", newUser)
+    if (!newUser.name || !newUser.email || !newUser.role) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos obligatorios",
+        variant: "destructive",
+      })
+      return
+    }
+
+    const user: User = {
+      id: Date.now().toString(),
+      name: newUser.name,
+      email: newUser.email,
+      role: newUser.role as User["role"],
+      specialty: newUser.specialty || undefined,
+      department: newUser.department || undefined,
+      phone: newUser.phone || undefined,
+      status: newUser.status as "active" | "inactive",
+      createdAt: new Date().toISOString(),
+    }
+
+    setUsers((prev) => [...prev, user])
     setIsCreateDialogOpen(false)
     setNewUser({
       name: "",
@@ -103,19 +179,60 @@ export default function AdminUsersPage() {
       phone: "",
       status: "active",
     })
+
+    toast({
+      title: "Usuario creado",
+      description: `${user.name} ha sido creado exitosamente`,
+    })
   }
 
   const handleEditUser = () => {
-    console.log("Editar usuario:", selectedUser)
+    if (!selectedUser) return
+
+    setUsers((prev) => prev.map((user) => (user.id === selectedUser.id ? { ...selectedUser } : user)))
     setIsEditDialogOpen(false)
+
+    toast({
+      title: "Usuario actualizado",
+      description: `${selectedUser.name} ha sido actualizado exitosamente`,
+    })
   }
 
   const handleDeleteUser = (userId: string) => {
-    console.log("Eliminar usuario:", userId)
+    const user = users.find((u) => u.id === userId)
+    setUsers((prev) => prev.filter((u) => u.id !== userId))
+
+    toast({
+      title: "Usuario eliminado",
+      description: `${user?.name} ha sido eliminado del sistema`,
+    })
   }
 
   const handleToggleStatus = (userId: string, currentStatus: string) => {
-    console.log("Cambiar estado usuario:", userId, currentStatus)
+    const newStatus = currentStatus === "active" ? "inactive" : "active"
+    setUsers((prev) => prev.map((user) => (user.id === userId ? { ...user, status: newStatus } : user)))
+
+    const user = users.find((u) => u.id === userId)
+    toast({
+      title: "Estado actualizado",
+      description: `${user?.name} ahora está ${newStatus === "active" ? "activo" : "inactivo"}`,
+    })
+  }
+
+  const handleExport = () => {
+    const dataStr = JSON.stringify(users, null, 2)
+    const dataUri = "data:application/json;charset=utf-8," + encodeURIComponent(dataStr)
+    const exportFileDefaultName = "usuarios.json"
+
+    const linkElement = document.createElement("a")
+    linkElement.setAttribute("href", dataUri)
+    linkElement.setAttribute("download", exportFileDefaultName)
+    linkElement.click()
+
+    toast({
+      title: "Exportación completada",
+      description: "Los datos de usuarios han sido exportados exitosamente",
+    })
   }
 
   return (
@@ -126,11 +243,7 @@ export default function AdminUsersPage() {
           <p className="text-muted-foreground">Administra todos los usuarios del sistema</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline">
-            <Upload className="mr-2 h-4 w-4" />
-            Importar
-          </Button>
-          <Button variant="outline">
+          <Button variant="outline" onClick={handleExport}>
             <Download className="mr-2 h-4 w-4" />
             Exportar
           </Button>
@@ -176,6 +289,7 @@ export default function AdminUsersPage() {
                         <SelectItem value="professor">Profesor</SelectItem>
                         <SelectItem value="student">Estudiante</SelectItem>
                         <SelectItem value="patient">Paciente</SelectItem>
+                        <SelectItem value="secretary">Secretario</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -261,7 +375,7 @@ export default function AdminUsersPage() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{allUsers.length}</div>
+            <div className="text-2xl font-bold">{users.length}</div>
             <p className="text-xs text-muted-foreground">Registrados en el sistema</p>
           </CardContent>
         </Card>
@@ -271,7 +385,7 @@ export default function AdminUsersPage() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{professors.length}</div>
+            <div className="text-2xl font-bold">{users.filter((u) => u.role === "professor").length}</div>
             <p className="text-xs text-muted-foreground">Activos</p>
           </CardContent>
         </Card>
@@ -281,7 +395,7 @@ export default function AdminUsersPage() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{students.length}</div>
+            <div className="text-2xl font-bold">{users.filter((u) => u.role === "student").length}</div>
             <p className="text-xs text-muted-foreground">Registrados</p>
           </CardContent>
         </Card>
@@ -291,7 +405,7 @@ export default function AdminUsersPage() {
             <Shield className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{patients.length}</div>
+            <div className="text-2xl font-bold">{users.filter((u) => u.role === "patient").length}</div>
             <p className="text-xs text-muted-foreground">En el sistema</p>
           </CardContent>
         </Card>
@@ -326,6 +440,7 @@ export default function AdminUsersPage() {
                 <SelectItem value="professor">Profesor</SelectItem>
                 <SelectItem value="student">Estudiante</SelectItem>
                 <SelectItem value="patient">Paciente</SelectItem>
+                <SelectItem value="secretary">Secretario</SelectItem>
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -382,7 +497,7 @@ export default function AdminUsersPage() {
                   </TableCell>
                   <TableCell>{getRoleBadge(user.role)}</TableCell>
                   <TableCell>
-                    {"specialty" in user && user.specialty ? (
+                    {user.specialty ? (
                       <Badge variant="outline">{user.specialty}</Badge>
                     ) : (
                       <span className="text-muted-foreground">-</span>
@@ -477,13 +592,13 @@ export default function AdminUsersPage() {
                   <Label className="text-sm font-medium">Estado</Label>
                   {getStatusBadge(selectedUser.status)}
                 </div>
-                {"specialty" in selectedUser && selectedUser.specialty && (
+                {selectedUser.specialty && (
                   <div>
                     <Label className="text-sm font-medium">Especialidad</Label>
                     <p>{selectedUser.specialty}</p>
                   </div>
                 )}
-                {"department" in selectedUser && selectedUser.department && (
+                {selectedUser.department && (
                   <div>
                     <Label className="text-sm font-medium">Departamento</Label>
                     <p>{selectedUser.department}</p>
@@ -511,15 +626,24 @@ export default function AdminUsersPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Nombre</Label>
-                  <Input defaultValue={selectedUser.name} />
+                  <Input
+                    value={selectedUser.name}
+                    onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Email</Label>
-                  <Input defaultValue={selectedUser.email} />
+                  <Input
+                    value={selectedUser.email}
+                    onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Rol</Label>
-                  <Select defaultValue={selectedUser.role}>
+                  <Select
+                    value={selectedUser.role}
+                    onValueChange={(value) => setSelectedUser({ ...selectedUser, role: value as User["role"] })}
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
@@ -528,12 +652,18 @@ export default function AdminUsersPage() {
                       <SelectItem value="professor">Profesor</SelectItem>
                       <SelectItem value="student">Estudiante</SelectItem>
                       <SelectItem value="patient">Paciente</SelectItem>
+                      <SelectItem value="secretary">Secretario</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Estado</Label>
-                  <Select defaultValue={selectedUser.status}>
+                  <Select
+                    value={selectedUser.status}
+                    onValueChange={(value) =>
+                      setSelectedUser({ ...selectedUser, status: value as "active" | "inactive" })
+                    }
+                  >
                     <SelectTrigger>
                       <SelectValue />
                     </SelectTrigger>
