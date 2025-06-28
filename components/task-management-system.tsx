@@ -1,14 +1,16 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useCallback } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Progress } from "@/components/ui/progress"
+import { Checkbox } from "@/components/ui/checkbox"
 import {
   Dialog,
   DialogContent,
@@ -18,265 +20,354 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Progress } from "@/components/ui/progress"
-import { Plus, Target, Users, CheckCircle, Clock, AlertCircle, FileText, Award, TrendingUp } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import {
+  Plus,
+  Target,
+  Users,
+  Calendar,
+  CheckCircle,
+  AlertTriangle,
+  TrendingUp,
+  Award,
+  Edit,
+  Trash2,
+  Eye,
+  Download,
+} from "lucide-react"
+import { getSpecialtyColor } from "@/lib/utils"
 
-interface Task {
+interface PerformanceTask {
   id: string
   title: string
   description: string
-  type: "extraction" | "filling" | "cleaning" | "root_canal" | "orthodontic" | "surgery" | "consultation"
   specialty: string
+  type: "extraction" | "filling" | "cleaning" | "endodontics" | "surgery" | "orthodontics" | "prosthetics"
   targetQuantity: number
-  currentProgress: number
-  deadline: string
-  assignedStudents: string[]
+  currentQuantity: number
   difficulty: "beginner" | "intermediate" | "advanced"
   points: number
-  requirements: string[]
-  evaluationCriteria: string[]
-  status: "active" | "completed" | "overdue" | "draft"
+  deadline: string
+  status: "active" | "completed" | "overdue" | "cancelled"
+  assignedStudents: string[]
+  criteria: TaskCriteria[]
   createdBy: string
   createdAt: string
+  completedAt?: string
 }
 
-interface Student {
+interface TaskCriteria {
   id: string
   name: string
-  specialty: string
-  semester: number
-  currentTasks: string[]
-  completedTasks: number
-  totalPoints: number
+  description: string
+  weight: number // Percentage of total grade
+  maxScore: number
+  evaluationType: "numeric" | "boolean" | "scale"
+}
+
+interface StudentProgress {
+  studentId: string
+  studentName: string
+  taskId: string
+  currentQuantity: number
+  completedProcedures: CompletedProcedure[]
+  overallScore: number
+  status: "not_started" | "in_progress" | "completed" | "needs_review"
+  lastUpdate: string
+}
+
+interface CompletedProcedure {
+  id: string
+  date: string
+  patientId: string
+  description: string
+  scores: Record<string, number>
+  supervisorId?: string
+  approved: boolean
+  notes?: string
+  images?: string[]
 }
 
 export function TaskManagementSystem() {
+  const [tasks, setTasks] = useState<PerformanceTask[]>([
+    {
+      id: "task1",
+      title: "Extracciones Simples",
+      description: "Realizar 5 extracciones simples de dientes unirradiculares",
+      specialty: "cirugia",
+      type: "extraction",
+      targetQuantity: 5,
+      currentQuantity: 0,
+      difficulty: "beginner",
+      points: 50,
+      deadline: "2024-03-15",
+      status: "active",
+      assignedStudents: ["est1", "est2", "est3"],
+      criteria: [
+        {
+          id: "c1",
+          name: "Técnica Quirúrgica",
+          description: "Aplicación correcta de la técnica de extracción",
+          weight: 40,
+          maxScore: 10,
+          evaluationType: "scale",
+        },
+        {
+          id: "c2",
+          name: "Manejo del Paciente",
+          description: "Comunicación y manejo adecuado del paciente",
+          weight: 30,
+          maxScore: 10,
+          evaluationType: "scale",
+        },
+        {
+          id: "c3",
+          name: "Tiempo de Procedimiento",
+          description: "Completar el procedimiento en tiempo adecuado",
+          weight: 20,
+          maxScore: 10,
+          evaluationType: "numeric",
+        },
+        {
+          id: "c4",
+          name: "Complicaciones",
+          description: "Manejo de complicaciones durante el procedimiento",
+          weight: 10,
+          maxScore: 10,
+          evaluationType: "boolean",
+        },
+      ],
+      createdBy: "prof1",
+      createdAt: "2024-01-15",
+    },
+    {
+      id: "task2",
+      title: "Restauraciones Posteriores",
+      description: "Completar 8 restauraciones con resina compuesta en dientes posteriores",
+      specialty: "endodoncia",
+      type: "filling",
+      targetQuantity: 8,
+      currentQuantity: 0,
+      difficulty: "intermediate",
+      points: 80,
+      deadline: "2024-04-01",
+      status: "active",
+      assignedStudents: ["est1", "est4"],
+      criteria: [
+        {
+          id: "c5",
+          name: "Preparación Cavitaria",
+          description: "Diseño y preparación adecuada de la cavidad",
+          weight: 35,
+          maxScore: 10,
+          evaluationType: "scale",
+        },
+        {
+          id: "c6",
+          name: "Técnica de Restauración",
+          description: "Aplicación correcta de la técnica restaurativa",
+          weight: 35,
+          maxScore: 10,
+          evaluationType: "scale",
+        },
+        {
+          id: "c7",
+          name: "Anatomía y Oclusión",
+          description: "Reproducción correcta de anatomía y oclusión",
+          weight: 30,
+          maxScore: 10,
+          evaluationType: "scale",
+        },
+      ],
+      createdBy: "prof1",
+      createdAt: "2024-01-20",
+    },
+  ])
+
+  const [studentProgress, setStudentProgress] = useState<StudentProgress[]>([
+    {
+      studentId: "est1",
+      studentName: "Juan Pérez",
+      taskId: "task1",
+      currentQuantity: 2,
+      completedProcedures: [
+        {
+          id: "proc1",
+          date: "2024-01-25",
+          patientId: "pac1",
+          description: "Extracción de premolar superior derecho",
+          scores: { c1: 8, c2: 9, c3: 7, c4: 10 },
+          supervisorId: "prof1",
+          approved: true,
+          notes: "Excelente técnica, paciente bien manejado",
+        },
+        {
+          id: "proc2",
+          date: "2024-01-28",
+          patientId: "pac2",
+          description: "Extracción de incisivo inferior",
+          scores: { c1: 9, c2: 8, c3: 8, c4: 10 },
+          supervisorId: "prof1",
+          approved: true,
+          notes: "Mejora en el tiempo de procedimiento",
+        },
+      ],
+      overallScore: 8.5,
+      status: "in_progress",
+      lastUpdate: "2024-01-28",
+    },
+  ])
+
   const [isCreateTaskOpen, setIsCreateTaskOpen] = useState(false)
-  const [selectedTask, setSelectedTask] = useState<Task | null>(null)
-  const [newTask, setNewTask] = useState<Partial<Task>>({
+  const [selectedTask, setSelectedTask] = useState<PerformanceTask | null>(null)
+  const [newTask, setNewTask] = useState<Partial<PerformanceTask>>({
+    title: "",
+    description: "",
+    specialty: "",
     type: "extraction",
-    specialty: "cirugia",
-    targetQuantity: 5,
+    targetQuantity: 1,
     difficulty: "beginner",
     points: 10,
-    requirements: [],
-    evaluationCriteria: [],
+    deadline: "",
+    assignedStudents: [],
+    criteria: [],
   })
 
-  const tasks: Task[] = [
-    {
-      id: "t1",
-      title: "Extracciones Simples",
-      description: "Realizar 5 extracciones simples de dientes anteriores bajo supervisión",
-      type: "extraction",
-      specialty: "cirugia",
-      targetQuantity: 5,
-      currentProgress: 3,
-      deadline: "2025-06-30",
-      assignedStudents: ["s1", "s2", "s3"],
-      difficulty: "beginner",
-      points: 15,
-      requirements: [
-        "Conocimiento básico de anatomía dental",
-        "Técnicas de anestesia local",
-        "Manejo de instrumental quirúrgico básico",
-      ],
-      evaluationCriteria: [
-        "Técnica de anestesia (20%)",
-        "Técnica de extracción (40%)",
-        "Manejo de complicaciones (20%)",
-        "Cuidados postoperatorios (20%)",
-      ],
-      status: "active",
-      createdBy: "pr4",
-      createdAt: "2025-05-01",
-    },
-    {
-      id: "t2",
-      title: "Tratamientos de Conducto",
-      description: "Completar 3 tratamientos de conducto en molares posteriores",
-      type: "root_canal",
-      specialty: "endodoncia",
-      targetQuantity: 3,
-      currentProgress: 1,
-      deadline: "2025-07-15",
-      assignedStudents: ["s1", "s4"],
-      difficulty: "intermediate",
-      points: 25,
-      requirements: [
-        "Conocimiento de anatomía pulpar",
-        "Técnicas de instrumentación",
-        "Manejo de materiales de obturación",
-      ],
-      evaluationCriteria: [
-        "Acceso endodóntico (25%)",
-        "Instrumentación (30%)",
-        "Obturación (25%)",
-        "Control radiográfico (20%)",
-      ],
-      status: "active",
-      createdBy: "pr1",
-      createdAt: "2025-05-05",
-    },
-    {
-      id: "t3",
-      title: "Limpiezas Dentales Profundas",
-      description: "Realizar 10 limpiezas dentales con técnica de ultrasonido",
-      type: "cleaning",
-      specialty: "periodoncia",
-      targetQuantity: 10,
-      currentProgress: 7,
-      deadline: "2025-06-15",
-      assignedStudents: ["s2", "s3", "s5"],
-      difficulty: "beginner",
-      points: 10,
-      requirements: ["Conocimiento de técnicas de profilaxis", "Manejo de ultrasonido dental", "Técnicas de pulido"],
-      evaluationCriteria: [
-        "Técnica de instrumentación (30%)",
-        "Remoción de cálculo (30%)",
-        "Pulido final (20%)",
-        "Instrucciones al paciente (20%)",
-      ],
-      status: "active",
-      createdBy: "pr3",
-      createdAt: "2025-04-20",
-    },
-  ]
-
-  const students: Student[] = [
-    {
-      id: "s1",
-      name: "Pedro Gómez",
-      specialty: "endodoncia",
-      semester: 8,
-      currentTasks: ["t1", "t2"],
-      completedTasks: 12,
-      totalPoints: 180,
-    },
-    {
-      id: "s2",
-      name: "Laura Torres",
-      specialty: "ortodoncia",
-      semester: 7,
-      currentTasks: ["t1", "t3"],
-      completedTasks: 8,
-      totalPoints: 120,
-    },
-    {
-      id: "s3",
-      name: "Miguel Sánchez",
-      specialty: "periodoncia",
-      semester: 9,
-      currentTasks: ["t1", "t3"],
-      completedTasks: 15,
-      totalPoints: 225,
-    },
-  ]
+  const { toast } = useToast()
 
   const taskTypes = [
-    { value: "extraction", label: "Extracción", icon: "🦷" },
-    { value: "filling", label: "Obturación", icon: "🔧" },
-    { value: "cleaning", label: "Limpieza", icon: "✨" },
-    { value: "root_canal", label: "Endodoncia", icon: "🔬" },
-    { value: "orthodontic", label: "Ortodoncia", icon: "📐" },
-    { value: "surgery", label: "Cirugía", icon: "⚕️" },
-    { value: "consultation", label: "Consulta", icon: "💬" },
+    { value: "extraction", label: "Extracciones", icon: "🦷" },
+    { value: "filling", label: "Restauraciones", icon: "🔧" },
+    { value: "cleaning", label: "Limpiezas", icon: "✨" },
+    { value: "endodontics", label: "Endodoncias", icon: "🔬" },
+    { value: "surgery", label: "Cirugías", icon: "⚕️" },
+    { value: "orthodontics", label: "Ortodoncia", icon: "📐" },
+    { value: "prosthetics", label: "Prótesis", icon: "🦷" },
   ]
 
-  const specialties = [
-    { value: "endodoncia", label: "Endodoncia" },
-    { value: "ortodoncia", label: "Ortodoncia" },
-    { value: "cirugia", label: "Cirugía Oral" },
-    { value: "odontopediatria", label: "Odontopediatría" },
-    { value: "periodoncia", label: "Periodoncia" },
-    { value: "protesis", label: "Prótesis" },
+  const difficultyLevels = [
+    { value: "beginner", label: "Principiante", color: "bg-green-100 text-green-800", points: 10 },
+    { value: "intermediate", label: "Intermedio", color: "bg-yellow-100 text-yellow-800", points: 20 },
+    { value: "advanced", label: "Avanzado", color: "bg-red-100 text-red-800", points: 30 },
   ]
 
-  const getTaskTypeIcon = (type: string) => {
-    const taskType = taskTypes.find((t) => t.value === type)
-    return taskType?.icon || "📋"
-  }
+  const students = [
+    { id: "est1", name: "Juan Pérez", specialty: "endodoncia", semester: 8 },
+    { id: "est2", name: "María González", specialty: "ortodoncia", semester: 7 },
+    { id: "est3", name: "Carlos López", specialty: "cirugia", semester: 9 },
+    { id: "est4", name: "Ana Rodríguez", specialty: "endodoncia", semester: 8 },
+  ]
 
-  const getProgressColor = (progress: number, target: number) => {
-    const percentage = (progress / target) * 100
-    if (percentage >= 100) return "text-green-600"
-    if (percentage >= 70) return "text-blue-600"
-    if (percentage >= 40) return "text-yellow-600"
-    return "text-red-600"
-  }
-
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "active":
-        return (
-          <Badge className="bg-blue-100 text-blue-800">
-            <Clock className="h-3 w-3 mr-1" />
-            Activa
-          </Badge>
-        )
-      case "completed":
-        return (
-          <Badge className="bg-green-100 text-green-800">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Completada
-          </Badge>
-        )
-      case "overdue":
-        return (
-          <Badge className="bg-red-100 text-red-800">
-            <AlertCircle className="h-3 w-3 mr-1" />
-            Vencida
-          </Badge>
-        )
-      case "draft":
-        return (
-          <Badge className="bg-gray-100 text-gray-800">
-            <FileText className="h-3 w-3 mr-1" />
-            Borrador
-          </Badge>
-        )
-      default:
-        return <Badge variant="secondary">{status}</Badge>
+  const handleCreateTask = useCallback(() => {
+    if (!newTask.title || !newTask.specialty || !newTask.deadline) {
+      toast({
+        title: "Error",
+        description: "Por favor completa todos los campos obligatorios",
+        variant: "destructive",
+      })
+      return
     }
-  }
 
-  const getDifficultyBadge = (difficulty: string) => {
-    switch (difficulty) {
-      case "beginner":
-        return (
-          <Badge variant="outline" className="border-green-500 text-green-700">
-            Principiante
-          </Badge>
-        )
-      case "intermediate":
-        return (
-          <Badge variant="outline" className="border-yellow-500 text-yellow-700">
-            Intermedio
-          </Badge>
-        )
-      case "advanced":
-        return (
-          <Badge variant="outline" className="border-red-500 text-red-700">
-            Avanzado
-          </Badge>
-        )
-      default:
-        return <Badge variant="outline">{difficulty}</Badge>
+    const task: PerformanceTask = {
+      id: `task_${Date.now()}`,
+      title: newTask.title!,
+      description: newTask.description || "",
+      specialty: newTask.specialty!,
+      type: newTask.type!,
+      targetQuantity: newTask.targetQuantity || 1,
+      currentQuantity: 0,
+      difficulty: newTask.difficulty!,
+      points: newTask.points || 10,
+      deadline: newTask.deadline!,
+      status: "active",
+      assignedStudents: newTask.assignedStudents || [],
+      criteria: newTask.criteria || [],
+      createdBy: "prof1", // Current professor
+      createdAt: new Date().toISOString(),
     }
-  }
 
-  const handleCreateTask = () => {
-    // Lógica para crear nueva tarea
-    console.log("Creando nueva tarea:", newTask)
+    setTasks((prev) => [...prev, task])
     setIsCreateTaskOpen(false)
+    setNewTask({
+      title: "",
+      description: "",
+      specialty: "",
+      type: "extraction",
+      targetQuantity: 1,
+      difficulty: "beginner",
+      points: 10,
+      deadline: "",
+      assignedStudents: [],
+      criteria: [],
+    })
+
+    toast({
+      title: "Tarea creada",
+      description: `La tarea "${task.title}" ha sido creada exitosamente`,
+    })
+  }, [newTask, toast])
+
+  const getTaskProgress = (task: PerformanceTask) => {
+    const assignedStudents = studentProgress.filter((sp) => sp.taskId === task.id)
+    if (assignedStudents.length === 0) return 0
+
+    const totalProgress = assignedStudents.reduce((sum, student) => {
+      return sum + (student.currentQuantity / task.targetQuantity) * 100
+    }, 0)
+
+    return Math.min(totalProgress / assignedStudents.length, 100)
+  }
+
+  const getStatusColor = (status: string) => {
+    const colors = {
+      active: "bg-blue-100 text-blue-800",
+      completed: "bg-green-100 text-green-800",
+      overdue: "bg-red-100 text-red-800",
+      cancelled: "bg-gray-100 text-gray-800",
+    }
+    return colors[status as keyof typeof colors] || "bg-gray-100 text-gray-800"
+  }
+
+  const addCriterion = () => {
+    const newCriterion: TaskCriteria = {
+      id: `criteria_${Date.now()}`,
+      name: "",
+      description: "",
+      weight: 25,
+      maxScore: 10,
+      evaluationType: "scale",
+    }
+    setNewTask((prev) => ({
+      ...prev,
+      criteria: [...(prev.criteria || []), newCriterion],
+    }))
+  }
+
+  const updateCriterion = (index: number, field: keyof TaskCriteria, value: any) => {
+    setNewTask((prev) => ({
+      ...prev,
+      criteria: prev.criteria?.map((criterion, i) =>
+        i === index ? { ...criterion, [field]: value } : criterion
+      ),
+    }))
+  }
+
+  const removeCriterion = (index: number) => {
+    setNewTask((prev) => ({
+      ...prev,
+      criteria: prev.criteria?.filter((_, i) => i !== index),
+    }))
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      {/* Header */}
+      <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Sistema de Tareas por Rendimiento</h1>
-          <p className="text-muted-foreground">Gestiona tareas académicas basadas en cantidad y calidad</p>
+          <p className="text-muted-foreground">
+            Crea y gestiona tareas basadas en objetivos cuantitativos para tus estudiantes
+          </p>
         </div>
         <Dialog open={isCreateTaskOpen} onOpenChange={setIsCreateTaskOpen}>
           <DialogTrigger asChild>
@@ -285,142 +376,253 @@ export function TaskManagementSystem() {
               Nueva Tarea
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[700px] max-h-[90vh] overflow-y-auto">
+          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Crear Nueva Tarea por Rendimiento</DialogTitle>
               <DialogDescription>
-                Define una tarea con objetivos cuantitativos específicos para los estudiantes
+                Define objetivos cuantitativos y criterios de evaluación para tus estudiantes
               </DialogDescription>
             </DialogHeader>
 
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-6">
+              {/* Basic Information */}
+              <div className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="title">Título de la Tarea *</Label>
+                    <Input
+                      id="title"
+                      value={newTask.title}
+                      onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                      placeholder="Ej: Extracciones Simples"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="specialty">Especialidad *</Label>
+                    <Select value={newTask.specialty} onValueChange={(value) => setNewTask({ ...newTask, specialty: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar especialidad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="endodoncia">Endodoncia</SelectItem>
+                        <SelectItem value="ortodoncia">Ortodoncia</SelectItem>
+                        <SelectItem value="cirugia">Cirugía Oral</SelectItem>
+                        <SelectItem value="odontopediatria">Odontopediatría</SelectItem>
+                        <SelectItem value="periodoncia">Periodoncia</SelectItem>
+                        <SelectItem value="protesis">Prótesis</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+
                 <div className="space-y-2">
-                  <Label htmlFor="title">Título de la Tarea</Label>
-                  <Input
-                    id="title"
-                    placeholder="Ej: Extracciones Simples"
-                    value={newTask.title || ""}
-                    onChange={(e) => setNewTask({ ...newTask, title: e.target.value })}
+                  <Label htmlFor="description">Descripción</Label>
+                  <Textarea
+                    id="description"
+                    value={newTask.description}
+                    onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
+                    placeholder="Describe los objetivos y requisitos de la tarea..."
+                    rows={3}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="type">Tipo de Procedimiento</Label>
-                  <Select
-                    value={newTask.type}
-                    onValueChange={(value) => setNewTask({ ...newTask, type: value as any })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar tipo" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {taskTypes.map((type) => (
-                        <SelectItem key={type.value} value={type.value}>
-                          {type.icon} {type.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+
+                <div className="grid grid-cols-3 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="type">Tipo de Procedimiento</Label>
+                    <Select value={newTask.type} onValueChange={(value: any) => setNewTask({ ...newTask, type: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar tipo" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {taskTypes.map((type) => (
+                          <SelectItem key={type.value} value={type.value}>
+                            {type.icon} {type.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="quantity">Cantidad Objetivo *</Label>
+                    <Input
+                      id="quantity"
+                      type="number"
+                      min="1"
+                      value={newTask.targetQuantity}
+                      onChange={(e) => setNewTask({ ...newTask, targetQuantity: Number.parseInt(e.target.value) })}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="deadline">Fecha Límite *</Label>
+                    <Input
+                      id="deadline"
+                      type="date"
+                      value={newTask.deadline}
+                      onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="difficulty">Nivel de Dificultad</Label>
+                    <Select value={newTask.difficulty} onValueChange={(value: any) => setNewTask({ ...newTask, difficulty: value })}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Seleccionar dificultad" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {difficultyLevels.map((level) => (
+                          <SelectItem key={level.value} value={level.value}>
+                            <div className="flex items-center gap-2">
+                              <Badge className={level.color}>{level.label}</Badge>
+                              <span className="text-sm">({level.points} pts base)</span>
+                            </div>
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="points">Puntos por Procedimiento</Label>
+                    <Input
+                      id="points"
+                      type="number"
+                      min="1"
+                      value={newTask.points}
+                      onChange={(e) => setNewTask({ ...newTask, points: Number.parseInt(e.target.value) })}
+                    />
+                  </div>
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="specialty">Especialidad</Label>
-                  <Select
-                    value={newTask.specialty}
-                    onValueChange={(value) => setNewTask({ ...newTask, specialty: value })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar especialidad" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {specialties.map((specialty) => (
-                        <SelectItem key={specialty.value} value={specialty.value}>
-                          {specialty.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="difficulty">Nivel de Dificultad</Label>
-                  <Select
-                    value={newTask.difficulty}
-                    onValueChange={(value) => setNewTask({ ...newTask, difficulty: value as any })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Seleccionar dificultad" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="beginner">Principiante</SelectItem>
-                      <SelectItem value="intermediate">Intermedio</SelectItem>
-                      <SelectItem value="advanced">Avanzado</SelectItem>
-                    </SelectContent>
-                  </Select>
+              {/* Student Assignment */}
+              <div className="space-y-4">
+                <Label>Estudiantes Asignados</Label>
+                <div className="grid grid-cols-2 gap-2 max-h-32 overflow-y-auto">
+                  {students
+                    .filter((student) => !newTask.specialty || student.specialty === newTask.specialty)
+                    .map((student) => (
+                      <div key={student.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={student.id}
+                          checked={newTask.assignedStudents?.includes(student.id)}
+                          onCheckedChange={(checked) => {
+                            const currentStudents = newTask.assignedStudents || []
+                            const newStudents = checked
+                              ? [...currentStudents, student.id]
+                              : currentStudents.filter((id) => id !== student.id)
+                            setNewTask({ ...newTask, assignedStudents: newStudents })
+                          }}
+                        />
+                        <Label htmlFor={student.id} className="text-sm">
+                          {student.name} ({student.semester}° sem)
+                        </Label>
+                      </div>
+                    ))}
                 </div>
               </div>
 
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="quantity">Cantidad Objetivo</Label>
-                  <Input
-                    id="quantity"
-                    type="number"
-                    min="1"
-                    value={newTask.targetQuantity || 1}
-                    onChange={(e) => setNewTask({ ...newTask, targetQuantity: Number.parseInt(e.target.value) })}
-                  />
+              {/* Evaluation Criteria */}
+              <div className="space-y-4">
+                <div className="flex justify-between items-center">
+                  <Label>Criterios de Evaluación</Label>
+                  <Button type="button" variant="outline" size="sm" onClick={addCriterion}>
+                    <Plus className="h-4 w-4 mr-1" />
+                    Agregar Criterio
+                  </Button>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="points">Puntos por Tarea</Label>
-                  <Input
-                    id="points"
-                    type="number"
-                    min="1"
-                    value={newTask.points || 10}
-                    onChange={(e) => setNewTask({ ...newTask, points: Number.parseInt(e.target.value) })}
-                  />
+
+                <div className="space-y-3">
+                  {newTask.criteria?.map((criterion, index) => (
+                    <Card key={criterion.id} className="p-4">
+                      <div className="space-y-3">
+                        <div className="flex justify-between items-start">
+                          <div className="grid grid-cols-2 gap-3 flex-1">
+                            <div className="space-y-1">
+                              <Label className="text-xs">Nombre del Criterio</Label>
+                              <Input
+                                value={criterion.name}
+                                onChange={(e) => updateCriterion(index, "name", e.target.value)}
+                                placeholder="Ej: Técnica Quirúrgica"
+                                className="text-sm"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label className="text-xs">Peso (%)</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={criterion.weight}
+                                onChange={(e) => updateCriterion(index, "weight", Number.parseInt(e.target.value))}
+                                className="text-sm"
+                              />
+                            </div>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => removeCriterion(index)}
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                        <div className="space-y-1">
+                          <Label className="text-xs">Descripción</Label>
+                          <Textarea
+                            value={criterion.description}
+                            onChange={(e) => updateCriterion(index, "description", e.target.value)}
+                            placeholder="Describe qué se evalúa en este criterio..."
+                            rows={2}
+                            className="text-sm"
+                          />
+                        </div>
+                        <div className="grid grid-cols-2 gap-3">
+                          <div className="space-y-1">
+                            <Label className="text-xs">Puntuación Máxima</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              value={criterion.maxScore}
+                              onChange={(e) => updateCriterion(index, "maxScore", Number.parseInt(e.target.value))}
+                              className="text-sm"
+                            />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-xs">Tipo de Evaluación</Label>
+                            <Select
+                              value={criterion.evaluationType}
+                              onValueChange={(value: any) => updateCriterion(index, "evaluationType", value)}
+                            >
+                              <SelectTrigger className="text-sm">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="scale">Escala (1-10)</SelectItem>
+                                <SelectItem value="numeric">Numérico</SelectItem>
+                                <SelectItem value="boolean">Sí/No</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        </div>
+                      </div>
+                    </Card>
+                  ))}
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="deadline">Fecha Límite</Label>
-                  <Input
-                    id="deadline"
-                    type="date"
-                    value={newTask.deadline || ""}
-                    onChange={(e) => setNewTask({ ...newTask, deadline: e.target.value })}
-                  />
-                </div>
-              </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="description">Descripción Detallada</Label>
-                <Textarea
-                  id="description"
-                  placeholder="Describe los objetivos específicos y metodología de la tarea..."
-                  value={newTask.description || ""}
-                  onChange={(e) => setNewTask({ ...newTask, description: e.target.value })}
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Requisitos Previos</Label>
-                <Textarea
-                  placeholder="Lista los conocimientos y habilidades requeridas (uno por línea)"
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, requirements: e.target.value.split("\n").filter((r) => r.trim()) })
-                  }
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label>Criterios de Evaluación</Label>
-                <Textarea
-                  placeholder="Define los criterios de evaluación con porcentajes (uno por línea)"
-                  onChange={(e) =>
-                    setNewTask({ ...newTask, evaluationCriteria: e.target.value.split("\n").filter((c) => c.trim()) })
-                  }
-                />
+                {newTask.criteria && newTask.criteria.length > 0 && (
+                  <div className="p-3 bg-blue-50 rounded-lg">
+                    <p className="text-sm text-blue-700">
+                      <strong>Total de pesos:</strong>{" "}
+                      {newTask.criteria.reduce((sum, c) => sum + c.weight, 0)}%
+                      {newTask.criteria.reduce((sum, c) => sum + c.weight, 0) !== 100 && (
+                        <span className="text-red-600 ml-2">⚠️ Debe sumar 100%</span>
+                      )}
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
 
@@ -434,7 +636,7 @@ export function TaskManagementSystem() {
         </Dialog>
       </div>
 
-      {/* Estadísticas Generales */}
+      {/* Statistics Cards */}
       <div className="grid gap-4 md:grid-cols-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -443,17 +645,23 @@ export function TaskManagementSystem() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{tasks.filter((t) => t.status === "active").length}</div>
+            <p className="text-xs text-muted-foreground">En progreso</p>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Estudiantes Participando</CardTitle>
+            <CardTitle className="text-sm font-medium">Estudiantes Asignados</CardTitle>
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{students.length}</div>
+            <div className="text-2xl font-bold">
+              {new Set(tasks.flatMap((t) => t.assignedStudents)).size}
+            </div>
+            <p className="text-xs text-muted-foreground">Únicos</p>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Progreso Promedio</CardTitle>
@@ -461,33 +669,146 @@ export function TaskManagementSystem() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {Math.round(
-                tasks.reduce((acc, task) => acc + (task.currentProgress / task.targetQuantity) * 100, 0) / tasks.length,
-              )}
-              %
+              {Math.round(tasks.reduce((sum, task) => sum + getTaskProgress(task), 0) / tasks.length || 0)}%
             </div>
+            <p className="text-xs text-muted-foreground">De todas las tareas</p>
           </CardContent>
         </Card>
+
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium">Puntos Totales</CardTitle>
             <Award className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{students.reduce((acc, student) => acc + student.totalPoints, 0)}</div>
+            <div className="text-2xl font-bold">
+              {tasks.reduce((sum, task) => sum + task.points * task.targetQuantity, 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">Disponibles</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabs de Gestión */}
-      <Tabs defaultValue="tasks" className="w-full">
+      {/* Tasks List */}
+      <Tabs defaultValue="active" className="w-full">
         <TabsList>
-          <TabsTrigger value="tasks">Tareas</TabsTrigger>
-          <TabsTrigger value="students">Estudiantes</TabsTrigger>
-          <TabsTrigger value="analytics">Análisis</TabsTrigger>
+          <TabsTrigger value="active">Activas</TabsTrigger>
+          <TabsTrigger value="completed">Completadas</TabsTrigger>
+          <TabsTrigger value="all">Todas</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="tasks" className="space-y-4">
+        <TabsContent value="active" className="space-y-4">
+          <div className="grid gap-4">
+            {tasks
+              .filter((task) => task.status === "active")
+              .map((task) => (
+                <Card key={task.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <CardTitle className="text-lg">{task.title}</CardTitle>
+                          <Badge className={getSpecialtyColor(task.specialty)}>{task.specialty}</Badge>
+                          <Badge className={difficultyLevels.find((d) => d.value === task.difficulty)?.color}>
+                            {difficultyLevels.find((d) => d.value === task.difficulty)?.label}
+                          </Badge>
+                        </div>
+                        <CardDescription>{task.description}</CardDescription>
+                      </div>
+                      <Badge className={getStatusColor(task.status)}>
+                        {task.status === "active" ? "Activa" : task.status}
+                      </Badge>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      {/* Task Details */}
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-blue-600">{task.targetQuantity}</div>
+                          <p className="text-xs text-muted-foreground">Objetivo</p>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-green-600">{task.assignedStudents.length}</div>
+                          <p className="text-xs text-muted-foreground">Estudiantes</p>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-purple-600">{task.points}</div>
+                          <p className="text-xs text-muted-foreground">Puntos/Proc.</p>
+                        </div>
+                        <div className="text-center">
+                          <div className="text-2xl font-bold text-orange-600">
+                            {Math.round(getTaskProgress(task))}%
+                          </div>
+                          <p className="text-xs text-muted-foreground">Progreso</p>
+                        </div>
+                      </div>
+
+                      {/* Progress Bar */}
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span>Progreso General</span>
+                          <span>{Math.round(getTaskProgress(task))}%</span>
+                        </div>
+                        <Progress value={getTaskProgress(task)} className="h-2" />
+                      </div>
+
+                      {/* Deadline */}
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Calendar className="h-4 w-4" />
+                        <span>Fecha límite: {new Date(task.deadline).toLocaleDateString("es-ES")}</span>
+                        {new Date(task.deadline) < new Date() && (
+                          <Badge variant="destructive" className="ml-2">
+                            <AlertTriangle className="h-3 w-3 mr-1" />
+                            Vencida
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Criteria Summary */}
+                      {task.criteria.length > 0 && (
+                        <div className="space-y-2">
+                          <Label className="text-sm font-medium">Criterios de Evaluación:</Label>
+                          <div className="flex flex-wrap gap-2">
+                            {task.criteria.map((criterion) => (
+                              <Badge key={criterion.id} variant="outline" className="text-xs">
+                                {criterion.name} ({criterion.weight}%)
+                              </Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Actions */}
+                      <div className="flex justify-end gap-2 pt-4 border-t">
+                        <Button variant="outline" size="sm" onClick={() => setSelectedTask(task)}>
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver Detalles
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Download className="h-4 w-4 mr-1" />
+                          Reporte
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="completed" className="space-y-4">
+          <div className="text-center py-8 text-muted-foreground">
+            <CheckCircle className="h-12 w-12 mx-auto mb-4 opacity-50" />
+            <p>No hay tareas completadas aún</p>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="all" className="space-y-4">
           <div className="grid gap-4">
             {tasks.map((task) => (
               <Card key={task.id} className="hover:shadow-md transition-shadow">
@@ -495,214 +816,171 @@ export function TaskManagementSystem() {
                   <div className="flex justify-between items-start">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-2xl">{getTaskTypeIcon(task.type)}</span>
                         <CardTitle className="text-lg">{task.title}</CardTitle>
-                        {getStatusBadge(task.status)}
-                        {getDifficultyBadge(task.difficulty)}
+                        <Badge className={getSpecialtyColor(task.specialty)}>{task.specialty}</Badge>
+                        <Badge className={difficultyLevels.find((d) => d.value === task.difficulty)?.color}>
+                          {difficultyLevels.find((d) => d.value === task.difficulty)?.label}
+                        </Badge>
                       </div>
                       <CardDescription>{task.description}</CardDescription>
                     </div>
-                    <div className="text-right">
-                      <div className="text-sm text-muted-foreground">Puntos</div>
-                      <div className="text-2xl font-bold text-primary">{task.points}</div>
-                    </div>
+                    <Badge className={getStatusColor(task.status)}>
+                      {task.status === "active" ? "Activa" : task.status}
+                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {/* Progreso */}
-                    <div className="space-y-2">
-                      <div className="flex justify-between text-sm">
-                        <span>Progreso</span>
-                        <span className={getProgressColor(task.currentProgress, task.targetQuantity)}>
-                          {task.currentProgress}/{task.targetQuantity} (
-                          {Math.round((task.currentProgress / task.targetQuantity) * 100)}%)
-                        </span>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-blue-600">{task.targetQuantity}</div>
+                        <p className="text-xs text-muted-foreground">Objetivo</p>
                       </div>
-                      <Progress value={(task.currentProgress / task.targetQuantity) * 100} className="h-2" />
-                    </div>
-
-                    {/* Información de la tarea */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                      <div>
-                        <span className="font-medium">Especialidad:</span>
-                        <p className="text-muted-foreground capitalize">{task.specialty}</p>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-green-600">{task.assignedStudents.length}</div>
+                        <p className="text-xs text-muted-foreground">Estudiantes</p>
                       </div>
-                      <div>
-                        <span className="font-medium">Fecha límite:</span>
-                        <p className="text-muted-foreground">{new Date(task.deadline).toLocaleDateString()}</p>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-purple-600">{task.points}</div>
+                        <p className="text-xs text-muted-foreground">Puntos/Proc.</p>
                       </div>
-                      <div>
-                        <span className="font-medium">Estudiantes:</span>
-                        <p className="text-muted-foreground">{task.assignedStudents.length} asignados</p>
-                      </div>
-                      <div>
-                        <span className="font-medium">Creada:</span>
-                        <p className="text-muted-foreground">{new Date(task.createdAt).toLocaleDateString()}</p>
+                      <div className="text-center">
+                        <div className="text-2xl font-bold text-orange-600">
+                          {Math.round(getTaskProgress(task))}%
+                        </div>
+                        <p className="text-xs text-muted-foreground">Progreso</p>
                       </div>
                     </div>
-
-                    {/* Requisitos */}
-                    {task.requirements.length > 0 && (
-                      <div>
-                        <span className="font-medium text-sm">Requisitos:</span>
-                        <ul className="text-sm text-muted-foreground mt-1 space-y-1">
-                          {task.requirements.map((req, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <span className="text-primary">•</span>
-                              {req}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
-
-                    {/* Criterios de evaluación */}
-                    {task.evaluationCriteria.length > 0 && (
-                      <div>
-                        <span className="font-medium text-sm">Criterios de Evaluación:</span>
-                        <ul className="text-sm text-muted-foreground mt-1 space-y-1">
-                          {task.evaluationCriteria.map((criteria, index) => (
-                            <li key={index} className="flex items-start gap-2">
-                              <span className="text-primary">•</span>
-                              {criteria}
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    )}
 
                     <div className="flex justify-end gap-2 pt-4 border-t">
-                      <Button variant="outline" size="sm">
+                      <Button variant="outline" size="sm" onClick={() => setSelectedTask(task)}>
+                        <Eye className="h-4 w-4 mr-1" />
                         Ver Detalles
                       </Button>
                       <Button variant="outline" size="sm">
+                        <Edit className="h-4 w-4 mr-1" />
                         Editar
                       </Button>
-                      <Button size="sm">Ver Progreso</Button>
+                      <Button variant="outline" size="sm">
+                        <Download className="h-4 w-4 mr-1" />
+                        Reporte
+                      </Button>
                     </div>
                   </div>
                 </CardContent>
               </Card>
             ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="students" className="space-y-4">
-          <div className="grid gap-4">
-            {students.map((student) => (
-              <Card key={student.id}>
-                <CardHeader>
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="text-lg">{student.name}</CardTitle>
-                      <CardDescription>
-                        {student.specialty} • {student.semester}° Semestre
-                      </CardDescription>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-muted-foreground">Puntos Totales</div>
-                      <div className="text-2xl font-bold text-primary">{student.totalPoints}</div>
-                    </div>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-3 gap-4 text-center">
-                    <div>
-                      <div className="text-2xl font-bold text-blue-600">{student.currentTasks.length}</div>
-                      <p className="text-sm text-muted-foreground">Tareas Activas</p>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-green-600">{student.completedTasks}</div>
-                      <p className="text-sm text-muted-foreground">Tareas Completadas</p>
-                    </div>
-                    <div>
-                      <div className="text-2xl font-bold text-purple-600">
-                        {student.completedTasks > 0 ? Math.round(student.totalPoints / student.completedTasks) : 0}
-                      </div>
-                      <p className="text-sm text-muted-foreground">Puntos Promedio</p>
-                    </div>
-                  </div>
-
-                  <div className="mt-4">
-                    <span className="font-medium text-sm">Tareas Actuales:</span>
-                    <div className="flex flex-wrap gap-2 mt-2">
-                      {student.currentTasks.map((taskId) => {
-                        const task = tasks.find((t) => t.id === taskId)
-                        return task ? (
-                          <Badge key={taskId} variant="outline" className="gap-1">
-                            {getTaskTypeIcon(task.type)} {task.title}
-                          </Badge>
-                        ) : null
-                      })}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </TabsContent>
-
-        <TabsContent value="analytics" className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <Card>
-              <CardHeader>
-                <CardTitle>Rendimiento por Especialidad</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {specialties.map((specialty) => {
-                    const specialtyTasks = tasks.filter((t) => t.specialty === specialty.value)
-                    const avgProgress =
-                      specialtyTasks.length > 0
-                        ? specialtyTasks.reduce(
-                            (acc, task) => acc + (task.currentProgress / task.targetQuantity) * 100,
-                            0,
-                          ) / specialtyTasks.length
-                        : 0
-
-                    return (
-                      <div key={specialty.value} className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="font-medium">{specialty.label}</span>
-                          <span>{Math.round(avgProgress)}%</span>
-                        </div>
-                        <Progress value={avgProgress} className="h-2" />
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Distribución de Dificultad</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {["beginner", "intermediate", "advanced"].map((difficulty) => {
-                    const difficultyTasks = tasks.filter((t) => t.difficulty === difficulty)
-                    const percentage = (difficultyTasks.length / tasks.length) * 100
-
-                    return (
-                      <div key={difficulty} className="space-y-2">
-                        <div className="flex justify-between text-sm">
-                          <span className="font-medium capitalize">{difficulty}</span>
-                          <span>
-                            {difficultyTasks.length} tareas ({Math.round(percentage)}%)
-                          </span>
-                        </div>
-                        <Progress value={percentage} className="h-2" />
-                      </div>
-                    )
-                  })}
-                </div>
-              </CardContent>
-            </Card>
           </div>
         </TabsContent>
       </Tabs>
-    </div>
-  )
-}
+
+      {/* Task Details Dialog */}
+      {selectedTask && (
+        <Dialog open={!!selectedTask} onOpenChange={() => setSelectedTask(null)}>
+          <DialogContent className="sm:max-w-[900px] max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2">
+                <Target className="h-5 w-5" />
+                {selectedTask.title}
+              </DialogTitle>
+              <DialogDescription>Detalles completos de la tarea y progreso de estudiantes</DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-6">
+              {/* Task Information */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Información de la Tarea</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <Label className="text-sm font-medium">Especialidad</Label>
+                      <p className="text-sm">{selectedTask.specialty}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Tipo</Label>
+                      <p className="text-sm">{taskTypes.find((t) => t.value === selectedTask.type)?.label}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Cantidad Objetivo</Label>
+                      <p className="text-sm">{selectedTask.targetQuantity} procedimientos</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Puntos por Procedimiento</Label>
+                      <p className="text-sm">{selectedTask.points} puntos</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Fecha Límite</Label>
+                      <p className="text-sm">{new Date(selectedTask.deadline).toLocaleDateString("es-ES")}</p>
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium">Estado</Label>
+                      <Badge className={getStatusColor(selectedTask.status)}>
+                        {selectedTask.status === "active" ? "Activa" : selectedTask.status}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium">Descripción</Label>
+                    <p className="text-sm text-muted-foreground">{selectedTask.description}</p>
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Evaluation Criteria */}
+              {selectedTask.criteria.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle className="text-lg">Criterios de Evaluación</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-3">
+                      {selectedTask.criteria.map((criterion) => (
+                        <div key={criterion.id} className="p-3 border rounded-lg">
+                          <div className="flex justify-between items-start mb-2">
+                            <h4 className="font-medium">{criterion.name}</h4>
+                            <Badge variant="outline">{criterion.weight}%</Badge>
+                          </div>
+                          <p className="text-sm text-muted-foreground mb-2">{criterion.description}</p>
+                          <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                            <span>Puntuación máxima: {criterion.maxScore}</span>
+                            <span>Tipo: {criterion.evaluationType}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              {/* Student Progress */}
+              <Card>
+                <CardHeader>
+                  <CardTitle className="text-lg">Progreso de Estudiantes</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {studentProgress
+                      .filter((sp) => sp.taskId === selectedTask.id)
+                      .map((progress) => (
+                        <div key={progress.studentId} className="p-4 border rounded-lg">
+                          <div className="flex justify-between items-start mb-3">
+                            <div>
+                              <h4 className="font-medium">{progress.studentName}</h4>
+                              <p className="text-sm text-muted-foreground">
+                                Progreso: {progress.currentQuantity}/{selectedTask.targetQuantity} procedimientos
+                              </p>
+                            </div>
+                            <div className="text-right">
+                              <div className="text-lg font-bold text-green-600">{progress.overallScore.toFixed(1)}</div>
+                              <p className="text-xs text-muted-foreground">Puntuación</p>
+                            </div>
+                          </div>
+                          <Progress
+                            value={(progress.currentQuantity / selectedTask.targetQuantity) * 100}
+                            className="h-2 mb-3"
+                          />
+                          <div className="space-y-2">
+                            {progress.completedProcedures.map((procedure) => (
+                \

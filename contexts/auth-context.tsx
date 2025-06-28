@@ -1,222 +1,221 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect, useRef, type ReactNode } from "react"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+import { useRouter } from "next/navigation"
 
 export interface User {
   id: string
-  email: string
   name: string
-  role: string
+  email: string
+  role: "admin" | "profesor" | "estudiante" | "paciente" | "secretario"
   specialty?: string
+  avatar?: string
+  phone?: string
+  department?: string
+  semester?: number
+  studentId?: string
+  professorId?: string
+  permissions?: string[]
+  preferences?: {
+    theme: "light" | "dark"
+    language: "es" | "en"
+    notifications: boolean
+  }
 }
 
 interface AuthContextType {
   user: User | null
-  isLoading: boolean
-  isInitialized: boolean
   login: (user: User) => void
   logout: () => void
+  updateUser: (updates: Partial<User>) => void
+  isLoading: boolean
+  hasPermission: (permission: string) => boolean
+  isRole: (role: string) => boolean
 }
 
-// Create context with undefined as default
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Export TEST_USERS for testing and development
-export const TEST_USERS = [
+export const TEST_USERS: (User & { password: string })[] = [
   {
-    id: "1",
-    email: "admin@clinica.com",
-    name: "Dr. Admin",
-    role: "admin",
-    password: "admin",
-  },
-  {
-    id: "2",
-    email: "profesor@clinica.com",
+    id: "admin1",
     name: "Dr. María González",
-    role: "profesor",
-    specialty: "Endodoncia",
-    password: "profesor",
+    email: "admin@uleam.edu.ec",
+    password: "admin123",
+    role: "admin",
+    phone: "+593 99 123 4567",
+    department: "Administración",
+    permissions: ["all"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
   },
   {
-    id: "3",
-    email: "estudiante@clinica.com",
-    name: "Juan Pérez",
-    role: "estudiante",
-    password: "estudiante",
-  },
-  {
-    id: "4",
-    email: "paciente@clinica.com",
-    name: "Ana López",
-    role: "paciente",
-    password: "paciente",
-  },
-  {
-    id: "5",
-    email: "endodoncia@clinica.com",
+    id: "prof1",
     name: "Dr. Carlos Ruiz",
+    email: "carlos.ruiz@uleam.edu.ec",
+    password: "prof123",
     role: "profesor",
-    specialty: "Endodoncia",
-    password: "endodoncia",
+    specialty: "endodoncia",
+    phone: "+593 99 234 5678",
+    department: "Endodoncia",
+    permissions: ["manage_students", "approve_treatments", "create_assignments"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
   },
   {
-    id: "6",
-    email: "ortodoncia@clinica.com",
+    id: "prof2",
     name: "Dra. Laura Martín",
+    email: "laura.martin@uleam.edu.ec",
+    password: "prof123",
     role: "profesor",
-    specialty: "Ortodoncia",
-    password: "ortodoncia",
+    specialty: "ortodoncia",
+    phone: "+593 99 345 6789",
+    department: "Ortodoncia",
+    permissions: ["manage_students", "approve_treatments", "create_assignments"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
   },
   {
-    id: "7",
-    email: "cirugia@clinica.com",
-    name: "Dr. Roberto Silva",
-    role: "profesor",
-    specialty: "Cirugía Oral",
-    password: "cirugia",
+    id: "est1",
+    name: "Juan Pérez",
+    email: "juan.perez@uleam.edu.ec",
+    password: "est123",
+    role: "estudiante",
+    specialty: "endodoncia",
+    semester: 8,
+    studentId: "2021-001",
+    professorId: "prof1",
+    phone: "+593 99 456 7890",
+    permissions: ["view_patients", "create_cases", "submit_assignments"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
   },
   {
-    id: "8",
-    email: "pediatria@clinica.com",
-    name: "Dra. Carmen Vega",
-    role: "profesor",
-    specialty: "Odontopediatría",
-    password: "pediatria",
+    id: "est2",
+    name: "María González",
+    email: "maria.gonzalez@uleam.edu.ec",
+    password: "est123",
+    role: "estudiante",
+    specialty: "ortodoncia",
+    semester: 7,
+    studentId: "2021-002",
+    professorId: "prof2",
+    phone: "+593 99 567 8901",
+    permissions: ["view_patients", "create_cases", "submit_assignments"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
   },
   {
-    id: "9",
-    email: "secretario@clinica.com",
-    name: "María Secretaria",
+    id: "pac1",
+    name: "Ana Rodríguez",
+    email: "ana.rodriguez@gmail.com",
+    password: "pac123",
+    role: "paciente",
+    phone: "+593 99 678 9012",
+    permissions: ["view_appointments", "view_records"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
+  },
+  {
+    id: "sec1",
+    name: "Carmen Vega",
+    email: "carmen.vega@uleam.edu.ec",
+    password: "sec123",
     role: "secretario",
-    password: "secretario",
+    phone: "+593 99 789 0123",
+    department: "Administración",
+    permissions: ["manage_appointments", "register_patients", "view_schedules"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
   },
 ]
 
-// Global state to prevent multiple initializations
-const globalAuthState = {
-  user: null as User | null,
-  isInitialized: false,
-  isLoading: true,
-  hasInitialized: false,
-}
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUser] = useState<User | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const router = useRouter()
 
-export const AuthProvider = ({ children }: { children: ReactNode }) => {
-  const [user, setUser] = useState<User | null>(globalAuthState.user)
-  const [isLoading, setIsLoading] = useState(globalAuthState.isLoading)
-  const [isInitialized, setIsInitialized] = useState(globalAuthState.isInitialized)
-  const initRef = useRef(false)
-
-  // Single initialization effect
   useEffect(() => {
-    if (initRef.current || globalAuthState.hasInitialized) {
-      // If already initialized, sync with global state
-      setUser(globalAuthState.user)
-      setIsLoading(false)
-      setIsInitialized(true)
-      return
-    }
-
-    initRef.current = true
-    globalAuthState.hasInitialized = true
-
-    const initializeAuth = async () => {
+    // Check for existing session
+    const savedUser = localStorage.getItem("dental_clinic_user")
+    if (savedUser) {
       try {
-        console.log("🔄 Initializing authentication (single instance)...")
-
-        const savedUser = localStorage.getItem("clinic_user")
-        const savedExpiry = localStorage.getItem("clinic_expiry")
-
-        if (savedUser && savedExpiry) {
-          const expiry = Number.parseInt(savedExpiry)
-          if (Date.now() < expiry) {
-            const userData = JSON.parse(savedUser)
-            globalAuthState.user = userData
-            setUser(userData)
-            console.log("✅ User restored:", userData.role, userData.name)
-          } else {
-            console.log("⚠️ Session expired, cleaning up")
-            localStorage.removeItem("clinic_user")
-            localStorage.removeItem("clinic_expiry")
-            globalAuthState.user = null
-            setUser(null)
-          }
-        } else {
-          console.log("ℹ️ No saved session found")
-          globalAuthState.user = null
-          setUser(null)
-        }
+        const parsedUser = JSON.parse(savedUser)
+        setUser(parsedUser)
       } catch (error) {
-        console.error("❌ Auth initialization error:", error)
-        localStorage.removeItem("clinic_user")
-        localStorage.removeItem("clinic_expiry")
-        globalAuthState.user = null
-        setUser(null)
-      } finally {
-        globalAuthState.isLoading = false
-        globalAuthState.isInitialized = true
-        setIsLoading(false)
-        setIsInitialized(true)
-        console.log("✅ Auth initialization complete")
+        console.error("Error parsing saved user:", error)
+        localStorage.removeItem("dental_clinic_user")
       }
     }
-
-    initializeAuth()
+    setIsLoading(false)
   }, [])
 
   const login = (userData: User) => {
-    try {
-      console.log("🔐 Logging in user:", userData.role, userData.name)
-
-      // Update global state
-      globalAuthState.user = userData
-      setUser(userData)
-
-      // Save to localStorage
-      localStorage.setItem("clinic_user", JSON.stringify(userData))
-      localStorage.setItem("clinic_expiry", (Date.now() + 24 * 60 * 60 * 1000).toString())
-
-      console.log("✅ Login successful")
-    } catch (error) {
-      console.error("❌ Login error:", error)
-    }
+    setUser(userData)
+    localStorage.setItem("dental_clinic_user", JSON.stringify(userData))
   }
 
   const logout = () => {
-    console.log("🚪 Logging out user")
-
-    // Update global state
-    globalAuthState.user = null
     setUser(null)
-
-    // Clear localStorage
-    localStorage.removeItem("clinic_user")
-    localStorage.removeItem("clinic_expiry")
-
-    console.log("✅ Logout complete")
+    localStorage.removeItem("dental_clinic_user")
+    router.push("/login")
   }
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        isLoading,
-        isInitialized,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  const updateUser = (updates: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...updates }
+      setUser(updatedUser)
+      localStorage.setItem("dental_clinic_user", JSON.stringify(updatedUser))
+    }
+  }
+
+  const hasPermission = (permission: string): boolean => {
+    if (!user) return false
+    if (user.permissions?.includes("all")) return true
+    return user.permissions?.includes(permission) || false
+  }
+
+  const isRole = (role: string): boolean => {
+    return user?.role === role
+  }
+
+  const value: AuthContextType = {
+    user,
+    login,
+    logout,
+    updateUser,
+    isLoading,
+    hasPermission,
+    isRole,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
-export const useAuth = () => {
+export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error(
-      "useAuth must be used within an AuthProvider. Make sure your component is wrapped with <AuthProvider>.",
-    )
+    throw new Error("useAuth must be used within an AuthProvider")
   }
   return context
 }
