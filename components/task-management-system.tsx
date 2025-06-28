@@ -346,9 +346,7 @@ export function TaskManagementSystem() {
   const updateCriterion = (index: number, field: keyof TaskCriteria, value: any) => {
     setNewTask((prev) => ({
       ...prev,
-      criteria: prev.criteria?.map((criterion, i) =>
-        i === index ? { ...criterion, [field]: value } : criterion
-      ),
+      criteria: prev.criteria?.map((criterion, i) => (i === index ? { ...criterion, [field]: value } : criterion)),
     }))
   }
 
@@ -399,7 +397,10 @@ export function TaskManagementSystem() {
                   </div>
                   <div className="space-y-2">
                     <Label htmlFor="specialty">Especialidad *</Label>
-                    <Select value={newTask.specialty} onValueChange={(value) => setNewTask({ ...newTask, specialty: value })}>
+                    <Select
+                      value={newTask.specialty}
+                      onValueChange={(value) => setNewTask({ ...newTask, specialty: value })}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar especialidad" />
                       </SelectTrigger>
@@ -429,7 +430,10 @@ export function TaskManagementSystem() {
                 <div className="grid grid-cols-3 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="type">Tipo de Procedimiento</Label>
-                    <Select value={newTask.type} onValueChange={(value: any) => setNewTask({ ...newTask, type: value })}>
+                    <Select
+                      value={newTask.type}
+                      onValueChange={(value: any) => setNewTask({ ...newTask, type: value })}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar tipo" />
                       </SelectTrigger>
@@ -466,7 +470,10 @@ export function TaskManagementSystem() {
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="difficulty">Nivel de Dificultad</Label>
-                    <Select value={newTask.difficulty} onValueChange={(value: any) => setNewTask({ ...newTask, difficulty: value })}>
+                    <Select
+                      value={newTask.difficulty}
+                      onValueChange={(value: any) => setNewTask({ ...newTask, difficulty: value })}
+                    >
                       <SelectTrigger>
                         <SelectValue placeholder="Seleccionar dificultad" />
                       </SelectTrigger>
@@ -615,8 +622,7 @@ export function TaskManagementSystem() {
                 {newTask.criteria && newTask.criteria.length > 0 && (
                   <div className="p-3 bg-blue-50 rounded-lg">
                     <p className="text-sm text-blue-700">
-                      <strong>Total de pesos:</strong>{" "}
-                      {newTask.criteria.reduce((sum, c) => sum + c.weight, 0)}%
+                      <strong>Total de pesos:</strong> {newTask.criteria.reduce((sum, c) => sum + c.weight, 0)}%
                       {newTask.criteria.reduce((sum, c) => sum + c.weight, 0) !== 100 && (
                         <span className="text-red-600 ml-2">⚠️ Debe sumar 100%</span>
                       )}
@@ -655,9 +661,7 @@ export function TaskManagementSystem() {
             <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">
-              {new Set(tasks.flatMap((t) => t.assignedStudents)).size}
-            </div>
+            <div className="text-2xl font-bold">{new Set(tasks.flatMap((t) => t.assignedStudents)).size}</div>
             <p className="text-xs text-muted-foreground">Únicos</p>
           </CardContent>
         </Card>
@@ -737,9 +741,7 @@ export function TaskManagementSystem() {
                           <p className="text-xs text-muted-foreground">Puntos/Proc.</p>
                         </div>
                         <div className="text-center">
-                          <div className="text-2xl font-bold text-orange-600">
-                            {Math.round(getTaskProgress(task))}%
-                          </div>
+                          <div className="text-2xl font-bold text-orange-600">{Math.round(getTaskProgress(task))}%</div>
                           <p className="text-xs text-muted-foreground">Progreso</p>
                         </div>
                       </div>
@@ -845,9 +847,7 @@ export function TaskManagementSystem() {
                         <p className="text-xs text-muted-foreground">Puntos/Proc.</p>
                       </div>
                       <div className="text-center">
-                        <div className="text-2xl font-bold text-orange-600">
-                          {Math.round(getTaskProgress(task))}%
-                        </div>
+                        <div className="text-2xl font-bold text-orange-600">{Math.round(getTaskProgress(task))}%</div>
                         <p className="text-xs text-muted-foreground">Progreso</p>
                       </div>
                     </div>
@@ -983,4 +983,36 @@ export function TaskManagementSystem() {
                           />
                           <div className="space-y-2">
                             {progress.completedProcedures.map((procedure) => (
-                \
+                              <div key={procedure.id} className="text-xs p-2 bg-gray-50 rounded">
+                                <div className="flex justify-between items-center">
+                                  <span className="font-medium">{procedure.description}</span>
+                                  <span className="text-muted-foreground">
+                                    {new Date(procedure.date).toLocaleDateString("es-ES")}
+                                  </span>
+                                </div>
+                                {procedure.notes && <p className="text-muted-foreground mt-1">{procedure.notes}</p>}
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setSelectedTask(null)}>
+                Cerrar
+              </Button>
+              <Button>
+                <Download className="h-4 w-4 mr-1" />
+                Exportar Reporte
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </div>
+  )
+}
