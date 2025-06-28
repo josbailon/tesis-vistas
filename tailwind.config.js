@@ -52,6 +52,13 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        chart: {
+          1: "hsl(var(--chart-1))",
+          2: "hsl(var(--chart-2))",
+          3: "hsl(var(--chart-3))",
+          4: "hsl(var(--chart-4))",
+          5: "hsl(var(--chart-5))",
+        },
         // Medical theme colors
         medical: {
           50: "hsl(var(--medical-50))",
@@ -64,7 +71,6 @@ module.exports = {
           700: "hsl(var(--medical-700))",
           800: "hsl(var(--medical-800))",
           900: "hsl(var(--medical-900))",
-          950: "hsl(var(--medical-950))",
         },
         // Dental condition colors
         dental: {
@@ -115,10 +121,14 @@ module.exports = {
       spacing: {
         18: "4.5rem",
         88: "22rem",
+        128: "32rem",
       },
       maxWidth: {
         "8xl": "88rem",
         "9xl": "96rem",
+      },
+      scale: {
+        102: "1.02",
       },
     },
   },

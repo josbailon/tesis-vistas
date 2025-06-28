@@ -1,29 +1,40 @@
 "use client"
 
 import { useState, useCallback } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Save, Search, Filter, ZoomIn, ZoomOut, RotateCcw, User, Printer, Download } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import {
+  Search,
+  ZoomIn,
+  ZoomOut,
+  Save,
+  PrinterIcon as Print,
+  FileText,
+  Calendar,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+} from "lucide-react"
 
 // Dental conditions with professional colors
 const dentalConditions = {
-  healthy: { name: "Sano", color: "#22c55e", bgColor: "#dcfce7", textColor: "#166534" },
-  caries: { name: "Caries", color: "#ef4444", bgColor: "#fecaca", textColor: "#991b1b" },
-  restoration: { name: "Restauración", color: "#f59e0b", bgColor: "#fef3c7", textColor: "#92400e" },
-  crown: { name: "Corona", color: "#8b5cf6", bgColor: "#ede9fe", textColor: "#5b21b6" },
-  implant: { name: "Implante", color: "#3b82f6", bgColor: "#dbeafe", textColor: "#1e40af" },
-  bridge: { name: "Puente", color: "#f97316", bgColor: "#fed7aa", textColor: "#9a3412" },
-  missing: { name: "Ausente", color: "#6b7280", bgColor: "#f3f4f6", textColor: "#374151" },
-  extraction: { name: "Extracción", color: "#ec4899", bgColor: "#fce7f3", textColor: "#be185d" },
-  endodontics: { name: "Endodoncia", color: "#06b6d4", bgColor: "#cffafe", textColor: "#0e7490" },
-  periodontal: { name: "Periodontal", color: "#84cc16", bgColor: "#ecfccb", textColor: "#365314" },
+  healthy: { name: "Sano", color: "#10b981", bgColor: "#d1fae5", borderColor: "#6ee7b7" },
+  caries: { name: "Caries", color: "#ef4444", bgColor: "#fee2e2", borderColor: "#fca5a5" },
+  restoration: { name: "Restauración", color: "#f59e0b", bgColor: "#fef3c7", borderColor: "#fcd34d" },
+  missing: { name: "Ausente", color: "#6b7280", bgColor: "#f3f4f6", borderColor: "#d1d5db" },
+  crown: { name: "Corona", color: "#8b5cf6", bgColor: "#ede9fe", borderColor: "#c4b5fd" },
+  implant: { name: "Implante", color: "#3b82f6", bgColor: "#dbeafe", borderColor: "#93c5fd" },
+  bridge: { name: "Puente", color: "#f97316", bgColor: "#fed7aa", borderColor: "#fdba74" },
+  extraction: { name: "Extracción", color: "#ec4899", bgColor: "#fce7f3", borderColor: "#f9a8d4" },
+  endodontics: { name: "Endodoncia", color: "#7c3aed", bgColor: "#e9d5ff", borderColor: "#c084fc" },
+  periodontics: { name: "Periodoncia", color: "#059669", bgColor: "#a7f3d0", borderColor: "#6ee7b7" },
 }
 
 // Tooth surfaces
@@ -39,13 +50,15 @@ interface ToothCondition {
   condition: keyof typeof dentalConditions
   date: string
   notes?: string
-  professional?: string
+  status: "diagnostico" | "sin_realizar" | "realizado"
 }
 
 interface PatientInfo {
   name: string
-  id: string
   age: number
+  phone: string
+  email: string
+  address: string
   lastVisit: string
 }
 
@@ -53,54 +66,49 @@ interface ProfessionalOdontogramProps {
   patientInfo?: PatientInfo
   initialConditions?: ToothCondition[]
   onSave?: (conditions: ToothCondition[]) => void
-  readOnly?: boolean
 }
 
 export function ProfessionalOdontogram({
-  patientInfo = { name: "Laura Medina", id: "12345", age: 28, lastVisit: "2024-01-15" },
+  patientInfo = {
+    name: "Laura Medina",
+    age: 28,
+    phone: "+593 99 123 4567",
+    email: "laura.medina@email.com",
+    address: "Manta, Manabí, Ecuador",
+    lastVisit: "2024-01-15",
+  },
   initialConditions = [],
   onSave,
-  readOnly = false,
 }: ProfessionalOdontogramProps) {
   const [conditions, setConditions] = useState<ToothCondition[]>(initialConditions)
-  const [selectedTooth, setSelectedTooth] = useState<number | null>(null)
   const [selectedCondition, setSelectedCondition] = useState<keyof typeof dentalConditions>("healthy")
-  const [selectedSurfaces, setSelectedSurfaces] = useState<string[]>([])
+  const [selectedSurfaces, setSelectedSurfaces] = useState<string[]>(["oclusal"])
   const [activeTab, setActiveTab] = useState("diagnosticos")
   const [zoom, setZoom] = useState(1)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterCondition, setFilterCondition] = useState<string>("all")
+  const [selectedTooth, setSelectedTooth] = useState<number | null>(null)
 
   const handleToothClick = useCallback(
     (toothNumber: number) => {
-      if (readOnly) return
       setSelectedTooth(toothNumber)
+
+      // Apply condition to selected surfaces
+      const newConditions = selectedSurfaces.map((surface) => ({
+        toothNumber,
+        surface,
+        condition: selectedCondition,
+        date: new Date().toISOString().split("T")[0],
+        status: activeTab as "diagnostico" | "sin_realizar" | "realizado",
+      }))
+
+      setConditions((prev) => {
+        // Remove existing conditions for the same tooth and surfaces
+        const filtered = prev.filter((c) => !(c.toothNumber === toothNumber && selectedSurfaces.includes(c.surface)))
+        return [...filtered, ...newConditions]
+      })
     },
-    [readOnly],
+    [selectedCondition, selectedSurfaces, activeTab],
   )
-
-  const handleSurfaceToggle = useCallback((surface: string) => {
-    setSelectedSurfaces((prev) => (prev.includes(surface) ? prev.filter((s) => s !== surface) : [...prev, surface]))
-  }, [])
-
-  const applyCondition = useCallback(() => {
-    if (!selectedTooth || selectedSurfaces.length === 0) return
-
-    const newConditions = selectedSurfaces.map((surface) => ({
-      toothNumber: selectedTooth,
-      surface,
-      condition: selectedCondition,
-      date: new Date().toISOString().split("T")[0],
-      professional: "Dr. Sistema",
-    }))
-
-    setConditions((prev) => {
-      const filtered = prev.filter((c) => !(c.toothNumber === selectedTooth && selectedSurfaces.includes(c.surface)))
-      return [...filtered, ...newConditions]
-    })
-
-    setSelectedSurfaces([])
-  }, [selectedTooth, selectedSurfaces, selectedCondition])
 
   const getToothConditions = useCallback(
     (toothNumber: number) => {
@@ -112,64 +120,45 @@ export function ProfessionalOdontogram({
   const getToothColor = useCallback(
     (toothNumber: number) => {
       const toothConditions = getToothConditions(toothNumber)
-      if (toothConditions.length === 0) return dentalConditions.healthy.color
+      if (toothConditions.length === 0) return "#ffffff"
 
-      // Priority order for displaying colors
-      const priority = [
-        "missing",
-        "extraction",
-        "caries",
-        "crown",
-        "implant",
-        "bridge",
-        "restoration",
-        "endodontics",
-        "periodontal",
-        "healthy",
-      ]
+      // Return the color of the most recent condition
+      const latestCondition = toothConditions.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())[0]
 
-      for (const conditionType of priority) {
-        if (toothConditions.some((c) => c.condition === conditionType)) {
-          return dentalConditions[conditionType as keyof typeof dentalConditions].color
-        }
-      }
-
-      return dentalConditions.healthy.color
+      return dentalConditions[latestCondition.condition].bgColor
     },
     [getToothConditions],
   )
 
-  const handleSave = useCallback(() => {
-    onSave?.(conditions)
-  }, [conditions, onSave])
-
-  const filteredConditions = conditions.filter((condition) => {
-    const matchesSearch =
-      searchTerm === "" ||
-      condition.toothNumber.toString().includes(searchTerm) ||
-      dentalConditions[condition.condition].name.toLowerCase().includes(searchTerm.toLowerCase())
-
-    const matchesFilter = filterCondition === "all" || condition.condition === filterCondition
-
-    return matchesSearch && matchesFilter
-  })
-
-  const getConditionsByTab = (tab: string) => {
-    switch (tab) {
-      case "diagnosticos":
-        return filteredConditions.filter((c) => ["caries", "periodontal", "missing"].includes(c.condition))
-      case "sin-realizar":
-        return filteredConditions.filter((c) => ["extraction", "endodontics", "crown", "implant"].includes(c.condition))
-      case "realizados":
-        return filteredConditions.filter((c) => ["restoration", "bridge", "healthy"].includes(c.condition))
-      default:
-        return filteredConditions
-    }
+  const handleSurfaceToggle = (surface: string) => {
+    setSelectedSurfaces((prev) => (prev.includes(surface) ? prev.filter((s) => s !== surface) : [...prev, surface]))
   }
+
+  const handleSave = () => {
+    onSave?.(conditions)
+  }
+
+  const getConditionStats = () => {
+    const stats = Object.keys(dentalConditions).reduce(
+      (acc, condition) => {
+        acc[condition] = conditions.filter((c) => c.condition === condition).length
+        return acc
+      },
+      {} as Record<string, number>,
+    )
+    return stats
+  }
+
+  const filteredConditions = conditions.filter(
+    (c) =>
+      searchTerm === "" ||
+      c.toothNumber.toString().includes(searchTerm) ||
+      dentalConditions[c.condition].name.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   const ToothComponent = ({ toothNumber, isUpper }: { toothNumber: number; isUpper: boolean }) => {
     const toothConditions = getToothConditions(toothNumber)
-    const toothColor = getToothColor(toothNumber)
+    const backgroundColor = getToothColor(toothNumber)
     const isSelected = selectedTooth === toothNumber
 
     return (
@@ -178,292 +167,309 @@ export function ProfessionalOdontogram({
         <button
           onClick={() => handleToothClick(toothNumber)}
           className={`
-            relative w-8 h-12 rounded-lg border-2 transition-all duration-200 transform hover:scale-110
-            ${isSelected ? "border-blue-500 ring-2 ring-blue-200" : "border-gray-300"}
-            ${readOnly ? "cursor-default" : "cursor-pointer hover:shadow-md"}
+            w-8 h-10 rounded-lg border-2 transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-blue-500
+            ${isSelected ? "ring-2 ring-blue-500 ring-offset-1" : ""}
           `}
-          style={{ backgroundColor: toothColor + "20", borderColor: toothColor }}
-          disabled={readOnly}
+          style={{
+            backgroundColor,
+            borderColor:
+              toothConditions.length > 0 ? dentalConditions[toothConditions[0].condition].borderColor : "#d1d5db",
+          }}
         >
-          {/* Tooth surfaces visualization */}
-          <div className="absolute inset-1 grid grid-cols-3 grid-rows-4 gap-px">
-            {toothConditions.map((condition, index) => (
-              <div
-                key={index}
-                className="rounded-sm"
-                style={{ backgroundColor: dentalConditions[condition.condition].color }}
-                title={`${condition.surface}: ${dentalConditions[condition.condition].name}`}
-              />
-            ))}
-          </div>
-
-          {/* Tooth number overlay */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <span className="text-xs font-bold text-gray-700">{toothNumber}</span>
+          <div className="w-full h-full rounded-md flex items-center justify-center">
+            {toothConditions.length > 0 && <div className="w-2 h-2 rounded-full bg-current opacity-60"></div>}
           </div>
         </button>
+        <div className="grid grid-cols-3 gap-px text-xs">
+          {["M", "O", "D"].map((surface) => {
+            const hasCondition = toothConditions.some((c) => c.surface.toLowerCase().startsWith(surface.toLowerCase()))
+            return (
+              <div key={surface} className={`w-2 h-1 rounded-sm ${hasCondition ? "bg-gray-400" : "bg-gray-200"}`} />
+            )
+          })}
+        </div>
       </div>
     )
   }
 
   return (
-    <div className="w-full max-w-7xl mx-auto space-y-6">
+    <div className="w-full max-w-7xl mx-auto p-4 space-y-6">
       {/* Header */}
-      <Card className="medical-header">
-        <CardHeader className="pb-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
-                <User className="h-6 w-6 text-white" />
-              </div>
-              <div>
-                <CardTitle className="text-2xl text-white">{patientInfo.name}</CardTitle>
-                <div className="flex items-center space-x-4 text-blue-100">
-                  <span>ID: {patientInfo.id}</span>
-                  <span>Edad: {patientInfo.age} años</span>
-                  <span>Última visita: {patientInfo.lastVisit}</span>
-                </div>
-              </div>
+      <div className="medical-header rounded-lg p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <div className="w-12 h-12 bg-white/20 rounded-lg flex items-center justify-center">
+              <FileText className="w-6 h-6 text-white" />
             </div>
-            <div className="flex items-center space-x-2">
-              <Button variant="secondary" size="sm" className="no-print">
-                <Printer className="h-4 w-4 mr-2" />
-                Imprimir
-              </Button>
-              <Button variant="secondary" size="sm" className="no-print">
-                <Download className="h-4 w-4 mr-2" />
-                Exportar
-              </Button>
+            <div>
+              <h1 className="text-2xl font-bold text-white">Odontograma Digital</h1>
+              <p className="text-blue-100">Sistema de Diagnóstico Dental</p>
             </div>
           </div>
-        </CardHeader>
-      </Card>
+          <div className="flex items-center space-x-2">
+            <Button variant="secondary" size="sm" onClick={handleSave}>
+              <Save className="w-4 h-4 mr-2" />
+              Guardar
+            </Button>
+            <Button variant="secondary" size="sm">
+              <Print className="w-4 h-4 mr-2" />
+              Imprimir
+            </Button>
+          </div>
+        </div>
+      </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-4 gap-6">
-        {/* Main Odontogram */}
-        <div className="xl:col-span-3">
-          <Card className="medical-card">
-            <CardHeader className="pb-4">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center space-x-4">
-                  <Tabs value={activeTab} onValueChange={setActiveTab} className="w-auto">
-                    <TabsList className="grid w-full grid-cols-4">
-                      <TabsTrigger value="diagnosticos" className="text-sm">
-                        Diagnósticos
-                      </TabsTrigger>
-                      <TabsTrigger value="sin-realizar" className="text-sm">
-                        Sin Realizar
-                      </TabsTrigger>
-                      <TabsTrigger value="realizados" className="text-sm">
-                        Realizados
-                      </TabsTrigger>
-                      <TabsTrigger value="estadisticas" className="text-sm">
-                        Estadísticas
-                      </TabsTrigger>
-                    </TabsList>
-                  </Tabs>
-                </div>
-                <div className="flex items-center space-x-2 no-print">
-                  <Button variant="outline" size="sm" onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}>
-                    <ZoomOut className="h-4 w-4" />
-                  </Button>
-                  <span className="text-sm font-medium">{Math.round(zoom * 100)}%</span>
-                  <Button variant="outline" size="sm" onClick={() => setZoom(Math.min(2, zoom + 0.1))}>
-                    <ZoomIn className="h-4 w-4" />
-                  </Button>
-                  <Button variant="outline" size="sm" onClick={() => setZoom(1)}>
-                    <RotateCcw className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
+      <div className="grid lg:grid-cols-4 gap-6">
+        {/* Patient Information Panel */}
+        <div className="lg:col-span-1">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <User className="w-5 h-5" />
+                <span>Información del Paciente</span>
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div
-                className="space-y-8 transition-transform duration-200"
-                style={{ transform: `scale(${zoom})`, transformOrigin: "center top" }}
-              >
-                {/* Upper Teeth */}
-                <div className="space-y-4">
-                  <h3 className="text-lg font-semibold text-center text-gray-700">Arcada Superior</h3>
-                  <div className="flex justify-center">
-                    <div className="grid grid-cols-8 gap-4">
-                      {upperTeeth.slice(0, 8).map((tooth) => (
-                        <ToothComponent key={tooth} toothNumber={tooth} isUpper={true} />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex justify-center">
-                    <div className="grid grid-cols-8 gap-4">
-                      {upperTeeth.slice(8).map((tooth) => (
-                        <ToothComponent key={tooth} toothNumber={tooth} isUpper={true} />
-                      ))}
-                    </div>
-                  </div>
-                </div>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Nombre</Label>
+                <p className="font-semibold">{patientInfo.name}</p>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-600">Edad</Label>
+                <p>{patientInfo.age} años</p>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Phone className="w-4 h-4 text-gray-400" />
+                <span className="text-sm">{patientInfo.phone}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Mail className="w-4 h-4 text-gray-400" />
+                <span className="text-sm">{patientInfo.email}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MapPin className="w-4 h-4 text-gray-400" />
+                <span className="text-sm">{patientInfo.address}</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Calendar className="w-4 h-4 text-gray-400" />
+                <span className="text-sm">Última visita: {patientInfo.lastVisit}</span>
+              </div>
+            </CardContent>
+          </Card>
 
-                {/* Lower Teeth */}
-                <div className="space-y-4">
-                  <div className="flex justify-center">
-                    <div className="grid grid-cols-8 gap-4">
-                      {lowerTeeth.slice(0, 8).map((tooth) => (
-                        <ToothComponent key={tooth} toothNumber={tooth} isUpper={false} />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="flex justify-center">
-                    <div className="grid grid-cols-8 gap-4">
-                      {lowerTeeth.slice(8).map((tooth) => (
-                        <ToothComponent key={tooth} toothNumber={tooth} isUpper={false} />
-                      ))}
-                    </div>
-                  </div>
-                  <h3 className="text-lg font-semibold text-center text-gray-700">Arcada Inferior</h3>
-                </div>
+          {/* Condition Selector */}
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>Diagnóstico</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label>Condición</Label>
+                <Select
+                  value={selectedCondition}
+                  onValueChange={(value: keyof typeof dentalConditions) => setSelectedCondition(value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(dentalConditions).map(([key, condition]) => (
+                      <SelectItem key={key} value={key}>
+                        <div className="flex items-center space-x-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: condition.color }} />
+                          <span>{condition.name}</span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
 
-              {/* Legend */}
-              <div className="mt-8 p-4 bg-gray-50 rounded-lg">
-                <h4 className="font-semibold mb-3">Leyenda de Condiciones</h4>
-                <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
-                  {Object.entries(dentalConditions).map(([key, condition]) => (
-                    <div key={key} className="flex items-center space-x-2">
-                      <div className="w-4 h-4 rounded border" style={{ backgroundColor: condition.color }} />
-                      <span className="text-sm">{condition.name}</span>
+              <div>
+                <Label>Superficies</Label>
+                <div className="grid grid-cols-2 gap-2 mt-2">
+                  {toothSurfaces.map((surface) => (
+                    <div key={surface} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={surface}
+                        checked={selectedSurfaces.includes(surface)}
+                        onCheckedChange={() => handleSurfaceToggle(surface)}
+                      />
+                      <Label htmlFor={surface} className="text-sm capitalize">
+                        {surface}
+                      </Label>
                     </div>
                   ))}
                 </div>
               </div>
             </CardContent>
           </Card>
+
+          {/* Legend */}
+          <Card className="mt-4">
+            <CardHeader>
+              <CardTitle>Leyenda</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                {Object.entries(dentalConditions).map(([key, condition]) => (
+                  <div key={key} className="flex items-center space-x-2">
+                    <div
+                      className="w-4 h-4 rounded border"
+                      style={{
+                        backgroundColor: condition.bgColor,
+                        borderColor: condition.borderColor,
+                      }}
+                    />
+                    <span className="text-sm">{condition.name}</span>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
-        {/* Control Panel */}
-        <div className="space-y-6">
-          {/* Tooth Selection */}
-          {!readOnly && (
-            <Card className="medical-card">
-              <CardHeader>
-                <CardTitle className="text-lg">Control de Diagnóstico</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {selectedTooth && (
-                  <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
-                    <div className="font-semibold text-blue-900">Diente Seleccionado: {selectedTooth}</div>
-                  </div>
-                )}
-
-                <div className="space-y-2">
-                  <Label>Condición</Label>
-                  <Select
-                    value={selectedCondition}
-                    onValueChange={(value) => setSelectedCondition(value as keyof typeof dentalConditions)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {Object.entries(dentalConditions).map(([key, condition]) => (
-                        <SelectItem key={key} value={key}>
-                          <div className="flex items-center space-x-2">
-                            <div className="w-3 h-3 rounded border" style={{ backgroundColor: condition.color }} />
-                            <span>{condition.name}</span>
-                          </div>
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label>Superficies</Label>
-                  <div className="grid grid-cols-2 gap-2">
-                    {toothSurfaces.map((surface) => (
-                      <div key={surface} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={surface}
-                          checked={selectedSurfaces.includes(surface)}
-                          onCheckedChange={() => handleSurfaceToggle(surface)}
-                        />
-                        <Label htmlFor={surface} className="text-sm capitalize">
-                          {surface}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <Button
-                  onClick={applyCondition}
-                  disabled={!selectedTooth || selectedSurfaces.length === 0}
-                  className="w-full medical-button"
-                >
-                  Aplicar Condición
-                </Button>
-
-                <Button onClick={handleSave} variant="outline" className="w-full bg-transparent">
-                  <Save className="h-4 w-4 mr-2" />
-                  Guardar
-                </Button>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Conditions List */}
-          <Card className="medical-card">
+        {/* Main Odontogram */}
+        <div className="lg:col-span-3">
+          <Card>
             <CardHeader>
-              <CardTitle className="text-lg">Historial de Condiciones</CardTitle>
-              <div className="flex space-x-2">
-                <div className="relative flex-1">
-                  <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <Input
-                    placeholder="Buscar..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-8"
-                  />
+              <div className="flex items-center justify-between">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <TabsList className="grid w-full grid-cols-4">
+                    <TabsTrigger value="diagnosticos">Diagnósticos</TabsTrigger>
+                    <TabsTrigger value="sin_realizar">Sin Realizar</TabsTrigger>
+                    <TabsTrigger value="realizado">Realizados</TabsTrigger>
+                    <TabsTrigger value="estadisticas">Estadísticas</TabsTrigger>
+                  </TabsList>
+                </Tabs>
+                <div className="flex items-center space-x-2 ml-4">
+                  <Button variant="outline" size="sm" onClick={() => setZoom(Math.max(0.5, zoom - 0.1))}>
+                    <ZoomOut className="w-4 h-4" />
+                  </Button>
+                  <span className="text-sm font-medium">{Math.round(zoom * 100)}%</span>
+                  <Button variant="outline" size="sm" onClick={() => setZoom(Math.min(2, zoom + 0.1))}>
+                    <ZoomIn className="w-4 h-4" />
+                  </Button>
                 </div>
-                <Select value={filterCondition} onValueChange={setFilterCondition}>
-                  <SelectTrigger className="w-32">
-                    <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos</SelectItem>
-                    {Object.entries(dentalConditions).map(([key, condition]) => (
-                      <SelectItem key={key} value={key}>
-                        {condition.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
               </div>
             </CardHeader>
             <CardContent>
-              <ScrollArea className="h-96">
-                <div className="space-y-2">
-                  {getConditionsByTab(activeTab).map((condition, index) => (
-                    <div key={index} className="p-3 border rounded-lg hover:bg-gray-50">
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center space-x-3">
-                          <Badge
-                            variant="secondary"
-                            style={{
-                              backgroundColor: dentalConditions[condition.condition].bgColor,
-                              color: dentalConditions[condition.condition].textColor,
-                            }}
-                          >
-                            Diente {condition.toothNumber}
-                          </Badge>
-                          <span className="text-sm font-medium">{dentalConditions[condition.condition].name}</span>
-                        </div>
-                        <span className="text-xs text-gray-500">{condition.date}</span>
+              <Tabs value={activeTab} onValueChange={setActiveTab}>
+                <TabsContent value="diagnosticos" className="space-y-6">
+                  {/* Odontogram */}
+                  <div
+                    className="bg-gray-50 rounded-lg p-6"
+                    style={{ transform: `scale(${zoom})`, transformOrigin: "center top" }}
+                  >
+                    {/* Upper Teeth */}
+                    <div className="mb-8">
+                      <div className="text-center text-sm font-medium text-gray-600 mb-4">Arcada Superior</div>
+                      <div className="flex justify-center space-x-2">
+                        {upperTeeth.map((toothNumber) => (
+                          <ToothComponent key={toothNumber} toothNumber={toothNumber} isUpper={true} />
+                        ))}
                       </div>
-                      <div className="mt-1 text-xs text-gray-600 capitalize">Superficie: {condition.surface}</div>
-                      {condition.notes && <div className="mt-1 text-xs text-gray-600">{condition.notes}</div>}
                     </div>
-                  ))}
-                </div>
-              </ScrollArea>
+
+                    {/* Lower Teeth */}
+                    <div>
+                      <div className="text-center text-sm font-medium text-gray-600 mb-4">Arcada Inferior</div>
+                      <div className="flex justify-center space-x-2">
+                        {lowerTeeth.map((toothNumber) => (
+                          <ToothComponent key={toothNumber} toothNumber={toothNumber} isUpper={false} />
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="sin_realizar" className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Search className="w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="Buscar tratamientos pendientes..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="max-w-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    {filteredConditions
+                      .filter((c) => c.status === "sin_realizar")
+                      .map((condition, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-yellow-50 border border-yellow-200 rounded-lg"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <Badge variant="outline" className="bg-yellow-100">
+                              Diente {condition.toothNumber}
+                            </Badge>
+                            <span className="font-medium">{dentalConditions[condition.condition].name}</span>
+                            <span className="text-sm text-gray-600 capitalize">{condition.surface}</span>
+                          </div>
+                          <div className="text-sm text-gray-500">{condition.date}</div>
+                        </div>
+                      ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="realizado" className="space-y-4">
+                  <div className="flex items-center space-x-2">
+                    <Search className="w-4 h-4 text-gray-400" />
+                    <Input
+                      placeholder="Buscar tratamientos realizados..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="max-w-sm"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    {filteredConditions
+                      .filter((c) => c.status === "realizado")
+                      .map((condition, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <Badge variant="outline" className="bg-green-100">
+                              Diente {condition.toothNumber}
+                            </Badge>
+                            <span className="font-medium">{dentalConditions[condition.condition].name}</span>
+                            <span className="text-sm text-gray-600 capitalize">{condition.surface}</span>
+                          </div>
+                          <div className="text-sm text-gray-500">{condition.date}</div>
+                        </div>
+                      ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="estadisticas">
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    {Object.entries(getConditionStats()).map(([condition, count]) => (
+                      <Card key={condition}>
+                        <CardContent className="p-4">
+                          <div className="flex items-center space-x-3">
+                            <div
+                              className="w-4 h-4 rounded"
+                              style={{
+                                backgroundColor: dentalConditions[condition as keyof typeof dentalConditions].color,
+                              }}
+                            />
+                            <div>
+                              <p className="text-sm font-medium">
+                                {dentalConditions[condition as keyof typeof dentalConditions].name}
+                              </p>
+                              <p className="text-2xl font-bold">{count}</p>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
             </CardContent>
           </Card>
         </div>

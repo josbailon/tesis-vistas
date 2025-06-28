@@ -85,7 +85,7 @@ export default function StudentOdontogramPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="container mx-auto py-6 space-y-6">
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-3xl font-bold">Odontograma Digital</h1>
@@ -181,6 +181,9 @@ export default function StudentOdontogramPage() {
           <ProfessionalOdontogram patient={selectedPatient} onSave={handleSaveOdontogram} />
         </div>
       )}
+
+      {/* Professional Odontogram without patient selection */}
+      {!selectedPatient && <ProfessionalOdontogram />}
     </div>
   )
 }
