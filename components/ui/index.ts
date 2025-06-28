@@ -5,7 +5,18 @@ export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
 export { Tabs, TabsList, TabsTrigger, TabsContent } from "./tabs"
 export { Label } from "./label"
 export { Textarea } from "./textarea"
-export { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select"
+export {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+  SelectGroup,
+  SelectLabel,
+  SelectSeparator,
+  SelectScrollUpButton,
+  SelectScrollDownButton,
+} from "./select"
 export { Badge } from "./badge"
 export { Avatar, AvatarImage, AvatarFallback } from "./avatar"
 export { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "./dialog"
