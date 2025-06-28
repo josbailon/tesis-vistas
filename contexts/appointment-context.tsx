@@ -29,6 +29,7 @@ interface AppointmentContextType {
   deleteAppointment: (id: string) => void
   getAppointmentsByDate: (date: string) => Appointment[]
   getAppointmentsByStudent: (studentName: string) => Appointment[]
+  getAppointmentsByStatus: (status: string) => Appointment[]
 }
 
 const AppointmentContext = createContext<AppointmentContextType | undefined>(undefined)
@@ -46,8 +47,8 @@ export function AppointmentProvider({ children }: { children: React.ReactNode })
       time: "09:00",
       duration: "90",
       type: "tratamiento",
-      notes: "Tratamiento de conducto en molar superior derecho",
-      priority: "medium",
+      notes: "Tratamiento de conducto en molar superior derecho. Paciente presenta dolor severo.",
+      priority: "high",
       status: "programada",
       createdAt: "2024-12-28T10:00:00Z",
       studentName: "Juan Carlos Pérez Mendoza",
@@ -64,8 +65,8 @@ export function AppointmentProvider({ children }: { children: React.ReactNode })
       time: "14:30",
       duration: "60",
       type: "consulta",
-      notes: "Evaluación para brackets",
-      priority: "low",
+      notes: "Evaluación inicial para colocación de brackets. Primera consulta ortodóntica.",
+      priority: "medium",
       status: "confirmada",
       createdAt: "2024-12-28T11:00:00Z",
       studentName: "Ana María López Silva",
@@ -82,12 +83,48 @@ export function AppointmentProvider({ children }: { children: React.ReactNode })
       time: "08:00",
       duration: "120",
       type: "cirugia",
-      notes: "Extracción de muela del juicio",
+      notes: "Extracción quirúrgica de tercer molar inferior izquierdo impactado.",
       priority: "high",
       status: "programada",
       createdAt: "2024-12-28T12:00:00Z",
       studentName: "Pedro Antonio Silva Castro",
       specialty: "Cirugía Oral y Maxilofacial",
+    },
+    {
+      id: "4",
+      title: "Periodoncia - Roberto Díaz",
+      patientName: "Roberto Díaz Castro",
+      patientPhone: "+593 99 456 7890",
+      patientEmail: "roberto.diaz@email.com",
+      patientCedula: "4567890123",
+      date: "2024-12-31",
+      time: "10:00",
+      duration: "75",
+      type: "tratamiento",
+      notes: "Raspado y alisado radicular. Paciente con periodontitis crónica.",
+      priority: "medium",
+      status: "programada",
+      createdAt: "2024-12-28T13:00:00Z",
+      studentName: "Carmen Elena Torres Vera",
+      specialty: "Periodoncia",
+    },
+    {
+      id: "5",
+      title: "Odontopediatría - Sofía Herrera",
+      patientName: "Sofía Herrera Alava",
+      patientPhone: "+593 99 567 8901",
+      patientEmail: "sofia.herrera@email.com",
+      patientCedula: "5678901234",
+      date: "2025-01-02",
+      time: "09:30",
+      duration: "45",
+      type: "consulta",
+      notes: "Control dental pediátrico. Paciente de 8 años, primera visita.",
+      priority: "low",
+      status: "programada",
+      createdAt: "2024-12-28T14:00:00Z",
+      studentName: "Luis Fernando Morales Ponce",
+      specialty: "Odontopediatría",
     },
   ])
 
@@ -113,6 +150,10 @@ export function AppointmentProvider({ children }: { children: React.ReactNode })
     return appointments.filter((appointment) => appointment.studentName === studentName)
   }
 
+  const getAppointmentsByStatus = (status: string) => {
+    return appointments.filter((appointment) => appointment.status === status)
+  }
+
   return (
     <AppointmentContext.Provider
       value={{
@@ -122,6 +163,7 @@ export function AppointmentProvider({ children }: { children: React.ReactNode })
         deleteAppointment,
         getAppointmentsByDate,
         getAppointmentsByStudent,
+        getAppointmentsByStatus,
       }}
     >
       {children}

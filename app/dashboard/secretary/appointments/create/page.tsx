@@ -13,7 +13,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { useToast } from "@/hooks/use-toast"
 import { useAppointments } from "@/contexts/appointment-context"
-import { CalendarIcon, Clock, User, Stethoscope, ArrowLeft, Plus } from "lucide-react"
+import { CalendarIcon, Clock, User, Stethoscope, ArrowLeft, Plus, Phone, Mail, MapPin } from "lucide-react"
 import { format } from "date-fns"
 import { es } from "date-fns/locale"
 import { cn } from "@/lib/utils"
@@ -26,6 +26,8 @@ interface Patient {
   email: string
   age: number
   address: string
+  emergencyContact?: string
+  emergencyPhone?: string
 }
 
 interface Student {
@@ -35,7 +37,9 @@ interface Student {
   semester: number
   email: string
   phone: string
-  experience: string
+  experience: "Básico" | "Intermedio" | "Avanzado"
+  gpa: number
+  completedCases: number
 }
 
 interface Specialty {
@@ -44,9 +48,10 @@ interface Specialty {
   duration: number
   description: string
   requirements: string[]
+  professor: string
 }
 
-export default function CreateAppointment() {
+export default function CreateAppointmentPage() {
   const router = useRouter()
   const { toast } = useToast()
   const { addAppointment } = useAppointments()
@@ -76,10 +81,12 @@ export default function CreateAppointment() {
     email: "",
     age: "",
     address: "",
+    emergencyContact: "",
+    emergencyPhone: "",
   })
 
-  // Datos expandidos de pacientes
-  const patients: Patient[] = [
+  // Enhanced patients data
+  const [patients, setPatients] = useState<Patient[]>([
     {
       id: "1",
       name: "María González Pérez",
@@ -88,6 +95,8 @@ export default function CreateAppointment() {
       email: "maria.gonzalez@email.com",
       age: 28,
       address: "Av. Universitaria 123, Manta",
+      emergencyContact: "Carlos González",
+      emergencyPhone: "+593 99 123 0000",
     },
     {
       id: "2",
@@ -97,6 +106,8 @@ export default function CreateAppointment() {
       email: "carlos.ruiz@email.com",
       age: 35,
       address: "Calle 24 de Mayo 456, Manta",
+      emergencyContact: "Ana Ruiz",
+      emergencyPhone: "+593 99 234 0000",
     },
     {
       id: "3",
@@ -106,6 +117,8 @@ export default function CreateAppointment() {
       email: "laura.martinez@email.com",
       age: 22,
       address: "Barrio Los Almendros, Manta",
+      emergencyContact: "Pedro Martínez",
+      emergencyPhone: "+593 99 345 0000",
     },
     {
       id: "4",
@@ -115,6 +128,8 @@ export default function CreateAppointment() {
       email: "roberto.diaz@email.com",
       age: 45,
       address: "Ciudadela El Palmar, Manta",
+      emergencyContact: "Carmen Díaz",
+      emergencyPhone: "+593 99 456 0000",
     },
     {
       id: "5",
@@ -124,6 +139,8 @@ export default function CreateAppointment() {
       email: "ana.rodriguez@email.com",
       age: 31,
       address: "Av. Flavio Reyes 789, Manta",
+      emergencyContact: "Luis Rodríguez",
+      emergencyPhone: "+593 99 567 0000",
     },
     {
       id: "6",
@@ -133,6 +150,8 @@ export default function CreateAppointment() {
       email: "pedro.morales@email.com",
       age: 38,
       address: "Barrio Jocay, Manta",
+      emergencyContact: "Rosa Morales",
+      emergencyPhone: "+593 99 678 0000",
     },
     {
       id: "7",
@@ -142,6 +161,8 @@ export default function CreateAppointment() {
       email: "carmen.torres@email.com",
       age: 26,
       address: "Ciudadela Miraflores, Manta",
+      emergencyContact: "Miguel Torres",
+      emergencyPhone: "+593 99 789 0000",
     },
     {
       id: "8",
@@ -151,70 +172,85 @@ export default function CreateAppointment() {
       email: "luis.herrera@email.com",
       age: 42,
       address: "Av. 4 de Noviembre, Manta",
+      emergencyContact: "María Herrera",
+      emergencyPhone: "+593 99 890 0000",
     },
-  ]
+  ])
 
-  // Datos expandidos de especialidades
+  // Enhanced specialties data
   const specialties: Specialty[] = [
     {
       id: "1",
       name: "Endodoncia",
       duration: 90,
       description: "Tratamiento de conductos radiculares y terapia pulpar",
-      requirements: ["Radiografías periapicales", "Pruebas de vitalidad pulpar"],
+      requirements: ["Radiografías periapicales", "Pruebas de vitalidad pulpar", "Historia clínica completa"],
+      professor: "Dr. Carlos Mendoza Ruiz",
     },
     {
       id: "2",
       name: "Ortodoncia",
       duration: 60,
       description: "Corrección de la posición dental y maloclusiones",
-      requirements: ["Radiografías panorámicas", "Modelos de estudio", "Fotografías clínicas"],
+      requirements: ["Radiografías panorámicas", "Modelos de estudio", "Fotografías clínicas", "Cefalometría"],
+      professor: "Dra. Laura Martín Silva",
     },
     {
       id: "3",
       name: "Cirugía Oral y Maxilofacial",
       duration: 120,
       description: "Extracciones dentales y procedimientos quirúrgicos orales",
-      requirements: ["Radiografías panorámicas", "Evaluación preoperatoria", "Consentimiento informado"],
+      requirements: [
+        "Radiografías panorámicas",
+        "Evaluación preoperatoria",
+        "Consentimiento informado",
+        "Exámenes de laboratorio",
+      ],
+      professor: "Dr. Roberto Silva Castro",
     },
     {
       id: "4",
       name: "Periodoncia",
       duration: 75,
       description: "Tratamiento de enfermedades de las encías y tejidos de soporte",
-      requirements: ["Radiografías periapicales", "Sondaje periodontal"],
+      requirements: ["Radiografías periapicales", "Sondaje periodontal", "Índices periodontales"],
+      professor: "Dra. Elena Vásquez Torres",
     },
     {
       id: "5",
       name: "Odontopediatría",
       duration: 45,
       description: "Atención dental especializada para niños y adolescentes",
-      requirements: ["Acompañante adulto", "Historial médico pediátrico"],
+      requirements: ["Acompañante adulto", "Historial médico pediátrico", "Autorización parental"],
+      professor: "Dr. Miguel Cedeño Loor",
     },
     {
       id: "6",
       name: "Prostodoncia",
       duration: 90,
       description: "Rehabilitación oral con prótesis dentales",
-      requirements: ["Impresiones dentales", "Radiografías panorámicas"],
+      requirements: ["Impresiones dentales", "Radiografías panorámicas", "Análisis oclusal"],
+      professor: "Dra. Patricia Zambrano Vera",
     },
     {
       id: "7",
       name: "Odontología Estética",
       duration: 60,
       description: "Tratamientos estéticos y blanqueamiento dental",
-      requirements: ["Fotografías clínicas", "Evaluación del color dental"],
+      requirements: ["Fotografías clínicas", "Evaluación del color dental", "Consentimiento estético"],
+      professor: "Dr. Andrés Castillo Bravo",
     },
     {
       id: "8",
       name: "Implantología",
       duration: 150,
       description: "Colocación de implantes dentales",
-      requirements: ["Tomografía computarizada", "Evaluación ósea", "Consentimiento informado"],
+      requirements: ["Tomografía computarizada", "Evaluación ósea", "Consentimiento informado", "Exámenes médicos"],
+      professor: "Dr. Diego Vega Santos",
     },
   ]
 
-  // Datos expandidos de estudiantes
+  // Enhanced students data
   const students: Student[] = [
     {
       id: "1",
@@ -224,6 +260,8 @@ export default function CreateAppointment() {
       email: "juan.perez@uleam.edu.ec",
       phone: "+593 99 111 2222",
       experience: "Avanzado",
+      gpa: 8.5,
+      completedCases: 25,
     },
     {
       id: "2",
@@ -233,6 +271,8 @@ export default function CreateAppointment() {
       email: "ana.lopez@uleam.edu.ec",
       phone: "+593 99 222 3333",
       experience: "Intermedio",
+      gpa: 9.2,
+      completedCases: 18,
     },
     {
       id: "3",
@@ -242,6 +282,8 @@ export default function CreateAppointment() {
       email: "pedro.silva@uleam.edu.ec",
       phone: "+593 99 333 4444",
       experience: "Avanzado",
+      gpa: 8.8,
+      completedCases: 32,
     },
     {
       id: "4",
@@ -251,6 +293,8 @@ export default function CreateAppointment() {
       email: "carmen.torres@uleam.edu.ec",
       phone: "+593 99 444 5555",
       experience: "Intermedio",
+      gpa: 8.1,
+      completedCases: 12,
     },
     {
       id: "5",
@@ -260,6 +304,8 @@ export default function CreateAppointment() {
       email: "luis.morales@uleam.edu.ec",
       phone: "+593 99 555 6666",
       experience: "Básico",
+      gpa: 7.8,
+      completedCases: 8,
     },
     {
       id: "6",
@@ -269,6 +315,8 @@ export default function CreateAppointment() {
       email: "maria.herrera@uleam.edu.ec",
       phone: "+593 99 666 7777",
       experience: "Avanzado",
+      gpa: 9.0,
+      completedCases: 28,
     },
     {
       id: "7",
@@ -278,6 +326,8 @@ export default function CreateAppointment() {
       email: "roberto.diaz@uleam.edu.ec",
       phone: "+593 99 777 8888",
       experience: "Intermedio",
+      gpa: 8.3,
+      completedCases: 20,
     },
     {
       id: "8",
@@ -287,6 +337,8 @@ export default function CreateAppointment() {
       email: "laura.rodriguez@uleam.edu.ec",
       phone: "+593 99 888 9999",
       experience: "Avanzado",
+      gpa: 9.1,
+      completedCases: 30,
     },
     {
       id: "9",
@@ -296,6 +348,8 @@ export default function CreateAppointment() {
       email: "diego.vega@uleam.edu.ec",
       phone: "+593 99 999 0000",
       experience: "Intermedio",
+      gpa: 8.4,
+      completedCases: 15,
     },
     {
       id: "10",
@@ -305,6 +359,8 @@ export default function CreateAppointment() {
       email: "sofia.munoz@uleam.edu.ec",
       phone: "+593 99 000 1111",
       experience: "Avanzado",
+      gpa: 9.3,
+      completedCases: 35,
     },
     {
       id: "11",
@@ -314,6 +370,8 @@ export default function CreateAppointment() {
       email: "andres.castillo@uleam.edu.ec",
       phone: "+593 99 111 0000",
       experience: "Avanzado",
+      gpa: 8.7,
+      completedCases: 29,
     },
     {
       id: "12",
@@ -323,6 +381,8 @@ export default function CreateAppointment() {
       email: "valeria.zambrano@uleam.edu.ec",
       phone: "+593 99 222 1111",
       experience: "Básico",
+      gpa: 8.0,
+      completedCases: 10,
     },
   ]
 
@@ -387,6 +447,26 @@ export default function CreateAppointment() {
       return
     }
 
+    // Validate cedula format (10 digits)
+    if (!/^\d{10}$/.test(newPatient.cedula)) {
+      toast({
+        title: "Error",
+        description: "La cédula debe tener 10 dígitos",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Check if cedula already exists
+    if (patients.some((p) => p.cedula === newPatient.cedula)) {
+      toast({
+        title: "Error",
+        description: "Ya existe un paciente con esta cédula",
+        variant: "destructive",
+      })
+      return
+    }
+
     const patient: Patient = {
       id: Date.now().toString(),
       name: newPatient.name,
@@ -395,12 +475,11 @@ export default function CreateAppointment() {
       email: newPatient.email,
       age: Number.parseInt(newPatient.age) || 0,
       address: newPatient.address,
+      emergencyContact: newPatient.emergencyContact,
+      emergencyPhone: newPatient.emergencyPhone,
     }
 
-    // Add to patients list (in real app, this would be an API call)
-    patients.push(patient)
-
-    // Select the new patient
+    setPatients((prev) => [...prev, patient])
     handlePatientSelect(patient.id)
     setShowNewPatientForm(false)
     setNewPatient({
@@ -410,6 +489,8 @@ export default function CreateAppointment() {
       email: "",
       age: "",
       address: "",
+      emergencyContact: "",
+      emergencyPhone: "",
     })
 
     toast({
@@ -513,10 +594,15 @@ export default function CreateAppointment() {
                       <SelectContent>
                         {patients.map((patient) => (
                           <SelectItem key={patient.id} value={patient.id}>
-                            <div>
+                            <div className="flex flex-col">
                               <div className="font-medium">{patient.name}</div>
-                              <div className="text-sm text-gray-500">
-                                CI: {patient.cedula} • {patient.age} años
+                              <div className="text-sm text-gray-500 flex items-center gap-2">
+                                <span>CI: {patient.cedula}</span>
+                                <span>•</span>
+                                <span>{patient.age} años</span>
+                                <span>•</span>
+                                <Phone className="h-3 w-3" />
+                                <span>{patient.phone}</span>
                               </div>
                             </div>
                           </SelectItem>
@@ -526,14 +612,24 @@ export default function CreateAppointment() {
                   </div>
 
                   {formData.patientId && (
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <Label>Teléfono</Label>
-                        <Input value={formData.patientPhone} readOnly />
-                      </div>
-                      <div>
-                        <Label>Email</Label>
-                        <Input value={formData.patientEmail} readOnly />
+                    <div className="bg-blue-50 p-4 rounded-lg space-y-2">
+                      <h4 className="font-medium text-blue-900">Información del Paciente</h4>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <div className="flex items-center gap-1">
+                          <Phone className="h-3 w-3 text-blue-600" />
+                          <span>{formData.patientPhone}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <Mail className="h-3 w-3 text-blue-600" />
+                          <span>{formData.patientEmail}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <MapPin className="h-3 w-3 text-blue-600" />
+                          <span>{patients.find((p) => p.id === formData.patientId)?.address}</span>
+                        </div>
+                        <div className="text-blue-700">
+                          <span>Emergencia: {patients.find((p) => p.id === formData.patientId)?.emergencyContact}</span>
+                        </div>
                       </div>
                     </div>
                   )}
@@ -571,6 +667,7 @@ export default function CreateAppointment() {
                         value={newPatient.cedula}
                         onChange={(e) => setNewPatient({ ...newPatient, cedula: e.target.value })}
                         placeholder="1234567890"
+                        maxLength={10}
                       />
                     </div>
                     <div>
@@ -584,6 +681,7 @@ export default function CreateAppointment() {
                     <div>
                       <Label>Email</Label>
                       <Input
+                        type="email"
                         value={newPatient.email}
                         onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
                         placeholder="email@ejemplo.com"
@@ -596,6 +694,8 @@ export default function CreateAppointment() {
                         value={newPatient.age}
                         onChange={(e) => setNewPatient({ ...newPatient, age: e.target.value })}
                         placeholder="25"
+                        min="1"
+                        max="120"
                       />
                     </div>
                     <div>
@@ -604,6 +704,22 @@ export default function CreateAppointment() {
                         value={newPatient.address}
                         onChange={(e) => setNewPatient({ ...newPatient, address: e.target.value })}
                         placeholder="Dirección completa"
+                      />
+                    </div>
+                    <div>
+                      <Label>Contacto de Emergencia</Label>
+                      <Input
+                        value={newPatient.emergencyContact}
+                        onChange={(e) => setNewPatient({ ...newPatient, emergencyContact: e.target.value })}
+                        placeholder="Nombre del contacto"
+                      />
+                    </div>
+                    <div>
+                      <Label>Teléfono de Emergencia</Label>
+                      <Input
+                        value={newPatient.emergencyPhone}
+                        onChange={(e) => setNewPatient({ ...newPatient, emergencyPhone: e.target.value })}
+                        placeholder="+593 99 123 4567"
                       />
                     </div>
                   </div>
@@ -634,17 +750,34 @@ export default function CreateAppointment() {
                   <SelectContent>
                     {specialties.map((specialty) => (
                       <SelectItem key={specialty.id} value={specialty.id}>
-                        <div>
+                        <div className="flex flex-col">
                           <div className="font-medium">{specialty.name}</div>
                           <div className="text-sm text-gray-500">
-                            Duración: {specialty.duration} min • {specialty.description}
+                            {specialty.duration} min • Prof. {specialty.professor}
                           </div>
+                          <div className="text-xs text-gray-400">{specialty.description}</div>
                         </div>
                       </SelectItem>
                     ))}
                   </SelectContent>
                 </Select>
               </div>
+
+              {formData.specialtyId && (
+                <div className="bg-purple-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-purple-900">Requisitos de la Especialidad</h4>
+                  <ul className="text-sm text-purple-700 mt-2 space-y-1">
+                    {specialties
+                      .find((s) => s.id === formData.specialtyId)
+                      ?.requirements.map((req, index) => (
+                        <li key={index} className="flex items-center gap-2">
+                          <div className="w-1 h-1 bg-purple-600 rounded-full" />
+                          {req}
+                        </li>
+                      ))}
+                  </ul>
+                </div>
+              )}
 
               <div>
                 <Label htmlFor="student">Estudiante *</Label>
@@ -663,10 +796,20 @@ export default function CreateAppointment() {
                   <SelectContent>
                     {getFilteredStudents().map((student) => (
                       <SelectItem key={student.id} value={student.id}>
-                        <div>
+                        <div className="flex flex-col">
                           <div className="font-medium">{student.name}</div>
-                          <div className="text-sm text-gray-500">
-                            {student.semester}° Semestre • {student.experience} • {student.phone}
+                          <div className="text-sm text-gray-500 flex items-center gap-2">
+                            <span>{student.semester}° Semestre</span>
+                            <span>•</span>
+                            <span>{student.experience}</span>
+                            <span>•</span>
+                            <span>GPA: {student.gpa}</span>
+                          </div>
+                          <div className="text-xs text-gray-400 flex items-center gap-2">
+                            <Phone className="h-3 w-3" />
+                            <span>{student.phone}</span>
+                            <span>•</span>
+                            <span>{student.completedCases} casos completados</span>
                           </div>
                         </div>
                       </SelectItem>
@@ -674,6 +817,22 @@ export default function CreateAppointment() {
                   </SelectContent>
                 </Select>
               </div>
+
+              {formData.studentId && (
+                <div className="bg-green-50 p-4 rounded-lg">
+                  <h4 className="font-medium text-green-900">Estudiante Seleccionado</h4>
+                  {(() => {
+                    const student = students.find((s) => s.id === formData.studentId)
+                    return student ? (
+                      <div className="text-sm text-green-700 mt-2 space-y-1">
+                        <div>Email: {student.email}</div>
+                        <div>Experiencia: {student.experience}</div>
+                        <div>Casos completados: {student.completedCases}</div>
+                      </div>
+                    ) : null
+                  })()}
+                </div>
+              )}
             </CardContent>
           </Card>
 
@@ -710,12 +869,16 @@ export default function CreateAppointment() {
                       disabled={(date) => {
                         const today = new Date()
                         today.setHours(0, 0, 0, 0)
-                        return date < today || date.getDay() === 0 || date.getDay() === 6
+                        const dayOfWeek = date.getDay()
+                        // Disable past dates, weekends (Sunday = 0, Saturday = 6)
+                        return date < today || dayOfWeek === 0 || dayOfWeek === 6
                       }}
                       initialFocus
+                      locale={es}
                     />
                   </PopoverContent>
                 </Popover>
+                <p className="text-xs text-gray-500 mt-1">Solo días laborables (lunes a viernes)</p>
               </div>
 
               <div>
@@ -756,6 +919,7 @@ export default function CreateAppointment() {
                       <SelectItem value="emergencia">Emergencia</SelectItem>
                       <SelectItem value="seguimiento">Seguimiento</SelectItem>
                       <SelectItem value="control">Control</SelectItem>
+                      <SelectItem value="cirugia">Cirugía</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -777,6 +941,18 @@ export default function CreateAppointment() {
                   </Select>
                 </div>
               </div>
+
+              <div>
+                <Label>Duración Estimada (minutos)</Label>
+                <Input
+                  type="number"
+                  value={formData.duration}
+                  onChange={(e) => setFormData((prev) => ({ ...prev, duration: e.target.value }))}
+                  min="15"
+                  max="240"
+                  step="15"
+                />
+              </div>
             </CardContent>
           </Card>
 
@@ -791,7 +967,7 @@ export default function CreateAppointment() {
                 <Label htmlFor="notes">Observaciones</Label>
                 <Textarea
                   id="notes"
-                  placeholder="Escribe cualquier información adicional sobre la cita..."
+                  placeholder="Escribe cualquier información adicional sobre la cita, síntomas del paciente, preparación especial requerida, etc."
                   value={formData.notes}
                   onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
                   rows={4}
