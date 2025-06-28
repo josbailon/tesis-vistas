@@ -3,9 +3,17 @@
 import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
 import { Save, RotateCcw, User } from "lucide-react"
 
@@ -73,7 +81,7 @@ export default function StudentOdontogramPage() {
   // Initialize tooth data
   const [teethData, setTeethData] = useState<{ [key: number]: ToothData }>(() => {
     const initialData: { [key: number]: ToothData } = {}
-    
+
     // Adult teeth (1-32)
     for (let i = 1; i <= 32; i++) {
       initialData[i] = {
@@ -90,7 +98,7 @@ export default function StudentOdontogramPage() {
         },
       }
     }
-    
+
     // Deciduous teeth (51-85)
     for (let i = 51; i <= 85; i++) {
       initialData[i] = {
@@ -107,7 +115,7 @@ export default function StudentOdontogramPage() {
         },
       }
     }
-    
+
     return initialData
   })
 
@@ -129,7 +137,7 @@ export default function StudentOdontogramPage() {
           date: new Date().toISOString(),
         },
       }))
-      
+
       toast({
         title: "Condición aplicada",
         description: `Diente ${toothNumber}: ${conditions.find((c) => c.id === selectedCondition)?.name}`,
@@ -152,7 +160,7 @@ export default function StudentOdontogramPage() {
           date: new Date().toISOString(),
         },
       }))
-      
+
       toast({
         title: "Detalles guardados",
         description: `Información del diente ${selectedTooth} actualizada`,
@@ -165,7 +173,7 @@ export default function StudentOdontogramPage() {
 
   const handleResetOdontogram = () => {
     const resetData: { [key: number]: ToothData } = {}
-    
+
     // Reset all teeth
     for (let i = 1; i <= 32; i++) {
       resetData[i] = {
@@ -182,7 +190,7 @@ export default function StudentOdontogramPage() {
         },
       }
     }
-    
+
     for (let i = 51; i <= 85; i++) {
       resetData[i] = {
         number: i,
@@ -198,7 +206,7 @@ export default function StudentOdontogramPage() {
         },
       }
     }
-    
+
     setTeethData(resetData)
     toast({
       title: "Odontograma reiniciado",
@@ -225,9 +233,9 @@ export default function StudentOdontogramPage() {
 
   const renderTooth = (toothNumber: number, position: { top: string; left: string }) => {
     const isDeciduousTooth = toothNumber >= 51
-    const shouldShow = 
-      odontogramMode === "adult" && !isDeciduousTooth ||
-      odontogramMode === "child" && isDeciduousTooth ||
+    const shouldShow =
+      (odontogramMode === "adult" && !isDeciduousTooth) ||
+      (odontogramMode === "child" && isDeciduousTooth) ||
       odontogramMode === "mixed"
 
     if (!shouldShow) return null
@@ -261,7 +269,7 @@ export default function StudentOdontogramPage() {
     13: { top: "20%", left: "40%" },
     12: { top: "20%", left: "45%" },
     11: { top: "20%", left: "50%" },
-    
+
     // Upper left quadrant (21-28)
     21: { top: "20%", left: "55%" },
     22: { top: "20%", left: "60%" },
@@ -271,7 +279,7 @@ export default function StudentOdontogramPage() {
     26: { top: "20%", left: "80%" },
     27: { top: "20%", left: "85%" },
     28: { top: "20%", left: "90%" },
-    
+
     // Lower left quadrant (31-38)
     31: { top: "80%", left: "50%" },
     32: { top: "80%", left: "45%" },
@@ -281,7 +289,7 @@ export default function StudentOdontogramPage() {
     36: { top: "80%", left: "25%" },
     37: { top: "80%", left: "20%" },
     38: { top: "80%", left: "15%" },
-    
+
     // Lower right quadrant (41-48)
     41: { top: "80%", left: "55%" },
     42: { top: "80%", left: "60%" },
@@ -301,21 +309,21 @@ export default function StudentOdontogramPage() {
     53: { top: "35%", left: "40%" },
     52: { top: "35%", left: "45%" },
     51: { top: "35%", left: "50%" },
-    
+
     // Upper left quadrant (61-65)
     61: { top: "35%", left: "55%" },
     62: { top: "35%", left: "60%" },
     63: { top: "35%", left: "65%" },
     64: { top: "35%", left: "70%" },
     65: { top: "35%", left: "75%" },
-    
+
     // Lower left quadrant (71-75)
     71: { top: "65%", left: "50%" },
     72: { top: "65%", left: "45%" },
     73: { top: "65%", left: "40%" },
     74: { top: "65%", left: "30%" },
     75: { top: "65%", left: "25%" },
-    
+
     // Lower right quadrant (81-85)
     81: { top: "65%", left: "55%" },
     82: { top: "65%", left: "60%" },
@@ -382,7 +390,10 @@ export default function StudentOdontogramPage() {
             </div>
             <div>
               <Label>Modo de Dentición</Label>
-              <Select value={odontogramMode} onValueChange={(value: "adult" | "child" | "mixed") => setOdontogramMode(value)}>
+              <Select
+                value={odontogramMode}
+                onValueChange={(value: "adult" | "child" | "mixed") => setOdontogramMode(value)}
+              >
                 <SelectTrigger className="w-40">
                   <SelectValue />
                 </SelectTrigger>
@@ -446,9 +457,7 @@ export default function StudentOdontogramPage() {
                   className="w-4 h-4 border border-gray-300 rounded-sm"
                   style={{ backgroundColor: conditions.find((c) => c.id === selectedCondition)?.color }}
                 />
-                <span className="font-medium">
-                  {conditions.find((c) => c.id === selectedCondition)?.name}:
-                </span>
+                <span className="font-medium">{conditions.find((c) => c.id === selectedCondition)?.name}:</span>
                 <span className="text-sm text-gray-600">
                   {conditions.find((c) => c.id === selectedCondition)?.description}
                 </span>
@@ -462,35 +471,35 @@ export default function StudentOdontogramPage() {
       <Card>
         <CardHeader>
           <CardTitle>Odontograma Interactivo</CardTitle>
-          <CardDescription>
-            Haz clic en un diente para aplicar la condición seleccionada o ver detalles
-          </CardDescription>
+          <CardDescription>Haz clic en un diente para aplicar la condición seleccionada o ver detalles</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="relative w-full h-96 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             {/* Adult teeth */}
             {Object.entries(adultToothPositions).map(([toothNumber, position]) =>
-              renderTooth(Number.parseInt(toothNumber), position)
+              renderTooth(Number.parseInt(toothNumber), position),
             )}
-            
+
             {/* Deciduous teeth */}
             {Object.entries(deciduousToothPositions).map(([toothNumber, position]) =>
-              renderTooth(Number.parseInt(toothNumber), position)
+              renderTooth(Number.parseInt(toothNumber), position),
             )}
-            
+
             {/* Quadrant labels */}
             <div className="absolute top-4 left-4 text-sm font-medium text-gray-500">Cuadrante 2</div>
             <div className="absolute top-4 right-4 text-sm font-medium text-gray-500">Cuadrante 1</div>
             <div className="absolute bottom-4 left-4 text-sm font-medium text-gray-500">Cuadrante 3</div>
             <div className="absolute bottom-4 right-4 text-sm font-medium text-gray-500">Cuadrante 4</div>
-            
+
             {/* Center line */}
             <div className="absolute top-0 bottom-0 left-1/2 w-px bg-gray-300 transform -translate-x-1/2" />
             <div className="absolute left-0 right-0 top-1/2 h-px bg-gray-300 transform -translate-y-1/2" />
           </div>
-          
+
           <div className="mt-4 text-sm text-gray-600">
-            <p><strong>Instrucciones:</strong></p>
+            <p>
+              <strong>Instrucciones:</strong>
+            </p>
             <ul className="list-disc list-inside space-y-1">
               <li>Selecciona una condición dental de la lista superior</li>
               <li>Haz clic en un diente para aplicar la condición</li>
@@ -549,7 +558,7 @@ export default function StudentOdontogramPage() {
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <Label className="text-sm font-medium">Cambiar Condición</Label>
                 <Select
@@ -583,4 +592,36 @@ export default function StudentOdontogramPage() {
                       </SelectItem>
                     ))}
                   </SelectContent>
-                </Select>\
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="tooth-notes">Notas y Observaciones</Label>
+                <Textarea
+                  id="tooth-notes"
+                  placeholder="Escribe observaciones sobre este diente..."
+                  value={toothNotes}
+                  onChange={(e) => setToothNotes(e.target.value)}
+                  rows={4}
+                />
+              </div>
+
+              <div>
+                <Label className="text-sm font-medium">Última Modificación</Label>
+                <p className="text-sm text-gray-600">
+                  {new Date(teethData[selectedTooth]?.date || "").toLocaleString("es-ES")}
+                </p>
+              </div>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsToothDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveToothDetails}>Guardar Detalles</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}
