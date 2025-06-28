@@ -6,9 +6,21 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Search, Eye, GraduationCap, Mail, Phone, MapPin, Calendar, BookOpen, Award, Star } from "lucide-react"
+import {
+  Search,
+  GraduationCap,
+  Mail,
+  Phone,
+  MapPin,
+  Award,
+  BookOpen,
+  Star,
+  Calendar,
+  User,
+  Filter,
+  Users,
+  TrendingUp,
+} from "lucide-react"
 
 interface Student {
   id: string
@@ -20,16 +32,17 @@ interface Student {
   experience: "Básico" | "Intermedio" | "Avanzado"
   gpa: number
   completedCases: number
-  address: string
   enrollmentDate: string
+  profileImage?: string
+  achievements: string[]
+  interests: string[]
 }
 
 export default function StudentsPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [specialtyFilter, setSpecialtyFilter] = useState("all")
   const [semesterFilter, setSemesterFilter] = useState("all")
-  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null)
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [experienceFilter, setExperienceFilter] = useState("all")
 
   const students: Student[] = [
     {
@@ -42,8 +55,9 @@ export default function StudentsPage() {
       experience: "Avanzado",
       gpa: 8.5,
       completedCases: 25,
-      address: "Av. Universitaria 123, Manta",
       enrollmentDate: "2020-09-01",
+      achievements: ["Mejor Promedio 2023", "Caso Clínico Destacado"],
+      interests: ["Investigación", "Tecnología Dental", "Docencia"],
     },
     {
       id: "2",
@@ -55,8 +69,9 @@ export default function StudentsPage() {
       experience: "Intermedio",
       gpa: 9.2,
       completedCases: 18,
-      address: "Calle 24 de Mayo 456, Manta",
       enrollmentDate: "2021-03-01",
+      achievements: ["Excelencia Académica", "Liderazgo Estudiantil"],
+      interests: ["Ortodoncia Invisible", "Biomecánica", "Estética Dental"],
     },
     {
       id: "3",
@@ -68,8 +83,9 @@ export default function StudentsPage() {
       experience: "Avanzado",
       gpa: 8.8,
       completedCases: 32,
-      address: "Barrio Los Almendros, Manta",
       enrollmentDate: "2019-09-01",
+      achievements: ["Cirujano Destacado", "Investigación Clínica"],
+      interests: ["Implantología", "Cirugía Reconstructiva", "Anestesiología"],
     },
     {
       id: "4",
@@ -81,8 +97,9 @@ export default function StudentsPage() {
       experience: "Intermedio",
       gpa: 8.1,
       completedCases: 12,
-      address: "Ciudadela El Palmar, Manta",
       enrollmentDate: "2022-03-01",
+      achievements: ["Mejor Trabajo de Investigación"],
+      interests: ["Regeneración Periodontal", "Microbiología", "Prevención"],
     },
     {
       id: "5",
@@ -94,8 +111,9 @@ export default function StudentsPage() {
       experience: "Básico",
       gpa: 7.8,
       completedCases: 8,
-      address: "Av. Flavio Reyes 789, Manta",
       enrollmentDate: "2022-09-01",
+      achievements: ["Mejor Trato con Pacientes Pediátricos"],
+      interests: ["Psicología Infantil", "Sedación Consciente", "Prevención"],
     },
     {
       id: "6",
@@ -107,8 +125,9 @@ export default function StudentsPage() {
       experience: "Avanzado",
       gpa: 9.0,
       completedCases: 28,
-      address: "Barrio Jocay, Manta",
       enrollmentDate: "2020-09-01",
+      achievements: ["Endodoncista del Año", "Técnica Innovadora"],
+      interests: ["Endodoncia Regenerativa", "Microscopía", "Biomateriales"],
     },
     {
       id: "7",
@@ -120,8 +139,9 @@ export default function StudentsPage() {
       experience: "Intermedio",
       gpa: 8.3,
       completedCases: 20,
-      address: "Ciudadela Miraflores, Manta",
       enrollmentDate: "2021-03-01",
+      achievements: ["Mejor Caso de Ortodoncia Interceptiva"],
+      interests: ["Ortodoncia Digital", "Cefalometría", "Aparatología"],
     },
     {
       id: "8",
@@ -133,8 +153,9 @@ export default function StudentsPage() {
       experience: "Avanzado",
       gpa: 9.1,
       completedCases: 30,
-      address: "Av. 4 de Noviembre, Manta",
       enrollmentDate: "2019-09-01",
+      achievements: ["Mejor Rehabilitación Protésica", "Innovación en Materiales"],
+      interests: ["Prótesis Digitales", "CAD/CAM", "Estética Avanzada"],
     },
     {
       id: "9",
@@ -146,8 +167,9 @@ export default function StudentsPage() {
       experience: "Intermedio",
       gpa: 8.4,
       completedCases: 15,
-      address: "Barrio San Mateo, Manta",
       enrollmentDate: "2022-03-01",
+      achievements: ["Mejor Sonrisa Diseñada"],
+      interests: ["Carillas de Porcelana", "Blanqueamiento", "Fotografía Dental"],
     },
     {
       id: "10",
@@ -159,8 +181,9 @@ export default function StudentsPage() {
       experience: "Avanzado",
       gpa: 9.3,
       completedCases: 35,
-      address: "Urbanización Los Esteros, Manta",
       enrollmentDate: "2019-03-01",
+      achievements: ["Implantóloga Destacada", "Mejor Tesis de Grado", "Liderazgo Académico"],
+      interests: ["Implantes Inmediatos", "Regeneración Ósea", "Cirugía Guiada"],
     },
   ]
 
@@ -178,18 +201,20 @@ export default function StudentsPage() {
   const filteredStudents = students.filter((student) => {
     const matchesSearch =
       student.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      student.specialty.toLowerCase().includes(searchTerm.toLowerCase()) ||
       student.email.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesSpecialty = specialtyFilter === "all" || student.specialty === specialtyFilter
     const matchesSemester = semesterFilter === "all" || student.semester.toString() === semesterFilter
+    const matchesExperience = experienceFilter === "all" || student.experience === experienceFilter
 
-    return matchesSearch && matchesSpecialty && matchesSemester
+    return matchesSearch && matchesSpecialty && matchesSemester && matchesExperience
   })
 
   const getExperienceBadge = (experience: string) => {
     const colors = {
-      Básico: "bg-yellow-100 text-yellow-800",
-      Intermedio: "bg-blue-100 text-blue-800",
-      Avanzado: "bg-green-100 text-green-800",
+      Básico: "bg-yellow-100 text-yellow-800 border-yellow-300",
+      Intermedio: "bg-blue-100 text-blue-800 border-blue-300",
+      Avanzado: "bg-green-100 text-green-800 border-green-300",
     }
     return <Badge className={colors[experience as keyof typeof colors]}>{experience}</Badge>
   }
@@ -201,259 +226,358 @@ export default function StudentsPage() {
     return "text-red-600"
   }
 
+  const getInitials = (name: string) => {
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase()
+  }
+
+  const getSpecialtyStats = () => {
+    const stats = specialties.map((specialty) => ({
+      name: specialty,
+      count: students.filter((s) => s.specialty === specialty).length,
+      avgGPA:
+        students.filter((s) => s.specialty === specialty).reduce((acc, s) => acc + s.gpa, 0) /
+          students.filter((s) => s.specialty === specialty).length || 0,
+    }))
+    return stats.sort((a, b) => b.count - a.count)
+  }
+
   return (
-    <div className="container mx-auto py-8 space-y-6">
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold">Directorio de Estudiantes</h1>
-          <p className="text-muted-foreground">Información pública de los estudiantes de odontología</p>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Estudiantes</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{students.length}</div>
-            <p className="text-xs text-muted-foreground">Registrados en el programa</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Especialidades</CardTitle>
-            <BookOpen className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{specialties.length}</div>
-            <p className="text-xs text-muted-foreground">Áreas de especialización</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Promedio GPA</CardTitle>
-            <Star className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {(students.reduce((acc, s) => acc + s.gpa, 0) / students.length).toFixed(1)}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-indigo-50">
+      <div className="container mx-auto px-4 py-8 space-y-8">
+        {/* Header */}
+        <div className="text-center space-y-4">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <div className="p-3 bg-blue-600 rounded-full">
+              <GraduationCap className="h-8 w-8 text-white" />
             </div>
-            <p className="text-xs text-muted-foreground">Promedio general</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Casos Completados</CardTitle>
-            <Award className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{students.reduce((acc, s) => acc + s.completedCases, 0)}</div>
-            <p className="text-xs text-muted-foreground">Total de casos</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Buscar Estudiantes</CardTitle>
-          <CardDescription>Encuentra estudiantes por nombre, especialidad o semestre</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Buscar por nombre o email..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Especialidad" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las especialidades</SelectItem>
-                {specialties.map((specialty) => (
-                  <SelectItem key={specialty} value={specialty}>
-                    {specialty}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <Select value={semesterFilter} onValueChange={setSemesterFilter}>
-              <SelectTrigger className="w-full md:w-32">
-                <SelectValue placeholder="Semestre" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos</SelectItem>
-                {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
-                  <SelectItem key={sem} value={sem.toString()}>
-                    {sem}°
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <h1 className="text-4xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              Estudiantes de Odontología
+            </h1>
           </div>
-        </CardContent>
-      </Card>
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
+            Conoce a nuestros talentosos estudiantes de la Facultad de Odontología de ULEAM. Futuros profesionales
+            comprometidos con la excelencia en salud oral.
+          </p>
+        </div>
 
-      {/* Students Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Estudiantes</CardTitle>
-          <CardDescription>{filteredStudents.length} estudiantes encontrados</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Estudiante</TableHead>
-                <TableHead>Especialidad</TableHead>
-                <TableHead>Semestre</TableHead>
-                <TableHead>Experiencia</TableHead>
-                <TableHead>GPA</TableHead>
-                <TableHead>Casos</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredStudents.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                        {student.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .slice(0, 2)}
-                      </div>
-                      <div>
-                        <div className="font-medium">{student.name}</div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          {student.email}
-                        </div>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{student.specialty}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="secondary">{student.semester}°</Badge>
-                  </TableCell>
-                  <TableCell>{getExperienceBadge(student.experience)}</TableCell>
-                  <TableCell>
-                    <span className={`font-medium ${getGPAColor(student.gpa)}`}>{student.gpa.toFixed(1)}</span>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{student.completedCases}</Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => {
-                        setSelectedStudent(student)
-                        setIsViewDialogOpen(true)
-                      }}
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+        {/* Stats Overview */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+          <Card className="border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-blue-900">Total Estudiantes</CardTitle>
+              <Users className="h-4 w-4 text-blue-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-blue-900">{students.length}</div>
+              <p className="text-xs text-blue-700">Registrados actualmente</p>
+            </CardContent>
+          </Card>
+          <Card className="border-green-200 bg-gradient-to-br from-green-50 to-green-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-green-900">Especialidades</CardTitle>
+              <BookOpen className="h-4 w-4 text-green-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-green-900">{specialties.length}</div>
+              <p className="text-xs text-green-700">Áreas de especialización</p>
+            </CardContent>
+          </Card>
+          <Card className="border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-purple-900">Promedio GPA</CardTitle>
+              <Star className="h-4 w-4 text-purple-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-purple-900">
+                {(students.reduce((acc, s) => acc + s.gpa, 0) / students.length).toFixed(1)}
+              </div>
+              <p className="text-xs text-purple-700">Excelencia académica</p>
+            </CardContent>
+          </Card>
+          <Card className="border-orange-200 bg-gradient-to-br from-orange-50 to-orange-100">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium text-orange-900">Casos Completados</CardTitle>
+              <Award className="h-4 w-4 text-orange-600" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-orange-900">
+                {students.reduce((acc, s) => acc + s.completedCases, 0)}
+              </div>
+              <p className="text-xs text-orange-700">Experiencia práctica</p>
+            </CardContent>
+          </Card>
+        </div>
 
-      {/* View Student Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Información del Estudiante</DialogTitle>
-            <DialogDescription>Detalles del estudiante</DialogDescription>
-          </DialogHeader>
-          {selectedStudent && (
-            <div className="space-y-6">
-              <div className="flex items-center gap-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-                  {selectedStudent.name
-                    .split(" ")
-                    .map((n) => n[0])
-                    .join("")
-                    .slice(0, 2)}
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold">{selectedStudent.name}</h3>
-                  <p className="text-muted-foreground">{selectedStudent.specialty}</p>
+        {/* Filters */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros de Búsqueda
+            </CardTitle>
+            <CardDescription>Encuentra estudiantes por especialidad, semestre o nivel de experiencia</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Buscar</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Nombre, especialidad o email..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10"
+                  />
                 </div>
               </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <h4 className="font-medium text-sm text-gray-500 mb-2">INFORMACIÓN DE CONTACTO</h4>
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2">
-                      <Mail className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm">{selectedStudent.email}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Phone className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm">{selectedStudent.phone}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                      <span className="text-sm">{selectedStudent.address}</span>
-                    </div>
-                  </div>
-                </div>
-
-                <div>
-                  <h4 className="font-medium text-sm text-gray-500 mb-2">INFORMACIÓN ACADÉMICA</h4>
-                  <div className="space-y-2">
-                    <div className="flex justify-between">
-                      <span className="text-sm">Semestre:</span>
-                      <Badge variant="secondary">{selectedStudent.semester}°</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Experiencia:</span>
-                      {getExperienceBadge(selectedStudent.experience)}
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">GPA:</span>
-                      <span className={`font-bold ${getGPAColor(selectedStudent.gpa)}`}>
-                        {selectedStudent.gpa.toFixed(1)}
-                      </span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Casos completados:</span>
-                      <Badge variant="outline">{selectedStudent.completedCases}</Badge>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-sm">Fecha de inscripción:</span>
-                      <span className="text-sm flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {new Date(selectedStudent.enrollmentDate).toLocaleDateString("es-ES")}
-                      </span>
-                    </div>
-                  </div>
-                </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Especialidad</label>
+                <Select value={specialtyFilter} onValueChange={setSpecialtyFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todas las especialidades" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todas las especialidades</SelectItem>
+                    {specialties.map((specialty) => (
+                      <SelectItem key={specialty} value={specialty}>
+                        {specialty}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Semestre</label>
+                <Select value={semesterFilter} onValueChange={setSemesterFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los semestres" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los semestres</SelectItem>
+                    {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
+                      <SelectItem key={sem} value={sem.toString()}>
+                        {sem}° Semestre
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <label className="text-sm font-medium">Experiencia</label>
+                <Select value={experienceFilter} onValueChange={setExperienceFilter}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Todos los niveles" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Todos los niveles</SelectItem>
+                    <SelectItem value="Básico">Básico</SelectItem>
+                    <SelectItem value="Intermedio">Intermedio</SelectItem>
+                    <SelectItem value="Avanzado">Avanzado</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Specialty Statistics */}
+        <Card className="shadow-lg">
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <TrendingUp className="h-5 w-5" />
+              Estadísticas por Especialidad
+            </CardTitle>
+            <CardDescription>Distribución de estudiantes y rendimiento académico por especialidad</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+              {getSpecialtyStats().map((stat) => (
+                <div key={stat.name} className="p-4 border rounded-lg bg-gradient-to-br from-gray-50 to-gray-100">
+                  <h3 className="font-medium text-sm text-gray-900 mb-2">{stat.name}</h3>
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p className="text-2xl font-bold text-blue-600">{stat.count}</p>
+                      <p className="text-xs text-gray-600">estudiantes</p>
+                    </div>
+                    <div className="text-right">
+                      <p className={`text-lg font-semibold ${getGPAColor(stat.avgGPA)}`}>{stat.avgGPA.toFixed(1)}</p>
+                      <p className="text-xs text-gray-600">GPA promedio</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Students Grid */}
+        <div className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-2xl font-bold">Estudiantes Encontrados ({filteredStudents.length})</h2>
+            <Badge variant="outline" className="text-sm">
+              {filteredStudents.length} de {students.length} estudiantes
+            </Badge>
+          </div>
+
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            {filteredStudents.map((student) => (
+              <Card key={student.id} className="shadow-lg hover:shadow-xl transition-shadow duration-300">
+                <CardHeader className="pb-4">
+                  <div className="flex items-start gap-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+                      {getInitials(student.name)}
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <h3 className="font-bold text-lg">{student.name}</h3>
+                        {getExperienceBadge(student.experience)}
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-1">
+                        <BookOpen className="h-3 w-3" />
+                        <span>{student.specialty}</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                        <GraduationCap className="h-3 w-3" />
+                        <span>{student.semester}° Semestre</span>
+                      </div>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {/* Academic Performance */}
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className={`text-2xl font-bold ${getGPAColor(student.gpa)}`}>{student.gpa.toFixed(1)}</div>
+                      <div className="text-xs text-muted-foreground">GPA</div>
+                    </div>
+                    <div className="text-center p-3 bg-gray-50 rounded-lg">
+                      <div className="text-2xl font-bold text-blue-600">{student.completedCases}</div>
+                      <div className="text-xs text-muted-foreground">Casos</div>
+                    </div>
+                  </div>
+
+                  {/* Contact Information */}
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <Mail className="h-3 w-3 text-muted-foreground" />
+                      <span className="truncate">{student.email}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Phone className="h-3 w-3 text-muted-foreground" />
+                      <span>{student.phone}</span>
+                    </div>
+                    <div className="flex items-center gap-2 text-sm">
+                      <Calendar className="h-3 w-3 text-muted-foreground" />
+                      <span>Ingreso: {new Date(student.enrollmentDate).toLocaleDateString("es-ES")}</span>
+                    </div>
+                  </div>
+
+                  {/* Achievements */}
+                  {student.achievements.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium flex items-center gap-1">
+                        <Award className="h-3 w-3" />
+                        Logros
+                      </h4>
+                      <div className="flex flex-wrap gap-1">
+                        {student.achievements.slice(0, 2).map((achievement, index) => (
+                          <Badge key={index} variant="secondary" className="text-xs">
+                            {achievement}
+                          </Badge>
+                        ))}
+                        {student.achievements.length > 2 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{student.achievements.length - 2} más
+                          </Badge>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Interests */}
+                  {student.interests.length > 0 && (
+                    <div className="space-y-2">
+                      <h4 className="text-sm font-medium">Intereses</h4>
+                      <div className="flex flex-wrap gap-1">
+                        {student.interests.slice(0, 3).map((interest, index) => (
+                          <Badge key={index} variant="outline" className="text-xs">
+                            {interest}
+                          </Badge>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Contact Button */}
+                  <Button className="w-full bg-transparent" variant="outline">
+                    <Mail className="mr-2 h-4 w-4" />
+                    Contactar
+                  </Button>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+
+          {filteredStudents.length === 0 && (
+            <Card className="text-center py-12">
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                    <Search className="h-8 w-8 text-gray-400" />
+                  </div>
+                  <div>
+                    <h3 className="text-lg font-medium">No se encontraron estudiantes</h3>
+                    <p className="text-muted-foreground">
+                      Intenta ajustar los filtros de búsqueda para encontrar estudiantes.
+                    </p>
+                  </div>
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setSearchTerm("")
+                      setSpecialtyFilter("all")
+                      setSemesterFilter("all")
+                      setExperienceFilter("all")
+                    }}
+                  >
+                    Limpiar Filtros
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
           )}
-        </DialogContent>
-      </Dialog>
+        </div>
+
+        {/* Call to Action */}
+        <Card className="bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xl">
+          <CardContent className="text-center py-12">
+            <h2 className="text-3xl font-bold mb-4">¿Interesado en Estudiar Odontología?</h2>
+            <p className="text-xl mb-6 opacity-90">
+              Únete a nuestra comunidad de futuros profesionales de la salud oral
+            </p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" variant="secondary">
+                <User className="mr-2 h-5 w-5" />
+                Información de Admisiones
+              </Button>
+              <Button
+                size="lg"
+                variant="outline"
+                className="text-white border-white hover:bg-white hover:text-blue-600 bg-transparent"
+              >
+                <MapPin className="mr-2 h-5 w-5" />
+                Visitar Campus
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   )
 }

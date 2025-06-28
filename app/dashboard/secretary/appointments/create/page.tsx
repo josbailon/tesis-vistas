@@ -1,464 +1,532 @@
 "use client"
 
-import type React from "react"
 import { useState } from "react"
-import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { useAppointments } from "@/contexts/appointment-context"
-import { CalendarIcon, Clock, User, Stethoscope, ArrowLeft, Plus, Phone, Mail, MapPin } from "lucide-react"
-import { format } from "date-fns"
+import {
+  CalendarIcon,
+  Clock,
+  User,
+  GraduationCap,
+  Stethoscope,
+  Phone,
+  Search,
+  CheckCircle,
+  AlertCircle,
+  BookOpen,
+  UserPlus,
+} from "lucide-react"
+import { format, isWeekend, isBefore, startOfDay } from "date-fns"
 import { es } from "date-fns/locale"
-import { cn } from "@/lib/utils"
-
-interface Patient {
-  id: string
-  name: string
-  cedula: string
-  phone: string
-  email: string
-  age: number
-  address: string
-  emergencyContact?: string
-  emergencyPhone?: string
-}
+import Link from "next/link"
 
 interface Student {
   id: string
   name: string
-  specialty: string
-  semester: number
   email: string
   phone: string
+  specialty: string
+  semester: number
   experience: "Básico" | "Intermedio" | "Avanzado"
   gpa: number
   completedCases: number
+  professor: string
+  status: "active" | "inactive"
+}
+
+interface Patient {
+  id: string
+  name: string
+  email: string
+  phone: string
+  cedula: string
+  birthDate: string
+  address: string
+  emergencyContact: string
+  emergencyPhone: string
+  medicalHistory: string[]
+  status: "active" | "inactive"
+  registrationDate: string
 }
 
 interface Specialty {
   id: string
   name: string
-  duration: number
   description: string
+  duration: number
   requirements: string[]
   professor: string
+  availableSlots: string[]
+}
+
+interface TimeSlot {
+  time: string
+  available: boolean
+  studentId?: string
+  studentName?: string
 }
 
 export default function CreateAppointmentPage() {
-  const router = useRouter()
   const { toast } = useToast()
-  const { addAppointment } = useAppointments()
-
-  const [isLoading, setIsLoading] = useState(false)
   const [selectedDate, setSelectedDate] = useState<Date>()
-  const [showNewPatientForm, setShowNewPatientForm] = useState(false)
-  const [formData, setFormData] = useState({
-    patientId: "",
-    patientName: "",
-    patientPhone: "",
-    patientEmail: "",
-    patientCedula: "",
-    specialtyId: "",
-    studentId: "",
-    time: "",
-    duration: "60",
-    type: "consulta",
-    priority: "medium",
-    notes: "",
-  })
+  const [selectedSpecialty, setSelectedSpecialty] = useState("")
+  const [selectedStudent, setSelectedStudent] = useState("")
+  const [selectedPatient, setSelectedPatient] = useState("")
+  const [selectedTime, setSelectedTime] = useState("")
+  const [appointmentType, setAppointmentType] = useState("")
+  const [notes, setNotes] = useState("")
+  const [isNewPatientDialogOpen, setIsNewPatientDialogOpen] = useState(false)
+  const [searchPatient, setSearchPatient] = useState("")
+  const [searchStudent, setSearchStudent] = useState("")
 
+  // New patient form state
   const [newPatient, setNewPatient] = useState({
     name: "",
-    cedula: "",
-    phone: "",
     email: "",
-    age: "",
+    phone: "",
+    cedula: "",
+    birthDate: "",
     address: "",
     emergencyContact: "",
     emergencyPhone: "",
+    medicalHistory: "",
   })
 
-  // Enhanced patients data
-  const [patients, setPatients] = useState<Patient[]>([
-    {
-      id: "1",
-      name: "María González Pérez",
-      cedula: "1234567890",
-      phone: "+593 99 123 4567",
-      email: "maria.gonzalez@email.com",
-      age: 28,
-      address: "Av. Universitaria 123, Manta",
-      emergencyContact: "Carlos González",
-      emergencyPhone: "+593 99 123 0000",
-    },
-    {
-      id: "2",
-      name: "Carlos Ruiz Mendoza",
-      cedula: "2345678901",
-      phone: "+593 99 234 5678",
-      email: "carlos.ruiz@email.com",
-      age: 35,
-      address: "Calle 24 de Mayo 456, Manta",
-      emergencyContact: "Ana Ruiz",
-      emergencyPhone: "+593 99 234 0000",
-    },
-    {
-      id: "3",
-      name: "Laura Martínez Silva",
-      cedula: "3456789012",
-      phone: "+593 99 345 6789",
-      email: "laura.martinez@email.com",
-      age: 22,
-      address: "Barrio Los Almendros, Manta",
-      emergencyContact: "Pedro Martínez",
-      emergencyPhone: "+593 99 345 0000",
-    },
-    {
-      id: "4",
-      name: "Roberto Díaz Castro",
-      cedula: "4567890123",
-      phone: "+593 99 456 7890",
-      email: "roberto.diaz@email.com",
-      age: 45,
-      address: "Ciudadela El Palmar, Manta",
-      emergencyContact: "Carmen Díaz",
-      emergencyPhone: "+593 99 456 0000",
-    },
-    {
-      id: "5",
-      name: "Ana Rodríguez López",
-      cedula: "5678901234",
-      phone: "+593 99 567 8901",
-      email: "ana.rodriguez@email.com",
-      age: 31,
-      address: "Av. Flavio Reyes 789, Manta",
-      emergencyContact: "Luis Rodríguez",
-      emergencyPhone: "+593 99 567 0000",
-    },
-    {
-      id: "6",
-      name: "Pedro Morales Vera",
-      cedula: "6789012345",
-      phone: "+593 99 678 9012",
-      email: "pedro.morales@email.com",
-      age: 38,
-      address: "Barrio Jocay, Manta",
-      emergencyContact: "Rosa Morales",
-      emergencyPhone: "+593 99 678 0000",
-    },
-    {
-      id: "7",
-      name: "Carmen Torres Alava",
-      cedula: "7890123456",
-      phone: "+593 99 789 0123",
-      email: "carmen.torres@email.com",
-      age: 26,
-      address: "Ciudadela Miraflores, Manta",
-      emergencyContact: "Miguel Torres",
-      emergencyPhone: "+593 99 789 0000",
-    },
-    {
-      id: "8",
-      name: "Luis Herrera Ponce",
-      cedula: "8901234567",
-      phone: "+593 99 890 1234",
-      email: "luis.herrera@email.com",
-      age: 42,
-      address: "Av. 4 de Noviembre, Manta",
-      emergencyContact: "María Herrera",
-      emergencyPhone: "+593 99 890 0000",
-    },
-  ])
-
-  // Enhanced specialties data
-  const specialties: Specialty[] = [
-    {
-      id: "1",
-      name: "Endodoncia",
-      duration: 90,
-      description: "Tratamiento de conductos radiculares y terapia pulpar",
-      requirements: ["Radiografías periapicales", "Pruebas de vitalidad pulpar", "Historia clínica completa"],
-      professor: "Dr. Carlos Mendoza Ruiz",
-    },
-    {
-      id: "2",
-      name: "Ortodoncia",
-      duration: 60,
-      description: "Corrección de la posición dental y maloclusiones",
-      requirements: ["Radiografías panorámicas", "Modelos de estudio", "Fotografías clínicas", "Cefalometría"],
-      professor: "Dra. Laura Martín Silva",
-    },
-    {
-      id: "3",
-      name: "Cirugía Oral y Maxilofacial",
-      duration: 120,
-      description: "Extracciones dentales y procedimientos quirúrgicos orales",
-      requirements: [
-        "Radiografías panorámicas",
-        "Evaluación preoperatoria",
-        "Consentimiento informado",
-        "Exámenes de laboratorio",
-      ],
-      professor: "Dr. Roberto Silva Castro",
-    },
-    {
-      id: "4",
-      name: "Periodoncia",
-      duration: 75,
-      description: "Tratamiento de enfermedades de las encías y tejidos de soporte",
-      requirements: ["Radiografías periapicales", "Sondaje periodontal", "Índices periodontales"],
-      professor: "Dra. Elena Vásquez Torres",
-    },
-    {
-      id: "5",
-      name: "Odontopediatría",
-      duration: 45,
-      description: "Atención dental especializada para niños y adolescentes",
-      requirements: ["Acompañante adulto", "Historial médico pediátrico", "Autorización parental"],
-      professor: "Dr. Miguel Cedeño Loor",
-    },
-    {
-      id: "6",
-      name: "Prostodoncia",
-      duration: 90,
-      description: "Rehabilitación oral con prótesis dentales",
-      requirements: ["Impresiones dentales", "Radiografías panorámicas", "Análisis oclusal"],
-      professor: "Dra. Patricia Zambrano Vera",
-    },
-    {
-      id: "7",
-      name: "Odontología Estética",
-      duration: 60,
-      description: "Tratamientos estéticos y blanqueamiento dental",
-      requirements: ["Fotografías clínicas", "Evaluación del color dental", "Consentimiento estético"],
-      professor: "Dr. Andrés Castillo Bravo",
-    },
-    {
-      id: "8",
-      name: "Implantología",
-      duration: 150,
-      description: "Colocación de implantes dentales",
-      requirements: ["Tomografía computarizada", "Evaluación ósea", "Consentimiento informado", "Exámenes médicos"],
-      professor: "Dr. Diego Vega Santos",
-    },
-  ]
-
-  // Enhanced students data
   const students: Student[] = [
     {
       id: "1",
       name: "Juan Carlos Pérez Mendoza",
-      specialty: "Endodoncia",
-      semester: 8,
       email: "juan.perez@uleam.edu.ec",
       phone: "+593 99 111 2222",
+      specialty: "Endodoncia",
+      semester: 8,
       experience: "Avanzado",
       gpa: 8.5,
       completedCases: 25,
+      professor: "Dr. Carlos Mendoza",
+      status: "active",
     },
     {
       id: "2",
       name: "Ana María López Silva",
-      specialty: "Ortodoncia",
-      semester: 7,
       email: "ana.lopez@uleam.edu.ec",
       phone: "+593 99 222 3333",
+      specialty: "Ortodoncia",
+      semester: 7,
       experience: "Intermedio",
       gpa: 9.2,
       completedCases: 18,
+      professor: "Dra. María González",
+      status: "active",
     },
     {
       id: "3",
       name: "Pedro Antonio Silva Castro",
-      specialty: "Cirugía Oral y Maxilofacial",
-      semester: 9,
       email: "pedro.silva@uleam.edu.ec",
       phone: "+593 99 333 4444",
+      specialty: "Cirugía Oral y Maxilofacial",
+      semester: 9,
       experience: "Avanzado",
       gpa: 8.8,
       completedCases: 32,
+      professor: "Dr. Roberto Vásquez",
+      status: "active",
     },
     {
       id: "4",
       name: "Carmen Elena Torres Vera",
-      specialty: "Periodoncia",
-      semester: 6,
       email: "carmen.torres@uleam.edu.ec",
       phone: "+593 99 444 5555",
+      specialty: "Periodoncia",
+      semester: 6,
       experience: "Intermedio",
       gpa: 8.1,
       completedCases: 12,
+      professor: "Dra. Laura Martín",
+      status: "active",
     },
     {
       id: "5",
       name: "Luis Fernando Morales Ponce",
-      specialty: "Odontopediatría",
-      semester: 5,
       email: "luis.morales@uleam.edu.ec",
       phone: "+593 99 555 6666",
+      specialty: "Odontopediatría",
+      semester: 5,
       experience: "Básico",
       gpa: 7.8,
       completedCases: 8,
+      professor: "Dr. Fernando López",
+      status: "active",
     },
     {
       id: "6",
       name: "María José Herrera Alava",
-      specialty: "Endodoncia",
-      semester: 8,
       email: "maria.herrera@uleam.edu.ec",
       phone: "+593 99 666 7777",
+      specialty: "Endodoncia",
+      semester: 8,
       experience: "Avanzado",
       gpa: 9.0,
       completedCases: 28,
+      professor: "Dr. Carlos Mendoza",
+      status: "active",
     },
     {
       id: "7",
       name: "Roberto Carlos Díaz López",
-      specialty: "Ortodoncia",
-      semester: 7,
       email: "roberto.diaz@uleam.edu.ec",
       phone: "+593 99 777 8888",
+      specialty: "Ortodoncia",
+      semester: 7,
       experience: "Intermedio",
       gpa: 8.3,
       completedCases: 20,
+      professor: "Dra. María González",
+      status: "active",
     },
     {
       id: "8",
       name: "Laura Patricia Rodríguez Mora",
-      specialty: "Prostodoncia",
-      semester: 9,
       email: "laura.rodriguez@uleam.edu.ec",
       phone: "+593 99 888 9999",
+      specialty: "Prostodoncia",
+      semester: 9,
       experience: "Avanzado",
       gpa: 9.1,
       completedCases: 30,
+      professor: "Dr. Antonio Ruiz",
+      status: "active",
     },
     {
       id: "9",
       name: "Diego Alejandro Vega Santos",
-      specialty: "Odontología Estética",
-      semester: 6,
       email: "diego.vega@uleam.edu.ec",
       phone: "+593 99 999 0000",
+      specialty: "Odontología Estética",
+      semester: 6,
       experience: "Intermedio",
       gpa: 8.4,
       completedCases: 15,
+      professor: "Dra. Patricia Silva",
+      status: "active",
     },
     {
       id: "10",
       name: "Sofía Gabriela Muñoz Cedeño",
-      specialty: "Implantología",
-      semester: 10,
       email: "sofia.munoz@uleam.edu.ec",
       phone: "+593 99 000 1111",
+      specialty: "Implantología",
+      semester: 10,
       experience: "Avanzado",
       gpa: 9.3,
       completedCases: 35,
+      professor: "Dr. Miguel Torres",
+      status: "active",
     },
     {
       id: "11",
-      name: "Andrés Felipe Castillo Bravo",
-      specialty: "Cirugía Oral y Maxilofacial",
-      semester: 9,
-      email: "andres.castillo@uleam.edu.ec",
-      phone: "+593 99 111 0000",
-      experience: "Avanzado",
-      gpa: 8.7,
-      completedCases: 29,
+      name: "Carlos Eduardo Zambrano Vera",
+      email: "carlos.zambrano@uleam.edu.ec",
+      phone: "+593 99 111 3333",
+      specialty: "Periodoncia",
+      semester: 7,
+      experience: "Intermedio",
+      gpa: 8.6,
+      completedCases: 22,
+      professor: "Dra. Laura Martín",
+      status: "active",
     },
     {
       id: "12",
-      name: "Valeria Nicole Zambrano Loor",
+      name: "Valeria Alejandra Moreira Castro",
+      email: "valeria.moreira@uleam.edu.ec",
+      phone: "+593 99 222 4444",
       specialty: "Odontopediatría",
-      semester: 5,
-      email: "valeria.zambrano@uleam.edu.ec",
-      phone: "+593 99 222 1111",
-      experience: "Básico",
-      gpa: 8.0,
-      completedCases: 10,
+      semester: 6,
+      experience: "Intermedio",
+      gpa: 8.9,
+      completedCases: 16,
+      professor: "Dr. Fernando López",
+      status: "active",
     },
   ]
 
-  const timeSlots = [
-    "08:00",
-    "08:30",
-    "09:00",
-    "09:30",
-    "10:00",
-    "10:30",
-    "11:00",
-    "11:30",
-    "12:00",
-    "14:00",
-    "14:30",
-    "15:00",
-    "15:30",
-    "16:00",
-    "16:30",
-    "17:00",
-    "17:30",
-    "18:00",
+  const [patients, setPatients] = useState<Patient[]>([
+    {
+      id: "1",
+      name: "María Elena Rodríguez Pérez",
+      email: "maria.rodriguez@email.com",
+      phone: "+593 99 111 0000",
+      cedula: "1234567890",
+      birthDate: "1985-03-15",
+      address: "Av. Universitaria 123, Manta",
+      emergencyContact: "Carlos Rodríguez",
+      emergencyPhone: "+593 99 111 1111",
+      medicalHistory: ["Hipertensión", "Alergia a la penicilina"],
+      status: "active",
+      registrationDate: "2024-01-15",
+    },
+    {
+      id: "2",
+      name: "José Antonio Mendoza Silva",
+      email: "jose.mendoza@email.com",
+      phone: "+593 99 222 0000",
+      cedula: "2345678901",
+      birthDate: "1978-07-22",
+      address: "Calle 24 de Mayo 456, Manta",
+      emergencyContact: "Ana Mendoza",
+      emergencyPhone: "+593 99 222 1111",
+      medicalHistory: ["Diabetes tipo 2"],
+      status: "active",
+      registrationDate: "2024-02-01",
+    },
+    {
+      id: "3",
+      name: "Carmen Lucía Torres Vega",
+      email: "carmen.torres@email.com",
+      phone: "+593 99 333 0000",
+      cedula: "3456789012",
+      birthDate: "1992-11-10",
+      address: "Barrio Los Almendros, Manta",
+      emergencyContact: "Luis Torres",
+      emergencyPhone: "+593 99 333 1111",
+      medicalHistory: [],
+      status: "active",
+      registrationDate: "2024-01-20",
+    },
+    {
+      id: "4",
+      name: "Roberto Carlos Alava Moreira",
+      email: "roberto.alava@email.com",
+      phone: "+593 99 444 0000",
+      cedula: "4567890123",
+      birthDate: "1965-01-18",
+      address: "Ciudadela El Palmar, Manta",
+      emergencyContact: "Elena Alava",
+      emergencyPhone: "+593 99 444 1111",
+      medicalHistory: ["Hipertensión", "Problemas cardíacos"],
+      status: "active",
+      registrationDate: "2024-02-15",
+    },
+    {
+      id: "5",
+      name: "Ana Patricia Cedeño López",
+      email: "ana.cedeno@email.com",
+      phone: "+593 99 555 0000",
+      cedula: "5678901234",
+      birthDate: "1988-05-30",
+      address: "Av. Flavio Reyes 789, Manta",
+      emergencyContact: "Miguel Cedeño",
+      emergencyPhone: "+593 99 555 1111",
+      medicalHistory: ["Alergia al látex"],
+      status: "active",
+      registrationDate: "2024-03-01",
+    },
+    {
+      id: "6",
+      name: "Diego Fernando Ponce Herrera",
+      email: "diego.ponce@email.com",
+      phone: "+593 99 666 0000",
+      cedula: "6789012345",
+      birthDate: "1995-09-12",
+      address: "Barrio Jocay, Manta",
+      emergencyContact: "Rosa Ponce",
+      emergencyPhone: "+593 99 666 1111",
+      medicalHistory: [],
+      status: "active",
+      registrationDate: "2024-01-10",
+    },
+    {
+      id: "7",
+      name: "Lucía Gabriela Santos Díaz",
+      email: "lucia.santos@email.com",
+      phone: "+593 99 777 0000",
+      cedula: "7890123456",
+      birthDate: "1982-04-08",
+      address: "Ciudadela Miraflores, Manta",
+      emergencyContact: "Carlos Santos",
+      emergencyPhone: "+593 99 777 1111",
+      medicalHistory: ["Asma"],
+      status: "active",
+      registrationDate: "2024-02-20",
+    },
+    {
+      id: "8",
+      name: "Fernando José Vera Muñoz",
+      email: "fernando.vera@email.com",
+      phone: "+593 99 888 0000",
+      cedula: "8901234567",
+      birthDate: "1970-12-25",
+      address: "Av. 4 de Noviembre, Manta",
+      emergencyContact: "Patricia Vera",
+      emergencyPhone: "+593 99 888 1111",
+      medicalHistory: ["Hipertensión", "Colesterol alto"],
+      status: "active",
+      registrationDate: "2024-01-05",
+    },
+  ])
+
+  const specialties: Specialty[] = [
+    {
+      id: "1",
+      name: "Endodoncia",
+      description: "Tratamiento de conductos radiculares y terapia pulpar",
+      duration: 90,
+      requirements: ["Radiografía periapical", "Historia clínica completa"],
+      professor: "Dr. Carlos Mendoza",
+      availableSlots: ["08:00", "10:00", "14:00", "16:00"],
+    },
+    {
+      id: "2",
+      name: "Ortodoncia",
+      description: "Corrección de malposiciones dentarias y maloclusiones",
+      duration: 60,
+      requirements: ["Radiografía panorámica", "Modelos de estudio", "Fotografías intraorales"],
+      professor: "Dra. María González",
+      availableSlots: ["09:00", "11:00", "15:00", "17:00"],
+    },
+    {
+      id: "3",
+      name: "Cirugía Oral y Maxilofacial",
+      description: "Procedimientos quirúrgicos en cavidad oral y estructuras maxilofaciales",
+      duration: 120,
+      requirements: ["Radiografía panorámica", "Exámenes de laboratorio", "Consentimiento informado"],
+      professor: "Dr. Roberto Vásquez",
+      availableSlots: ["08:00", "10:30", "14:00"],
+    },
+    {
+      id: "4",
+      name: "Periodoncia",
+      description: "Tratamiento de enfermedades de las encías y estructuras de soporte",
+      duration: 75,
+      requirements: ["Radiografías periapicales", "Sondaje periodontal"],
+      professor: "Dra. Laura Martín",
+      availableSlots: ["08:30", "10:30", "14:30", "16:30"],
+    },
+    {
+      id: "5",
+      name: "Odontopediatría",
+      description: "Atención dental especializada para niños y adolescentes",
+      duration: 45,
+      requirements: ["Autorización de padres", "Historia clínica pediátrica"],
+      professor: "Dr. Fernando López",
+      availableSlots: ["09:00", "10:00", "11:00", "15:00", "16:00"],
+    },
+    {
+      id: "6",
+      name: "Prostodoncia",
+      description: "Rehabilitación oral mediante prótesis dentales",
+      duration: 90,
+      requirements: ["Radiografía panorámica", "Impresiones", "Articulador"],
+      professor: "Dr. Antonio Ruiz",
+      availableSlots: ["08:00", "10:00", "14:00", "16:00"],
+    },
+    {
+      id: "7",
+      name: "Odontología Estética",
+      description: "Tratamientos estéticos y restauradores",
+      duration: 60,
+      requirements: ["Fotografías extraorales e intraorales", "Análisis estético"],
+      professor: "Dra. Patricia Silva",
+      availableSlots: ["09:00", "11:00", "15:00", "17:00"],
+    },
+    {
+      id: "8",
+      name: "Implantología",
+      description: "Colocación y rehabilitación con implantes dentales",
+      duration: 120,
+      requirements: ["Tomografía computarizada", "Exámenes de laboratorio", "Planificación quirúrgica"],
+      professor: "Dr. Miguel Torres",
+      availableSlots: ["08:00", "10:30", "14:00"],
+    },
   ]
 
-  const handlePatientSelect = (patientId: string) => {
-    const patient = patients.find((p) => p.id === patientId)
-    if (patient) {
-      setFormData((prev) => ({
-        ...prev,
-        patientId,
-        patientName: patient.name,
-        patientPhone: patient.phone,
-        patientEmail: patient.email,
-        patientCedula: patient.cedula,
-      }))
-    }
-  }
+  const appointmentTypes = [
+    "Primera consulta",
+    "Consulta de seguimiento",
+    "Tratamiento",
+    "Emergencia",
+    "Evaluación",
+    "Control post-operatorio",
+  ]
 
-  const handleSpecialtySelect = (specialtyId: string) => {
-    const specialty = specialties.find((s) => s.id === specialtyId)
-    setFormData((prev) => ({
-      ...prev,
-      specialtyId,
-      studentId: "", // Reset student when specialty changes
-      duration: specialty?.duration.toString() || "60",
+  const filteredStudents = students.filter((student) => {
+    const matchesSearch = student.name.toLowerCase().includes(searchStudent.toLowerCase())
+    const matchesSpecialty = !selectedSpecialty || student.specialty === selectedSpecialty
+    return matchesSearch && matchesSpecialty && student.status === "active"
+  })
+
+  const filteredPatients = patients.filter((patient) => {
+    const matchesSearch =
+      patient.name.toLowerCase().includes(searchPatient.toLowerCase()) ||
+      patient.cedula.includes(searchPatient) ||
+      patient.phone.includes(searchPatient)
+    return matchesSearch && patient.status === "active"
+  })
+
+  const getAvailableTimeSlots = (): TimeSlot[] => {
+    if (!selectedSpecialty || !selectedDate) return []
+
+    const specialty = specialties.find((s) => s.name === selectedSpecialty)
+    if (!specialty) return []
+
+    return specialty.availableSlots.map((time) => ({
+      time,
+      available: Math.random() > 0.3, // Simulate availability
+      studentId: Math.random() > 0.7 ? "1" : undefined,
+      studentName: Math.random() > 0.7 ? "Juan Pérez" : undefined,
     }))
   }
 
-  const getFilteredStudents = () => {
-    if (!formData.specialtyId) return []
-    const specialty = specialties.find((s) => s.id === formData.specialtyId)
-    return students.filter((student) => student.specialty === specialty?.name)
+  const getExperienceBadge = (experience: string) => {
+    const colors = {
+      Básico: "bg-yellow-100 text-yellow-800",
+      Intermedio: "bg-blue-100 text-blue-800",
+      Avanzado: "bg-green-100 text-green-800",
+    }
+    return <Badge className={colors[experience as keyof typeof colors]}>{experience}</Badge>
   }
 
-  const handleCreateNewPatient = () => {
+  const getGPAColor = (gpa: number) => {
+    if (gpa >= 9) return "text-green-600"
+    if (gpa >= 8) return "text-blue-600"
+    if (gpa >= 7) return "text-yellow-600"
+    return "text-red-600"
+  }
+
+  const isDateDisabled = (date: Date) => {
+    const today = startOfDay(new Date())
+    return isBefore(date, today) || isWeekend(date)
+  }
+
+  const handleCreatePatient = () => {
     if (!newPatient.name || !newPatient.cedula || !newPatient.phone) {
       toast({
         title: "Error",
-        description: "Por favor completa los campos obligatorios del paciente",
-        variant: "destructive",
-      })
-      return
-    }
-
-    // Validate cedula format (10 digits)
-    if (!/^\d{10}$/.test(newPatient.cedula)) {
-      toast({
-        title: "Error",
-        description: "La cédula debe tener 10 dígitos",
+        description: "Por favor completa los campos obligatorios",
         variant: "destructive",
       })
       return
     }
 
     // Check if cedula already exists
-    if (patients.some((p) => p.cedula === newPatient.cedula)) {
+    if (patients.some((patient) => patient.cedula === newPatient.cedula)) {
       toast({
         title: "Error",
         description: "Ya existe un paciente con esta cédula",
@@ -470,27 +538,31 @@ export default function CreateAppointmentPage() {
     const patient: Patient = {
       id: Date.now().toString(),
       name: newPatient.name,
-      cedula: newPatient.cedula,
-      phone: newPatient.phone,
       email: newPatient.email,
-      age: Number.parseInt(newPatient.age) || 0,
+      phone: newPatient.phone,
+      cedula: newPatient.cedula,
+      birthDate: newPatient.birthDate,
       address: newPatient.address,
       emergencyContact: newPatient.emergencyContact,
       emergencyPhone: newPatient.emergencyPhone,
+      medicalHistory: newPatient.medicalHistory ? newPatient.medicalHistory.split(",").map((h) => h.trim()) : [],
+      status: "active",
+      registrationDate: new Date().toISOString().split("T")[0],
     }
 
     setPatients((prev) => [...prev, patient])
-    handlePatientSelect(patient.id)
-    setShowNewPatientForm(false)
+    setSelectedPatient(patient.id)
+    setIsNewPatientDialogOpen(false)
     setNewPatient({
       name: "",
-      cedula: "",
-      phone: "",
       email: "",
-      age: "",
+      phone: "",
+      cedula: "",
+      birthDate: "",
       address: "",
       emergencyContact: "",
       emergencyPhone: "",
+      medicalHistory: "",
     })
 
     toast({
@@ -499,10 +571,15 @@ export default function CreateAppointmentPage() {
     })
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!selectedDate || !formData.time || !formData.patientId || !formData.specialtyId || !formData.studentId) {
+  const handleCreateAppointment = () => {
+    if (
+      !selectedDate ||
+      !selectedSpecialty ||
+      !selectedStudent ||
+      !selectedPatient ||
+      !selectedTime ||
+      !appointmentType
+    ) {
       toast({
         title: "Error",
         description: "Por favor completa todos los campos obligatorios",
@@ -511,482 +588,529 @@ export default function CreateAppointmentPage() {
       return
     }
 
-    setIsLoading(true)
+    const student = students.find((s) => s.id === selectedStudent)
+    const patient = patients.find((p) => p.id === selectedPatient)
+    const specialty = specialties.find((s) => s.name === selectedSpecialty)
 
-    try {
-      const specialty = specialties.find((s) => s.id === formData.specialtyId)
-      const student = students.find((s) => s.id === formData.studentId)
+    toast({
+      title: "Cita creada exitosamente",
+      description: `Cita programada para ${patient?.name} con ${student?.name} el ${format(selectedDate, "dd/MM/yyyy", { locale: es })} a las ${selectedTime}`,
+    })
 
-      const newAppointment = {
-        id: Date.now().toString(),
-        title: `${specialty?.name} - ${formData.patientName}`,
-        patientName: formData.patientName,
-        patientPhone: formData.patientPhone,
-        patientEmail: formData.patientEmail,
-        patientCedula: formData.patientCedula,
-        date: format(selectedDate, "yyyy-MM-dd"),
-        time: formData.time,
-        duration: formData.duration,
-        type: formData.type,
-        notes: formData.notes,
-        priority: formData.priority,
-        status: "programada" as const,
-        createdAt: new Date().toISOString(),
-        studentName: student?.name || "",
-        specialty: specialty?.name || "",
-      }
-
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      addAppointment(newAppointment)
-
-      toast({
-        title: "Cita creada exitosamente",
-        description: `Cita para ${formData.patientName} el ${format(selectedDate, "dd/MM/yyyy", { locale: es })} a las ${formData.time}`,
-      })
-
-      router.push("/dashboard/secretary/appointments")
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo crear la cita. Inténtalo de nuevo.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsLoading(false)
-    }
+    // Reset form
+    setSelectedDate(undefined)
+    setSelectedSpecialty("")
+    setSelectedStudent("")
+    setSelectedPatient("")
+    setSelectedTime("")
+    setAppointmentType("")
+    setNotes("")
+    setSearchPatient("")
+    setSearchStudent("")
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 p-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Volver
-        </Button>
+    <div className="space-y-6">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Nueva Cita</h1>
-          <p className="text-gray-600 mt-1">Programa una nueva cita para un paciente</p>
+          <h1 className="text-3xl font-bold">Crear Nueva Cita</h1>
+          <p className="text-muted-foreground">Programa una nueva cita para un paciente</p>
+        </div>
+        <Button asChild variant="outline">
+          <Link href="/dashboard/secretary/appointments">
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            Ver Todas las Citas
+          </Link>
+        </Button>
+      </div>
+
+      <div className="grid gap-6 lg:grid-cols-3">
+        {/* Main Form */}
+        <div className="lg:col-span-2 space-y-6">
+          {/* Date and Specialty Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CalendarIcon className="h-5 w-5" />
+                Fecha y Especialidad
+              </CardTitle>
+              <CardDescription>Selecciona la fecha y especialidad para la cita</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid gap-4 md:grid-cols-2">
+                <div className="space-y-2">
+                  <Label>Fecha de la Cita *</Label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left font-normal bg-transparent">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {selectedDate ? format(selectedDate, "PPP", { locale: es }) : "Seleccionar fecha"}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={setSelectedDate}
+                        disabled={isDateDisabled}
+                        initialFocus
+                        locale={es}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  <p className="text-xs text-muted-foreground">Solo días laborables (Lunes a Viernes)</p>
+                </div>
+                <div className="space-y-2">
+                  <Label>Especialidad *</Label>
+                  <Select value={selectedSpecialty} onValueChange={setSelectedSpecialty}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Seleccionar especialidad" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {specialties.map((specialty) => (
+                        <SelectItem key={specialty.id} value={specialty.name}>
+                          <div className="flex items-center gap-2">
+                            <Stethoscope className="h-4 w-4" />
+                            {specialty.name}
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
+              {selectedSpecialty && (
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
+                  <div className="space-y-2">
+                    <h4 className="font-medium text-blue-900">Información de la Especialidad</h4>
+                    <p className="text-sm text-blue-700">
+                      {specialties.find((s) => s.name === selectedSpecialty)?.description}
+                    </p>
+                    <div className="flex items-center gap-4 text-sm text-blue-700">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {specialties.find((s) => s.name === selectedSpecialty)?.duration} min
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <User className="h-3 w-3" />
+                        {specialties.find((s) => s.name === selectedSpecialty)?.professor}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Time Selection */}
+          {selectedDate && selectedSpecialty && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Clock className="h-5 w-5" />
+                  Horarios Disponibles
+                </CardTitle>
+                <CardDescription>
+                  Selecciona un horario disponible para {format(selectedDate, "EEEE, dd 'de' MMMM", { locale: es })}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="grid gap-2 md:grid-cols-4">
+                  {getAvailableTimeSlots().map((slot) => (
+                    <Button
+                      key={slot.time}
+                      variant={selectedTime === slot.time ? "default" : slot.available ? "outline" : "secondary"}
+                      disabled={!slot.available}
+                      onClick={() => setSelectedTime(slot.time)}
+                      className="justify-start"
+                    >
+                      <Clock className="mr-2 h-4 w-4" />
+                      {slot.time}
+                      {!slot.available && <span className="ml-2 text-xs">(Ocupado)</span>}
+                    </Button>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Student Selection */}
+          {selectedSpecialty && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <GraduationCap className="h-5 w-5" />
+                  Seleccionar Estudiante
+                </CardTitle>
+                <CardDescription>Elige el estudiante que atenderá al paciente</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Buscar Estudiante</Label>
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Buscar por nombre..."
+                      value={searchStudent}
+                      onChange={(e) => setSearchStudent(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid gap-3 max-h-64 overflow-y-auto">
+                  {filteredStudents.map((student) => (
+                    <div
+                      key={student.id}
+                      className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                        selectedStudent === student.id
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                      onClick={() => setSelectedStudent(student.id)}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                            {student.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .slice(0, 2)}
+                          </div>
+                          <div>
+                            <h4 className="font-medium">{student.name}</h4>
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                              <span>{student.semester}° Semestre</span>
+                              <span>•</span>
+                              <span>{student.professor}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          {getExperienceBadge(student.experience)}
+                          <div className="text-right">
+                            <div className={`text-sm font-medium ${getGPAColor(student.gpa)}`}>
+                              GPA: {student.gpa.toFixed(1)}
+                            </div>
+                            <div className="text-xs text-muted-foreground">{student.completedCases} casos</div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Patient Selection */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                Seleccionar Paciente
+              </CardTitle>
+              <CardDescription>Elige el paciente para la cita o registra uno nuevo</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex gap-2">
+                <div className="flex-1">
+                  <div className="relative">
+                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                    <Input
+                      placeholder="Buscar por nombre, cédula o teléfono..."
+                      value={searchPatient}
+                      onChange={(e) => setSearchPatient(e.target.value)}
+                      className="pl-10"
+                    />
+                  </div>
+                </div>
+                <Button onClick={() => setIsNewPatientDialogOpen(true)}>
+                  <UserPlus className="mr-2 h-4 w-4" />
+                  Nuevo Paciente
+                </Button>
+              </div>
+
+              <div className="grid gap-3 max-h-64 overflow-y-auto">
+                {filteredPatients.map((patient) => (
+                  <div
+                    key={patient.id}
+                    className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                      selectedPatient === patient.id
+                        ? "border-blue-500 bg-blue-50"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                    onClick={() => setSelectedPatient(patient.id)}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-green-600 to-teal-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                          {patient.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)}
+                        </div>
+                        <div>
+                          <h4 className="font-medium">{patient.name}</h4>
+                          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                            <Phone className="h-3 w-3" />
+                            <span>{patient.phone}</span>
+                            <span>•</span>
+                            <span>CI: {patient.cedula}</span>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-sm font-medium">
+                          {new Date().getFullYear() - new Date(patient.birthDate).getFullYear()} años
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                          {patient.medicalHistory.length > 0 ? (
+                            <span className="text-orange-600">Con historial médico</span>
+                          ) : (
+                            <span className="text-green-600">Sin historial médico</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Appointment Details */}
+          <Card>
+            <CardHeader>
+              <CardTitle>Detalles de la Cita</CardTitle>
+              <CardDescription>Información adicional sobre la cita</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label>Tipo de Cita *</Label>
+                <Select value={appointmentType} onValueChange={setAppointmentType}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar tipo de cita" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {appointmentTypes.map((type) => (
+                      <SelectItem key={type} value={type}>
+                        {type}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="space-y-2">
+                <Label>Notas Adicionales</Label>
+                <Textarea
+                  placeholder="Información adicional sobre la cita, síntomas, observaciones..."
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={3}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <Button onClick={handleCreateAppointment} className="flex-1">
+              <CheckCircle className="mr-2 h-4 w-4" />
+              Crear Cita
+            </Button>
+            <Button variant="outline" asChild>
+              <Link href="/dashboard/secretary/appointments">Cancelar</Link>
+            </Button>
+          </div>
+        </div>
+
+        {/* Summary Sidebar */}
+        <div className="space-y-6">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <CheckCircle className="h-5 w-5" />
+                Resumen de la Cita
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {selectedDate && (
+                <div className="flex items-center gap-2 text-sm">
+                  <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                  <span>{format(selectedDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es })}</span>
+                </div>
+              )}
+              {selectedTime && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Clock className="h-4 w-4 text-muted-foreground" />
+                  <span>{selectedTime}</span>
+                </div>
+              )}
+              {selectedSpecialty && (
+                <div className="flex items-center gap-2 text-sm">
+                  <Stethoscope className="h-4 w-4 text-muted-foreground" />
+                  <span>{selectedSpecialty}</span>
+                </div>
+              )}
+              {selectedStudent && (
+                <div className="flex items-center gap-2 text-sm">
+                  <GraduationCap className="h-4 w-4 text-muted-foreground" />
+                  <span>{students.find((s) => s.id === selectedStudent)?.name}</span>
+                </div>
+              )}
+              {selectedPatient && (
+                <div className="flex items-center gap-2 text-sm">
+                  <User className="h-4 w-4 text-muted-foreground" />
+                  <span>{patients.find((p) => p.id === selectedPatient)?.name}</span>
+                </div>
+              )}
+              {appointmentType && (
+                <div className="flex items-center gap-2 text-sm">
+                  <BookOpen className="h-4 w-4 text-muted-foreground" />
+                  <span>{appointmentType}</span>
+                </div>
+              )}
+
+              {selectedDate &&
+                selectedSpecialty &&
+                selectedStudent &&
+                selectedPatient &&
+                selectedTime &&
+                appointmentType && (
+                  <div className="pt-4 border-t">
+                    <div className="flex items-center gap-2 text-green-600">
+                      <CheckCircle className="h-4 w-4" />
+                      <span className="text-sm font-medium">Lista para crear</span>
+                    </div>
+                  </div>
+                )}
+            </CardContent>
+          </Card>
+
+          {/* Requirements */}
+          {selectedSpecialty && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <AlertCircle className="h-5 w-5" />
+                  Requisitos
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul className="space-y-2 text-sm">
+                  {specialties
+                    .find((s) => s.name === selectedSpecialty)
+                    ?.requirements.map((req, index) => (
+                      <li key={index} className="flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 bg-blue-600 rounded-full" />
+                        {req}
+                      </li>
+                    ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
-      <form onSubmit={handleSubmit}>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {/* Patient Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <User className="mr-2 h-5 w-5" />
-                Información del Paciente
-              </CardTitle>
-              <CardDescription>Selecciona o registra un paciente</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {!showNewPatientForm ? (
-                <>
-                  <div>
-                    <Label htmlFor="patient">Paciente *</Label>
-                    <Select value={formData.patientId} onValueChange={handlePatientSelect}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecciona un paciente" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {patients.map((patient) => (
-                          <SelectItem key={patient.id} value={patient.id}>
-                            <div className="flex flex-col">
-                              <div className="font-medium">{patient.name}</div>
-                              <div className="text-sm text-gray-500 flex items-center gap-2">
-                                <span>CI: {patient.cedula}</span>
-                                <span>•</span>
-                                <span>{patient.age} años</span>
-                                <span>•</span>
-                                <Phone className="h-3 w-3" />
-                                <span>{patient.phone}</span>
-                              </div>
-                            </div>
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-
-                  {formData.patientId && (
-                    <div className="bg-blue-50 p-4 rounded-lg space-y-2">
-                      <h4 className="font-medium text-blue-900">Información del Paciente</h4>
-                      <div className="grid grid-cols-2 gap-2 text-sm">
-                        <div className="flex items-center gap-1">
-                          <Phone className="h-3 w-3 text-blue-600" />
-                          <span>{formData.patientPhone}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Mail className="h-3 w-3 text-blue-600" />
-                          <span>{formData.patientEmail}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <MapPin className="h-3 w-3 text-blue-600" />
-                          <span>{patients.find((p) => p.id === formData.patientId)?.address}</span>
-                        </div>
-                        <div className="text-blue-700">
-                          <span>Emergencia: {patients.find((p) => p.id === formData.patientId)?.emergencyContact}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  <Button
-                    type="button"
-                    variant="outline"
-                    className="w-full bg-transparent"
-                    onClick={() => setShowNewPatientForm(true)}
-                  >
-                    <Plus className="mr-2 h-4 w-4" />
-                    Registrar nuevo paciente
-                  </Button>
-                </>
-              ) : (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center">
-                    <h4 className="font-medium">Nuevo Paciente</h4>
-                    <Button type="button" variant="ghost" size="sm" onClick={() => setShowNewPatientForm(false)}>
-                      Cancelar
-                    </Button>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label>Nombre Completo *</Label>
-                      <Input
-                        value={newPatient.name}
-                        onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
-                        placeholder="Nombre y apellidos"
-                      />
-                    </div>
-                    <div>
-                      <Label>Cédula *</Label>
-                      <Input
-                        value={newPatient.cedula}
-                        onChange={(e) => setNewPatient({ ...newPatient, cedula: e.target.value })}
-                        placeholder="1234567890"
-                        maxLength={10}
-                      />
-                    </div>
-                    <div>
-                      <Label>Teléfono *</Label>
-                      <Input
-                        value={newPatient.phone}
-                        onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
-                        placeholder="+593 99 123 4567"
-                      />
-                    </div>
-                    <div>
-                      <Label>Email</Label>
-                      <Input
-                        type="email"
-                        value={newPatient.email}
-                        onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
-                        placeholder="email@ejemplo.com"
-                      />
-                    </div>
-                    <div>
-                      <Label>Edad</Label>
-                      <Input
-                        type="number"
-                        value={newPatient.age}
-                        onChange={(e) => setNewPatient({ ...newPatient, age: e.target.value })}
-                        placeholder="25"
-                        min="1"
-                        max="120"
-                      />
-                    </div>
-                    <div>
-                      <Label>Dirección</Label>
-                      <Input
-                        value={newPatient.address}
-                        onChange={(e) => setNewPatient({ ...newPatient, address: e.target.value })}
-                        placeholder="Dirección completa"
-                      />
-                    </div>
-                    <div>
-                      <Label>Contacto de Emergencia</Label>
-                      <Input
-                        value={newPatient.emergencyContact}
-                        onChange={(e) => setNewPatient({ ...newPatient, emergencyContact: e.target.value })}
-                        placeholder="Nombre del contacto"
-                      />
-                    </div>
-                    <div>
-                      <Label>Teléfono de Emergencia</Label>
-                      <Input
-                        value={newPatient.emergencyPhone}
-                        onChange={(e) => setNewPatient({ ...newPatient, emergencyPhone: e.target.value })}
-                        placeholder="+593 99 123 4567"
-                      />
-                    </div>
-                  </div>
-                  <Button type="button" onClick={handleCreateNewPatient} className="w-full">
-                    Registrar Paciente
-                  </Button>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Specialty and Student */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <Stethoscope className="mr-2 h-5 w-5" />
-                Especialidad y Estudiante
-              </CardTitle>
-              <CardDescription>Selecciona la especialidad y el estudiante</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label htmlFor="specialty">Especialidad *</Label>
-                <Select value={formData.specialtyId} onValueChange={handleSpecialtySelect}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una especialidad" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {specialties.map((specialty) => (
-                      <SelectItem key={specialty.id} value={specialty.id}>
-                        <div className="flex flex-col">
-                          <div className="font-medium">{specialty.name}</div>
-                          <div className="text-sm text-gray-500">
-                            {specialty.duration} min • Prof. {specialty.professor}
-                          </div>
-                          <div className="text-xs text-gray-400">{specialty.description}</div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.specialtyId && (
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-purple-900">Requisitos de la Especialidad</h4>
-                  <ul className="text-sm text-purple-700 mt-2 space-y-1">
-                    {specialties
-                      .find((s) => s.id === formData.specialtyId)
-                      ?.requirements.map((req, index) => (
-                        <li key={index} className="flex items-center gap-2">
-                          <div className="w-1 h-1 bg-purple-600 rounded-full" />
-                          {req}
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              )}
-
-              <div>
-                <Label htmlFor="student">Estudiante *</Label>
-                <Select
-                  value={formData.studentId}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, studentId: value }))}
-                  disabled={!formData.specialtyId}
-                >
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={
-                        formData.specialtyId ? "Selecciona un estudiante" : "Primero selecciona una especialidad"
-                      }
-                    />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {getFilteredStudents().map((student) => (
-                      <SelectItem key={student.id} value={student.id}>
-                        <div className="flex flex-col">
-                          <div className="font-medium">{student.name}</div>
-                          <div className="text-sm text-gray-500 flex items-center gap-2">
-                            <span>{student.semester}° Semestre</span>
-                            <span>•</span>
-                            <span>{student.experience}</span>
-                            <span>•</span>
-                            <span>GPA: {student.gpa}</span>
-                          </div>
-                          <div className="text-xs text-gray-400 flex items-center gap-2">
-                            <Phone className="h-3 w-3" />
-                            <span>{student.phone}</span>
-                            <span>•</span>
-                            <span>{student.completedCases} casos completados</span>
-                          </div>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              {formData.studentId && (
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h4 className="font-medium text-green-900">Estudiante Seleccionado</h4>
-                  {(() => {
-                    const student = students.find((s) => s.id === formData.studentId)
-                    return student ? (
-                      <div className="text-sm text-green-700 mt-2 space-y-1">
-                        <div>Email: {student.email}</div>
-                        <div>Experiencia: {student.experience}</div>
-                        <div>Casos completados: {student.completedCases}</div>
-                      </div>
-                    ) : null
-                  })()}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Date and Time */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center">
-                <CalendarIcon className="mr-2 h-5 w-5" />
-                Fecha y Hora
-              </CardTitle>
-              <CardDescription>Selecciona cuándo será la cita</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Fecha *</Label>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className={cn(
-                        "w-full justify-start text-left font-normal",
-                        !selectedDate && "text-muted-foreground",
-                      )}
-                    >
-                      <CalendarIcon className="mr-2 h-4 w-4" />
-                      {selectedDate ? format(selectedDate, "PPP", { locale: es }) : "Selecciona una fecha"}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar
-                      mode="single"
-                      selected={selectedDate}
-                      onSelect={setSelectedDate}
-                      disabled={(date) => {
-                        const today = new Date()
-                        today.setHours(0, 0, 0, 0)
-                        const dayOfWeek = date.getDay()
-                        // Disable past dates, weekends (Sunday = 0, Saturday = 6)
-                        return date < today || dayOfWeek === 0 || dayOfWeek === 6
-                      }}
-                      initialFocus
-                      locale={es}
-                    />
-                  </PopoverContent>
-                </Popover>
-                <p className="text-xs text-gray-500 mt-1">Solo días laborables (lunes a viernes)</p>
-              </div>
-
-              <div>
-                <Label htmlFor="time">Hora *</Label>
-                <Select
-                  value={formData.time}
-                  onValueChange={(value) => setFormData((prev) => ({ ...prev, time: value }))}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecciona una hora" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {timeSlots.map((time) => (
-                      <SelectItem key={time} value={time}>
-                        <div className="flex items-center">
-                          <Clock className="mr-2 h-4 w-4" />
-                          {time}
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Tipo de Cita</Label>
-                  <Select
-                    value={formData.type}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, type: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="consulta">Consulta</SelectItem>
-                      <SelectItem value="tratamiento">Tratamiento</SelectItem>
-                      <SelectItem value="emergencia">Emergencia</SelectItem>
-                      <SelectItem value="seguimiento">Seguimiento</SelectItem>
-                      <SelectItem value="control">Control</SelectItem>
-                      <SelectItem value="cirugia">Cirugía</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div>
-                  <Label>Prioridad</Label>
-                  <Select
-                    value={formData.priority}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, priority: value }))}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="low">Baja</SelectItem>
-                      <SelectItem value="medium">Media</SelectItem>
-                      <SelectItem value="high">Alta</SelectItem>
-                      <SelectItem value="urgent">Urgente</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              <div>
-                <Label>Duración Estimada (minutos)</Label>
+      {/* New Patient Dialog */}
+      <Dialog open={isNewPatientDialogOpen} onOpenChange={setIsNewPatientDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Registrar Nuevo Paciente</DialogTitle>
+            <DialogDescription>Completa la información del nuevo paciente</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Nombre Completo *</Label>
                 <Input
-                  type="number"
-                  value={formData.duration}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, duration: e.target.value }))}
-                  min="15"
-                  max="240"
-                  step="15"
+                  value={newPatient.name}
+                  onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
+                  placeholder="Nombre y apellidos"
                 />
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Notes */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Notas Adicionales</CardTitle>
-              <CardDescription>Información adicional sobre la cita</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div>
-                <Label htmlFor="notes">Observaciones</Label>
-                <Textarea
-                  id="notes"
-                  placeholder="Escribe cualquier información adicional sobre la cita, síntomas del paciente, preparación especial requerida, etc."
-                  value={formData.notes}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, notes: e.target.value }))}
-                  rows={4}
+              <div className="space-y-2">
+                <Label>Cédula *</Label>
+                <Input
+                  value={newPatient.cedula}
+                  onChange={(e) => setNewPatient({ ...newPatient, cedula: e.target.value })}
+                  placeholder="1234567890"
+                  maxLength={10}
                 />
               </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Action Buttons */}
-        <div className="flex justify-end space-x-4 mt-6">
-          <Button type="button" variant="outline" onClick={() => router.back()} disabled={isLoading}>
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Creando..." : "Crear Cita"}
-          </Button>
-        </div>
-      </form>
+              <div className="space-y-2">
+                <Label>Teléfono *</Label>
+                <Input
+                  value={newPatient.phone}
+                  onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
+                  placeholder="+593 99 123 4567"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Email</Label>
+                <Input
+                  type="email"
+                  value={newPatient.email}
+                  onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
+                  placeholder="paciente@email.com"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Fecha de Nacimiento</Label>
+                <Input
+                  type="date"
+                  value={newPatient.birthDate}
+                  onChange={(e) => setNewPatient({ ...newPatient, birthDate: e.target.value })}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Contacto de Emergencia</Label>
+                <Input
+                  value={newPatient.emergencyContact}
+                  onChange={(e) => setNewPatient({ ...newPatient, emergencyContact: e.target.value })}
+                  placeholder="Nombre del contacto"
+                />
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label>Dirección</Label>
+              <Input
+                value={newPatient.address}
+                onChange={(e) => setNewPatient({ ...newPatient, address: e.target.value })}
+                placeholder="Dirección completa"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Teléfono de Emergencia</Label>
+              <Input
+                value={newPatient.emergencyPhone}
+                onChange={(e) => setNewPatient({ ...newPatient, emergencyPhone: e.target.value })}
+                placeholder="+593 99 123 4567"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Historial Médico</Label>
+              <Textarea
+                value={newPatient.medicalHistory}
+                onChange={(e) => setNewPatient({ ...newPatient, medicalHistory: e.target.value })}
+                placeholder="Enfermedades, alergias, medicamentos... (separar con comas)"
+                rows={3}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsNewPatientDialogOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleCreatePatient}>Registrar Paciente</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
