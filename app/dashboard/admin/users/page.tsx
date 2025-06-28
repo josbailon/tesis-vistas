@@ -43,6 +43,8 @@ import {
   Phone,
   GraduationCap,
   Stethoscope,
+  Users,
+  Plus,
 } from "lucide-react"
 
 interface AdminUser {
@@ -216,11 +218,11 @@ export default function AdminUsersPage() {
 
   const getRoleBadge = (role: string) => {
     const roleColors = {
-      admin: "bg-red-100 text-red-800",
-      professor: "bg-purple-100 text-purple-800",
-      student: "bg-blue-100 text-blue-800",
-      patient: "bg-green-100 text-green-800",
-      secretary: "bg-orange-100 text-orange-800",
+      admin: "bg-red-100 text-red-800 border-red-200",
+      professor: "bg-purple-100 text-purple-800 border-purple-200",
+      student: "bg-blue-100 text-blue-800 border-blue-200",
+      patient: "bg-green-100 text-green-800 border-green-200",
+      secretary: "bg-orange-100 text-orange-800 border-orange-200",
     }
     const roleLabels = {
       admin: "Administrador",
@@ -230,7 +232,7 @@ export default function AdminUsersPage() {
       secretary: "Secretario",
     }
     return (
-      <Badge className={roleColors[role as keyof typeof roleColors]}>
+      <Badge className={`${roleColors[role as keyof typeof roleColors]} border`}>
         {roleLabels[role as keyof typeof roleLabels]}
       </Badge>
     )
@@ -238,7 +240,13 @@ export default function AdminUsersPage() {
 
   const getStatusBadge = (status: string) => {
     return (
-      <Badge className={status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
+      <Badge
+        className={
+          status === "active"
+            ? "bg-green-100 text-green-800 border-green-200 border"
+            : "bg-gray-100 text-gray-800 border-gray-200 border"
+        }
+      >
         {status === "active" ? "Activo" : "Inactivo"}
       </Badge>
     )
@@ -395,110 +403,120 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex justify-between items-center">
+    <div className="space-y-6 p-6">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
-          <p className="text-muted-foreground">Administra todos los usuarios del sistema</p>
+          <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
+          <p className="text-gray-600 mt-1">Administra todos los usuarios del sistema</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport}>
-            <Download className="mr-2 h-4 w-4" />
+          <Button variant="outline" onClick={handleExport} className="flex items-center gap-2 bg-transparent">
+            <Download className="h-4 w-4" />
             Exportar
           </Button>
         </div>
       </div>
 
-      {/* Quick Create Buttons */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Crear Nuevos Usuarios</CardTitle>
-          <CardDescription>Accesos rápidos para crear diferentes tipos de usuarios</CardDescription>
+      {/* Quick Create Buttons - Moved to top */}
+      <Card className="border-2 border-dashed border-blue-200 bg-blue-50/50">
+        <CardHeader className="pb-4">
+          <div className="flex items-center gap-2">
+            <Plus className="h-5 w-5 text-blue-600" />
+            <CardTitle className="text-blue-900">Crear Nuevos Usuarios</CardTitle>
+          </div>
+          <CardDescription className="text-blue-700">
+            Accesos rápidos para crear diferentes tipos de usuarios
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             <Button
               onClick={() => openCreateDialog("patient")}
-              className="h-20 flex flex-col gap-2 bg-green-600 hover:bg-green-700"
+              className="h-20 flex flex-col gap-2 bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <UserPlus className="h-6 w-6" />
-              <span>Nuevo Paciente</span>
+              <span className="font-medium">Nuevo Paciente</span>
             </Button>
             <Button
               onClick={() => openCreateDialog("student")}
-              className="h-20 flex flex-col gap-2 bg-blue-600 hover:bg-blue-700"
+              className="h-20 flex flex-col gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <GraduationCap className="h-6 w-6" />
-              <span>Nuevo Estudiante</span>
+              <span className="font-medium">Nuevo Estudiante</span>
             </Button>
             <Button
               onClick={() => openCreateDialog("professor")}
-              className="h-20 flex flex-col gap-2 bg-purple-600 hover:bg-purple-700"
+              className="h-20 flex flex-col gap-2 bg-purple-600 hover:bg-purple-700 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Stethoscope className="h-6 w-6" />
-              <span>Nuevo Profesor</span>
+              <span className="font-medium">Nuevo Profesor</span>
             </Button>
             <Button
               onClick={() => openCreateDialog("secretary")}
-              className="h-20 flex flex-col gap-2 bg-orange-600 hover:bg-orange-700"
+              className="h-20 flex flex-col gap-2 bg-orange-600 hover:bg-orange-700 shadow-lg hover:shadow-xl transition-all duration-200"
             >
               <Shield className="h-6 w-6" />
-              <span>Nuevo Secretario</span>
+              <span className="font-medium">Nuevo Secretario</span>
             </Button>
           </div>
         </CardContent>
       </Card>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-6">
-        <Card>
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <Card className="border-l-4 border-l-gray-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Usuarios</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-gray-700">Total Usuarios</CardTitle>
+            <Users className="h-4 w-4 text-gray-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.length}</div>
-            <p className="text-xs text-muted-foreground">Registrados en el sistema</p>
+            <div className="text-2xl font-bold text-gray-900">{users.length}</div>
+            <p className="text-xs text-gray-500">Registrados en el sistema</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-purple-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Profesores</CardTitle>
-            <Stethoscope className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-purple-700">Profesores</CardTitle>
+            <Stethoscope className="h-4 w-4 text-purple-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter((u) => u.role === "professor").length}</div>
-            <p className="text-xs text-muted-foreground">Activos</p>
+            <div className="text-2xl font-bold text-purple-900">
+              {users.filter((u) => u.role === "professor").length}
+            </div>
+            <p className="text-xs text-purple-600">Activos</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-blue-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Estudiantes</CardTitle>
-            <GraduationCap className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-blue-700">Estudiantes</CardTitle>
+            <GraduationCap className="h-4 w-4 text-blue-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter((u) => u.role === "student").length}</div>
-            <p className="text-xs text-muted-foreground">Registrados</p>
+            <div className="text-2xl font-bold text-blue-900">{users.filter((u) => u.role === "student").length}</div>
+            <p className="text-xs text-blue-600">Registrados</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-green-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pacientes</CardTitle>
-            <UserPlus className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-green-700">Pacientes</CardTitle>
+            <UserPlus className="h-4 w-4 text-green-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter((u) => u.role === "patient").length}</div>
-            <p className="text-xs text-muted-foreground">En el sistema</p>
+            <div className="text-2xl font-bold text-green-900">{users.filter((u) => u.role === "patient").length}</div>
+            <p className="text-xs text-green-600">En el sistema</p>
           </CardContent>
         </Card>
-        <Card>
+        <Card className="border-l-4 border-l-orange-500">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Secretarios</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
+            <CardTitle className="text-sm font-medium text-orange-700">Secretarios</CardTitle>
+            <Shield className="h-4 w-4 text-orange-500" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">{users.filter((u) => u.role === "secretary").length}</div>
-            <p className="text-xs text-muted-foreground">Activos</p>
+            <div className="text-2xl font-bold text-orange-900">
+              {users.filter((u) => u.role === "secretary").length}
+            </div>
+            <p className="text-xs text-orange-600">Activos</p>
           </CardContent>
         </Card>
       </div>
@@ -506,8 +524,11 @@ export default function AdminUsersPage() {
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>Busca y filtra usuarios</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="h-5 w-5" />
+            Filtros y Búsqueda
+          </CardTitle>
+          <CardDescription>Busca y filtra usuarios por diferentes criterios</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="flex flex-col md:flex-row gap-4">
@@ -518,13 +539,13 @@ export default function AdminUsersPage() {
                   placeholder="Buscar por nombre, email o cédula..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 h-11"
                 />
               </div>
             </div>
             <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Rol" />
+              <SelectTrigger className="w-full md:w-48 h-11">
+                <SelectValue placeholder="Filtrar por rol" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los roles</SelectItem>
@@ -536,8 +557,8 @@ export default function AdminUsersPage() {
               </SelectContent>
             </Select>
             <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Estado" />
+              <SelectTrigger className="w-full md:w-48 h-11">
+                <SelectValue placeholder="Filtrar por estado" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todos los estados</SelectItem>
@@ -553,172 +574,199 @@ export default function AdminUsersPage() {
       <Card>
         <CardHeader>
           <CardTitle>Lista de Usuarios</CardTitle>
-          <CardDescription>{filteredUsers.length} usuarios encontrados</CardDescription>
+          <CardDescription>
+            {filteredUsers.length} usuario{filteredUsers.length !== 1 ? "s" : ""} encontrado
+            {filteredUsers.length !== 1 ? "s" : ""}
+          </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Usuario</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Especialidad</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Fecha Registro</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")
-                          .slice(0, 2)}
-                      </div>
-                      <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          {user.email}
-                        </div>
-                        {user.phone && (
-                          <div className="text-sm text-muted-foreground flex items-center gap-1">
-                            <Phone className="h-3 w-3" />
-                            {user.phone}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{getRoleBadge(user.role)}</TableCell>
-                  <TableCell>
-                    {user.specialty ? (
-                      <Badge variant="outline">{user.specialty}</Badge>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{getStatusBadge(user.status)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(user.createdAt).toLocaleDateString("es-ES")}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUser(user)
-                          setIsViewDialogOpen(true)
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUser(user)
-                          setIsEditDialogOpen(true)
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(user.id, user.status)}>
-                        {user.status === "active" ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm" className="text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta acción eliminará permanentemente el usuario {user.name} y todos sus datos asociados.
-                              Esta acción no se puede deshacer.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Eliminar
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Usuario</TableHead>
+                  <TableHead>Rol</TableHead>
+                  <TableHead>Especialidad</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Fecha Registro</TableHead>
+                  <TableHead className="text-center">Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id} className="hover:bg-gray-50">
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">
+                          {user.name
+                            .split(" ")
+                            .map((n) => n[0])
+                            .join("")
+                            .slice(0, 2)}
+                        </div>
+                        <div>
+                          <div className="font-medium text-gray-900">{user.name}</div>
+                          <div className="text-sm text-gray-500 flex items-center gap-1">
+                            <Mail className="h-3 w-3" />
+                            {user.email}
+                          </div>
+                          {user.phone && (
+                            <div className="text-sm text-gray-500 flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {user.phone}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{getRoleBadge(user.role)}</TableCell>
+                    <TableCell>
+                      {user.specialty ? (
+                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
+                          {user.specialty}
+                        </Badge>
+                      ) : (
+                        <span className="text-gray-400">-</span>
+                      )}
+                    </TableCell>
+                    <TableCell>{getStatusBadge(user.status)}</TableCell>
+                    <TableCell className="text-sm text-gray-600">
+                      {new Date(user.createdAt).toLocaleDateString("es-ES", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center justify-center gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(user)
+                            setIsViewDialogOpen(true)
+                          }}
+                          className="h-8 w-8 p-0 hover:bg-blue-100"
+                        >
+                          <Eye className="h-4 w-4 text-blue-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedUser(user)
+                            setIsEditDialogOpen(true)
+                          }}
+                          className="h-8 w-8 p-0 hover:bg-green-100"
+                        >
+                          <Edit className="h-4 w-4 text-green-600" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleToggleStatus(user.id, user.status)}
+                          className="h-8 w-8 p-0 hover:bg-yellow-100"
+                        >
+                          {user.status === "active" ? (
+                            <Lock className="h-4 w-4 text-yellow-600" />
+                          ) : (
+                            <Unlock className="h-4 w-4 text-yellow-600" />
+                          )}
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-red-100">
+                              <Trash2 className="h-4 w-4 text-red-600" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                Esta acción eliminará permanentemente el usuario <strong>{user.name}</strong> y todos
+                                sus datos asociados. Esta acción no se puede deshacer.
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={() => handleDeleteUser(user.id)}
+                                className="bg-red-600 hover:bg-red-700"
+                              >
+                                Eliminar
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
 
       {/* Create User Dialog */}
       <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Crear Nuevo {getRoleLabel(createUserType)}</DialogTitle>
+            <DialogTitle className="text-xl">Crear Nuevo {getRoleLabel(createUserType)}</DialogTitle>
             <DialogDescription>
               Completa la información del nuevo {getRoleLabel(createUserType).toLowerCase()}
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
+          <div className="space-y-6">
             {/* Basic Information */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label>Nombre Completo *</Label>
+                <Label className="text-sm font-medium">Nombre Completo *</Label>
                 <Input
                   value={newUser.name}
                   onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
                   placeholder="Nombre y apellidos completos"
+                  className="h-11"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Cédula *</Label>
+                <Label className="text-sm font-medium">Cédula *</Label>
                 <Input
                   value={newUser.cedula}
                   onChange={(e) => setNewUser({ ...newUser, cedula: e.target.value })}
                   placeholder="1234567890"
+                  className="h-11"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Email *</Label>
+                <Label className="text-sm font-medium">Email *</Label>
                 <Input
                   type="email"
                   value={newUser.email}
                   onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
                   placeholder={createUserType === "patient" ? "email@ejemplo.com" : "usuario@uleam.edu.ec"}
+                  className="h-11"
                 />
               </div>
               <div className="space-y-2">
-                <Label>Teléfono *</Label>
+                <Label className="text-sm font-medium">Teléfono *</Label>
                 <Input
                   value={newUser.phone}
                   onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
                   placeholder="+593 99 123 4567"
+                  className="h-11"
                 />
               </div>
             </div>
 
             {/* Address */}
             <div className="space-y-2">
-              <Label>Dirección</Label>
+              <Label className="text-sm font-medium">Dirección</Label>
               <Input
                 value={newUser.address}
                 onChange={(e) => setNewUser({ ...newUser, address: e.target.value })}
                 placeholder="Dirección completa"
+                className="h-11"
               />
             </div>
 
@@ -726,12 +774,12 @@ export default function AdminUsersPage() {
             {(createUserType === "professor" || createUserType === "student") && (
               <div className="space-y-4">
                 <div className="space-y-2">
-                  <Label>Especialidad *</Label>
+                  <Label className="text-sm font-medium">Especialidad *</Label>
                   <Select
                     value={newUser.specialty}
                     onValueChange={(value) => setNewUser({ ...newUser, specialty: value })}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue placeholder="Seleccionar especialidad" />
                     </SelectTrigger>
                     <SelectContent>
@@ -746,24 +794,25 @@ export default function AdminUsersPage() {
 
                 {createUserType === "professor" && (
                   <div className="space-y-2">
-                    <Label>Departamento</Label>
+                    <Label className="text-sm font-medium">Departamento</Label>
                     <Input
                       value={newUser.department}
                       onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
                       placeholder="Departamento de Odontología"
+                      className="h-11"
                     />
                   </div>
                 )}
 
                 {createUserType === "student" && (
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label>Semestre *</Label>
+                      <Label className="text-sm font-medium">Semestre *</Label>
                       <Select
                         value={newUser.semester}
                         onValueChange={(value) => setNewUser({ ...newUser, semester: value })}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-11">
                           <SelectValue placeholder="Seleccionar semestre" />
                         </SelectTrigger>
                         <SelectContent>
@@ -776,12 +825,12 @@ export default function AdminUsersPage() {
                       </Select>
                     </div>
                     <div className="space-y-2">
-                      <Label>Nivel de Experiencia</Label>
+                      <Label className="text-sm font-medium">Nivel de Experiencia</Label>
                       <Select
                         value={newUser.experience}
                         onValueChange={(value) => setNewUser({ ...newUser, experience: value })}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="h-11">
                           <SelectValue placeholder="Seleccionar nivel" />
                         </SelectTrigger>
                         <SelectContent>
@@ -797,9 +846,9 @@ export default function AdminUsersPage() {
             )}
 
             <div className="space-y-2">
-              <Label>Estado</Label>
+              <Label className="text-sm font-medium">Estado</Label>
               <Select value={newUser.status} onValueChange={(value) => setNewUser({ ...newUser, status: value })}>
-                <SelectTrigger>
+                <SelectTrigger className="h-11">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -809,11 +858,13 @@ export default function AdminUsersPage() {
               </Select>
             </div>
           </div>
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleCreateUser}>Crear {getRoleLabel(createUserType)}</Button>
+            <Button onClick={handleCreateUser} className="bg-blue-600 hover:bg-blue-700">
+              Crear {getRoleLabel(createUserType)}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -827,64 +878,70 @@ export default function AdminUsersPage() {
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <Label className="text-sm font-medium">Nombre</Label>
-                  <p>{selectedUser.name}</p>
+                  <Label className="text-sm font-medium text-gray-600">Nombre</Label>
+                  <p className="text-gray-900 font-medium">{selectedUser.name}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Cédula</Label>
-                  <p>{selectedUser.cedula}</p>
+                  <Label className="text-sm font-medium text-gray-600">Cédula</Label>
+                  <p className="text-gray-900">{selectedUser.cedula}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Email</Label>
-                  <p>{selectedUser.email}</p>
+                  <Label className="text-sm font-medium text-gray-600">Email</Label>
+                  <p className="text-gray-900">{selectedUser.email}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Teléfono</Label>
-                  <p>{selectedUser.phone}</p>
+                  <Label className="text-sm font-medium text-gray-600">Teléfono</Label>
+                  <p className="text-gray-900">{selectedUser.phone}</p>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Rol</Label>
-                  {getRoleBadge(selectedUser.role)}
+                  <Label className="text-sm font-medium text-gray-600">Rol</Label>
+                  <div className="mt-1">{getRoleBadge(selectedUser.role)}</div>
                 </div>
                 <div>
-                  <Label className="text-sm font-medium">Estado</Label>
-                  {getStatusBadge(selectedUser.status)}
+                  <Label className="text-sm font-medium text-gray-600">Estado</Label>
+                  <div className="mt-1">{getStatusBadge(selectedUser.status)}</div>
                 </div>
                 {selectedUser.specialty && (
                   <div>
-                    <Label className="text-sm font-medium">Especialidad</Label>
-                    <p>{selectedUser.specialty}</p>
+                    <Label className="text-sm font-medium text-gray-600">Especialidad</Label>
+                    <p className="text-gray-900">{selectedUser.specialty}</p>
                   </div>
                 )}
                 {selectedUser.department && (
                   <div>
-                    <Label className="text-sm font-medium">Departamento</Label>
-                    <p>{selectedUser.department}</p>
+                    <Label className="text-sm font-medium text-gray-600">Departamento</Label>
+                    <p className="text-gray-900">{selectedUser.department}</p>
                   </div>
                 )}
                 {selectedUser.semester && (
                   <div>
-                    <Label className="text-sm font-medium">Semestre</Label>
-                    <p>{selectedUser.semester}°</p>
+                    <Label className="text-sm font-medium text-gray-600">Semestre</Label>
+                    <p className="text-gray-900">{selectedUser.semester}°</p>
                   </div>
                 )}
                 {selectedUser.experience && (
                   <div>
-                    <Label className="text-sm font-medium">Experiencia</Label>
-                    <p>{selectedUser.experience}</p>
+                    <Label className="text-sm font-medium text-gray-600">Experiencia</Label>
+                    <p className="text-gray-900">{selectedUser.experience}</p>
                   </div>
                 )}
                 {selectedUser.address && (
                   <div className="col-span-2">
-                    <Label className="text-sm font-medium">Dirección</Label>
-                    <p>{selectedUser.address}</p>
+                    <Label className="text-sm font-medium text-gray-600">Dirección</Label>
+                    <p className="text-gray-900">{selectedUser.address}</p>
                   </div>
                 )}
                 <div>
-                  <Label className="text-sm font-medium">Fecha de Registro</Label>
-                  <p>{new Date(selectedUser.createdAt).toLocaleDateString("es-ES")}</p>
+                  <Label className="text-sm font-medium text-gray-600">Fecha de Registro</Label>
+                  <p className="text-gray-900">
+                    {new Date(selectedUser.createdAt).toLocaleDateString("es-ES", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </p>
                 </div>
               </div>
             </div>
@@ -901,37 +958,40 @@ export default function AdminUsersPage() {
           </DialogHeader>
           {selectedUser && (
             <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label>Nombre</Label>
+                  <Label className="text-sm font-medium">Nombre</Label>
                   <Input
                     value={selectedUser.name}
                     onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
+                    className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Email</Label>
+                  <Label className="text-sm font-medium">Email</Label>
                   <Input
                     value={selectedUser.email}
                     onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
+                    className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Teléfono</Label>
+                  <Label className="text-sm font-medium">Teléfono</Label>
                   <Input
                     value={selectedUser.phone || ""}
                     onChange={(e) => setSelectedUser({ ...selectedUser, phone: e.target.value })}
+                    className="h-11"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label>Estado</Label>
+                  <Label className="text-sm font-medium">Estado</Label>
                   <Select
                     value={selectedUser.status}
                     onValueChange={(value) =>
                       setSelectedUser({ ...selectedUser, status: value as "active" | "inactive" })
                     }
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="h-11">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -942,12 +1002,12 @@ export default function AdminUsersPage() {
                 </div>
                 {(selectedUser.role === "professor" || selectedUser.role === "student") && (
                   <div className="space-y-2">
-                    <Label>Especialidad</Label>
+                    <Label className="text-sm font-medium">Especialidad</Label>
                     <Select
                       value={selectedUser.specialty || ""}
                       onValueChange={(value) => setSelectedUser({ ...selectedUser, specialty: value })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-11">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -962,12 +1022,12 @@ export default function AdminUsersPage() {
                 )}
                 {selectedUser.role === "student" && (
                   <div className="space-y-2">
-                    <Label>Semestre</Label>
+                    <Label className="text-sm font-medium">Semestre</Label>
                     <Select
                       value={selectedUser.semester?.toString() || ""}
                       onValueChange={(value) => setSelectedUser({ ...selectedUser, semester: Number.parseInt(value) })}
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-11">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
@@ -983,21 +1043,24 @@ export default function AdminUsersPage() {
               </div>
               {selectedUser.address && (
                 <div className="space-y-2">
-                  <Label>Dirección</Label>
+                  <Label className="text-sm font-medium">Dirección</Label>
                   <Textarea
                     value={selectedUser.address}
                     onChange={(e) => setSelectedUser({ ...selectedUser, address: e.target.value })}
                     rows={2}
+                    className="resize-none"
                   />
                 </div>
               )}
             </div>
           )}
-          <DialogFooter>
+          <DialogFooter className="gap-2">
             <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={handleEditUser}>Guardar Cambios</Button>
+            <Button onClick={handleEditUser} className="bg-green-600 hover:bg-green-700">
+              Guardar Cambios
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
