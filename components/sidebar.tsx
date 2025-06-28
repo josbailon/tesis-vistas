@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
@@ -32,6 +31,8 @@ import {
   UserCheck,
   GraduationCap,
   SmileIcon as Tooth,
+  Menu,
+  X,
 } from "lucide-react"
 
 interface NavItem {
@@ -42,13 +43,22 @@ interface NavItem {
   children?: NavItem[]
 }
 
-export function Sidebar() {
+interface SidebarProps {
+  className?: string
+}
+
+export function Sidebar({ className }: SidebarProps) {
   const { user, logout } = useAuth()
   const pathname = usePathname()
   const [expandedItems, setExpandedItems] = useState<string[]>([])
+  const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   const toggleExpanded = (title: string) => {
     setExpandedItems((prev) => (prev.includes(title) ? prev.filter((item) => item !== title) : [...prev, title]))
+  }
+
+  const closeMobileSidebar = () => {
+    setIsMobileOpen(false)
   }
 
   const getNavItems = (): NavItem[] => {
@@ -167,7 +177,7 @@ export function Sidebar() {
           },
           {
             title: "Especialidad",
-            href: `/dashboard/professor/${user.specialty?.toLowerCase()}`,
+            href: `/dashboard/professor/${user.specialty?.toLowerCase() || "general"}`,
             icon: Stethoscope,
           },
         ]
@@ -261,30 +271,35 @@ export function Sidebar() {
                 isActive ? "bg-blue-100 text-blue-700" : "text-gray-700 hover:bg-gray-100",
               )}
             >
-              <div className="flex items-center">
-                <item.icon className="mr-3 h-5 w-5" />
-                {item.title}
+              <div className="flex items-center min-w-0">
+                <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+                <span className="truncate">{item.title}</span>
                 {item.badge && (
-                  <Badge variant="secondary" className="ml-2">
+                  <Badge variant="secondary" className="ml-2 text-xs">
                     {item.badge}
                   </Badge>
                 )}
               </div>
-              {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              {isExpanded ? (
+                <ChevronDown className="h-4 w-4 flex-shrink-0" />
+              ) : (
+                <ChevronRight className="h-4 w-4 flex-shrink-0" />
+              )}
             </button>
           ) : (
             <Link
               href={item.href}
+              onClick={closeMobileSidebar}
               className={cn(
                 "flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors",
                 level > 0 && "ml-4",
                 isActive ? "bg-blue-100 text-blue-700" : "text-gray-700 hover:bg-gray-100",
               )}
             >
-              <item.icon className="mr-3 h-5 w-5" />
-              {item.title}
+              <item.icon className="mr-3 h-5 w-5 flex-shrink-0" />
+              <span className="truncate">{item.title}</span>
               {item.badge && (
-                <Badge variant="secondary" className="ml-2">
+                <Badge variant="secondary" className="ml-2 text-xs">
                   {item.badge}
                 </Badge>
               )}
@@ -299,42 +314,82 @@ export function Sidebar() {
     )
   }
 
-  return (
-    <div className="fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg">
-      <div className="flex h-full flex-col">
-        {/* Header */}
-        <div className="flex h-16 items-center justify-center border-b border-gray-200 px-4">
-          <div className="flex items-center">
-            <Tooth className="h-8 w-8 text-blue-600" />
-            <span className="ml-2 text-xl font-bold text-gray-900">ULEAM</span>
-          </div>
+  const sidebarContent = (
+    <div className="flex h-full flex-col">
+      {/* Header */}
+      <div className="flex h-16 items-center justify-between border-b border-gray-200 px-4">
+        <div className="flex items-center">
+          <Tooth className="h-8 w-8 text-blue-600" />
+          <span className="ml-2 text-xl font-bold text-gray-900">ULEAM</span>
         </div>
+        <Button variant="ghost" size="sm" className="lg:hidden" onClick={() => setIsMobileOpen(false)}>
+          <X className="h-5 w-5" />
+        </Button>
+      </div>
 
-        {/* User Info */}
-        <div className="border-b border-gray-200 p-4">
-          <div className="flex items-center">
-            <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center">
-              <User className="h-6 w-6 text-blue-600" />
-            </div>
-            <div className="ml-3">
-              <p className="text-sm font-medium text-gray-900">{user?.name}</p>
-              <p className="text-xs text-gray-500 capitalize">{user?.role}</p>
-            </div>
+      {/* User Info */}
+      <div className="border-b border-gray-200 p-4">
+        <div className="flex items-center">
+          <div className="h-10 w-10 rounded-full bg-blue-100 flex items-center justify-center flex-shrink-0">
+            <User className="h-6 w-6 text-blue-600" />
           </div>
-        </div>
-
-        {/* Navigation */}
-        <nav className="flex-1 space-y-1 p-4 overflow-y-auto">{navItems.map((item) => renderNavItem(item))}</nav>
-
-        {/* Footer */}
-        <div className="border-t border-gray-200 p-4">
-          <Button variant="ghost" className="w-full justify-start" onClick={logout}>
-            <LogOut className="mr-3 h-5 w-5" />
-            Cerrar Sesión
-          </Button>
+          <div className="ml-3 min-w-0">
+            <p className="text-sm font-medium text-gray-900 truncate">{user?.name}</p>
+            <p className="text-xs text-gray-500 capitalize truncate">{user?.role}</p>
+          </div>
         </div>
       </div>
+
+      {/* Navigation */}
+      <nav className="flex-1 space-y-1 p-4 overflow-y-auto">{navItems.map((item) => renderNavItem(item))}</nav>
+
+      {/* Footer */}
+      <div className="border-t border-gray-200 p-4">
+        <Button variant="ghost" className="w-full justify-start" onClick={logout}>
+          <LogOut className="mr-3 h-5 w-5" />
+          <span className="truncate">Cerrar Sesión</span>
+        </Button>
+      </div>
     </div>
+  )
+
+  return (
+    <>
+      {/* Mobile menu button */}
+      <Button
+        variant="ghost"
+        size="sm"
+        className="fixed top-4 left-4 z-50 lg:hidden bg-white shadow-md"
+        onClick={() => setIsMobileOpen(true)}
+      >
+        <Menu className="h-5 w-5" />
+      </Button>
+
+      {/* Mobile overlay */}
+      {isMobileOpen && (
+        <div className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden" onClick={() => setIsMobileOpen(false)} />
+      )}
+
+      {/* Desktop sidebar */}
+      <div
+        className={cn(
+          "hidden lg:fixed lg:inset-y-0 lg:left-0 lg:z-50 lg:w-64 lg:bg-white lg:shadow-lg lg:flex",
+          className,
+        )}
+      >
+        {sidebarContent}
+      </div>
+
+      {/* Mobile sidebar */}
+      <div
+        className={cn(
+          "fixed inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:hidden",
+          isMobileOpen ? "translate-x-0" : "-translate-x-full",
+        )}
+      >
+        {sidebarContent}
+      </div>
+    </>
   )
 }
 

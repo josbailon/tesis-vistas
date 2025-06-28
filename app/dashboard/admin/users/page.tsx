@@ -45,6 +45,7 @@ import {
   Stethoscope,
   Users,
   Plus,
+  Filter,
 } from "lucide-react"
 
 interface AdminUser {
@@ -232,7 +233,7 @@ export default function AdminUsersPage() {
       secretary: "Secretario",
     }
     return (
-      <Badge className={`${roleColors[role as keyof typeof roleColors]} border`}>
+      <Badge className={`${roleColors[role as keyof typeof roleColors]} border text-xs`}>
         {roleLabels[role as keyof typeof roleLabels]}
       </Badge>
     )
@@ -243,8 +244,8 @@ export default function AdminUsersPage() {
       <Badge
         className={
           status === "active"
-            ? "bg-green-100 text-green-800 border-green-200 border"
-            : "bg-gray-100 text-gray-800 border-gray-200 border"
+            ? "bg-green-100 text-green-800 border-green-200 border text-xs"
+            : "bg-gray-100 text-gray-800 border-gray-200 border text-xs"
         }
       >
         {status === "active" ? "Activo" : "Inactivo"}
@@ -403,612 +404,396 @@ export default function AdminUsersPage() {
   }
 
   return (
-    <div className="space-y-6 p-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
-          <p className="text-gray-600 mt-1">Administra todos los usuarios del sistema</p>
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto p-4 lg:p-6 space-y-6">
+        {/* Header */}
+        <div className="bg-white rounded-lg shadow-sm p-6">
+          <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
+            <div>
+              <h1 className="text-2xl lg:text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
+              <p className="text-gray-600 mt-1">Administra todos los usuarios del sistema</p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-2">
+              <Button variant="outline" onClick={handleExport} className="flex items-center gap-2 bg-transparent">
+                <Download className="h-4 w-4" />
+                <span className="hidden sm:inline">Exportar</span>
+              </Button>
+            </div>
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleExport} className="flex items-center gap-2 bg-transparent">
-            <Download className="h-4 w-4" />
-            Exportar
-          </Button>
+
+        {/* Quick Create Section - Fixed positioning */}
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="bg-gradient-to-r from-blue-600 to-green-600 p-6">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center">
+                <Plus className="h-5 w-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-xl font-bold text-white">Crear Nuevos Usuarios</h2>
+                <p className="text-blue-100 text-sm">Accesos rápidos para crear diferentes tipos de usuarios</p>
+              </div>
+            </div>
+          </div>
+          <div className="p-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <Button
+                onClick={() => openCreateDialog("patient")}
+                className="h-20 flex flex-col gap-2 bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <UserPlus className="h-6 w-6" />
+                <span className="font-medium text-sm">Nuevo Paciente</span>
+              </Button>
+              <Button
+                onClick={() => openCreateDialog("student")}
+                className="h-20 flex flex-col gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <GraduationCap className="h-6 w-6" />
+                <span className="font-medium text-sm">Nuevo Estudiante</span>
+              </Button>
+              <Button
+                onClick={() => openCreateDialog("professor")}
+                className="h-20 flex flex-col gap-2 bg-purple-600 hover:bg-purple-700 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Stethoscope className="h-6 w-6" />
+                <span className="font-medium text-sm">Nuevo Profesor</span>
+              </Button>
+              <Button
+                onClick={() => openCreateDialog("secretary")}
+                className="h-20 flex flex-col gap-2 bg-orange-600 hover:bg-orange-700 shadow-lg hover:shadow-xl transition-all duration-200"
+              >
+                <Shield className="h-6 w-6" />
+                <span className="font-medium text-sm">Nuevo Secretario</span>
+              </Button>
+            </div>
+          </div>
         </div>
-      </div>
 
-      {/* Quick Create Buttons - Moved to top */}
-      <Card className="border-2 border-dashed border-blue-200 bg-blue-50/50">
-        <CardHeader className="pb-4">
-          <div className="flex items-center gap-2">
-            <Plus className="h-5 w-5 text-blue-600" />
-            <CardTitle className="text-blue-900">Crear Nuevos Usuarios</CardTitle>
-          </div>
-          <CardDescription className="text-blue-700">
-            Accesos rápidos para crear diferentes tipos de usuarios
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <Button
-              onClick={() => openCreateDialog("patient")}
-              className="h-20 flex flex-col gap-2 bg-green-600 hover:bg-green-700 shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <UserPlus className="h-6 w-6" />
-              <span className="font-medium">Nuevo Paciente</span>
-            </Button>
-            <Button
-              onClick={() => openCreateDialog("student")}
-              className="h-20 flex flex-col gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <GraduationCap className="h-6 w-6" />
-              <span className="font-medium">Nuevo Estudiante</span>
-            </Button>
-            <Button
-              onClick={() => openCreateDialog("professor")}
-              className="h-20 flex flex-col gap-2 bg-purple-600 hover:bg-purple-700 shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Stethoscope className="h-6 w-6" />
-              <span className="font-medium">Nuevo Profesor</span>
-            </Button>
-            <Button
-              onClick={() => openCreateDialog("secretary")}
-              className="h-20 flex flex-col gap-2 bg-orange-600 hover:bg-orange-700 shadow-lg hover:shadow-xl transition-all duration-200"
-            >
-              <Shield className="h-6 w-6" />
-              <span className="font-medium">Nuevo Secretario</span>
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
-        <Card className="border-l-4 border-l-gray-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-700">Total Usuarios</CardTitle>
-            <Users className="h-4 w-4 text-gray-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{users.length}</div>
-            <p className="text-xs text-gray-500">Registrados en el sistema</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-purple-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-purple-700">Profesores</CardTitle>
-            <Stethoscope className="h-4 w-4 text-purple-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-purple-900">
-              {users.filter((u) => u.role === "professor").length}
-            </div>
-            <p className="text-xs text-purple-600">Activos</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-blue-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-blue-700">Estudiantes</CardTitle>
-            <GraduationCap className="h-4 w-4 text-blue-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-blue-900">{users.filter((u) => u.role === "student").length}</div>
-            <p className="text-xs text-blue-600">Registrados</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-green-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-green-700">Pacientes</CardTitle>
-            <UserPlus className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-green-900">{users.filter((u) => u.role === "patient").length}</div>
-            <p className="text-xs text-green-600">En el sistema</p>
-          </CardContent>
-        </Card>
-        <Card className="border-l-4 border-l-orange-500">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-orange-700">Secretarios</CardTitle>
-            <Shield className="h-4 w-4 text-orange-500" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold text-orange-900">
-              {users.filter((u) => u.role === "secretary").length}
-            </div>
-            <p className="text-xs text-orange-600">Activos</p>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Search className="h-5 w-5" />
-            Filtros y Búsqueda
-          </CardTitle>
-          <CardDescription>Busca y filtra usuarios por diferentes criterios</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                <Input
-                  placeholder="Buscar por nombre, email o cédula..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 h-11"
-                />
-              </div>
-            </div>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-full md:w-48 h-11">
-                <SelectValue placeholder="Filtrar por rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los roles</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
-                <SelectItem value="professor">Profesor</SelectItem>
-                <SelectItem value="student">Estudiante</SelectItem>
-                <SelectItem value="patient">Paciente</SelectItem>
-                <SelectItem value="secretary">Secretario</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48 h-11">
-                <SelectValue placeholder="Filtrar por estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="active">Activos</SelectItem>
-                <SelectItem value="inactive">Inactivos</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Users Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Lista de Usuarios</CardTitle>
-          <CardDescription>
-            {filteredUsers.length} usuario{filteredUsers.length !== 1 ? "s" : ""} encontrado
-            {filteredUsers.length !== 1 ? "s" : ""}
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Usuario</TableHead>
-                  <TableHead>Rol</TableHead>
-                  <TableHead>Especialidad</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha Registro</TableHead>
-                  <TableHead className="text-center">Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredUsers.map((user) => (
-                  <TableRow key={user.id} className="hover:bg-gray-50">
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">
-                          {user.name
-                            .split(" ")
-                            .map((n) => n[0])
-                            .join("")
-                            .slice(0, 2)}
-                        </div>
-                        <div>
-                          <div className="font-medium text-gray-900">{user.name}</div>
-                          <div className="text-sm text-gray-500 flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {user.email}
-                          </div>
-                          {user.phone && (
-                            <div className="text-sm text-gray-500 flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              {user.phone}
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{getRoleBadge(user.role)}</TableCell>
-                    <TableCell>
-                      {user.specialty ? (
-                        <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
-                          {user.specialty}
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-400">-</span>
-                      )}
-                    </TableCell>
-                    <TableCell>{getStatusBadge(user.status)}</TableCell>
-                    <TableCell className="text-sm text-gray-600">
-                      {new Date(user.createdAt).toLocaleDateString("es-ES", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center justify-center gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedUser(user)
-                            setIsViewDialogOpen(true)
-                          }}
-                          className="h-8 w-8 p-0 hover:bg-blue-100"
-                        >
-                          <Eye className="h-4 w-4 text-blue-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => {
-                            setSelectedUser(user)
-                            setIsEditDialogOpen(true)
-                          }}
-                          className="h-8 w-8 p-0 hover:bg-green-100"
-                        >
-                          <Edit className="h-4 w-4 text-green-600" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleToggleStatus(user.id, user.status)}
-                          className="h-8 w-8 p-0 hover:bg-yellow-100"
-                        >
-                          {user.status === "active" ? (
-                            <Lock className="h-4 w-4 text-yellow-600" />
-                          ) : (
-                            <Unlock className="h-4 w-4 text-yellow-600" />
-                          )}
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-red-100">
-                              <Trash2 className="h-4 w-4 text-red-600" />
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                Esta acción eliminará permanentemente el usuario <strong>{user.name}</strong> y todos
-                                sus datos asociados. Esta acción no se puede deshacer.
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                              <AlertDialogAction
-                                onClick={() => handleDeleteUser(user.id)}
-                                className="bg-red-600 hover:bg-red-700"
-                              >
-                                Eliminar
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Create User Dialog */}
-      <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl">Crear Nuevo {getRoleLabel(createUserType)}</DialogTitle>
-            <DialogDescription>
-              Completa la información del nuevo {getRoleLabel(createUserType).toLowerCase()}
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6">
-            {/* Basic Information */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Nombre Completo *</Label>
-                <Input
-                  value={newUser.name}
-                  onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                  placeholder="Nombre y apellidos completos"
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Cédula *</Label>
-                <Input
-                  value={newUser.cedula}
-                  onChange={(e) => setNewUser({ ...newUser, cedula: e.target.value })}
-                  placeholder="1234567890"
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Email *</Label>
-                <Input
-                  type="email"
-                  value={newUser.email}
-                  onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                  placeholder={createUserType === "patient" ? "email@ejemplo.com" : "usuario@uleam.edu.ec"}
-                  className="h-11"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Teléfono *</Label>
-                <Input
-                  value={newUser.phone}
-                  onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-                  placeholder="+593 99 123 4567"
-                  className="h-11"
-                />
-              </div>
-            </div>
-
-            {/* Address */}
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Dirección</Label>
-              <Input
-                value={newUser.address}
-                onChange={(e) => setNewUser({ ...newUser, address: e.target.value })}
-                placeholder="Dirección completa"
-                className="h-11"
-              />
-            </div>
-
-            {/* Role-specific fields */}
-            {(createUserType === "professor" || createUserType === "student") && (
-              <div className="space-y-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Especialidad *</Label>
-                  <Select
-                    value={newUser.specialty}
-                    onValueChange={(value) => setNewUser({ ...newUser, specialty: value })}
-                  >
-                    <SelectTrigger className="h-11">
-                      <SelectValue placeholder="Seleccionar especialidad" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {specialties.map((specialty) => (
-                        <SelectItem key={specialty} value={specialty}>
-                          {specialty}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <Card className="border-l-4 border-l-gray-500">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Total</p>
+                  <p className="text-2xl font-bold text-gray-900">{users.length}</p>
                 </div>
-
-                {createUserType === "professor" && (
-                  <div className="space-y-2">
-                    <Label className="text-sm font-medium">Departamento</Label>
-                    <Input
-                      value={newUser.department}
-                      onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
-                      placeholder="Departamento de Odontología"
-                      className="h-11"
-                    />
-                  </div>
-                )}
-
-                {createUserType === "student" && (
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Semestre *</Label>
-                      <Select
-                        value={newUser.semester}
-                        onValueChange={(value) => setNewUser({ ...newUser, semester: value })}
-                      >
-                        <SelectTrigger className="h-11">
-                          <SelectValue placeholder="Seleccionar semestre" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
-                            <SelectItem key={sem} value={sem.toString()}>
-                              {sem}° Semestre
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium">Nivel de Experiencia</Label>
-                      <Select
-                        value={newUser.experience}
-                        onValueChange={(value) => setNewUser({ ...newUser, experience: value })}
-                      >
-                        <SelectTrigger className="h-11">
-                          <SelectValue placeholder="Seleccionar nivel" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="Básico">Básico</SelectItem>
-                          <SelectItem value="Intermedio">Intermedio</SelectItem>
-                          <SelectItem value="Avanzado">Avanzado</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                  </div>
-                )}
+                <Users className="h-8 w-8 text-gray-500" />
               </div>
-            )}
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-purple-500">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-purple-600">Profesores</p>
+                  <p className="text-2xl font-bold text-purple-900">
+                    {users.filter((u) => u.role === "professor").length}
+                  </p>
+                </div>
+                <Stethoscope className="h-8 w-8 text-purple-500" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-blue-500">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-blue-600">Estudiantes</p>
+                  <p className="text-2xl font-bold text-blue-900">{users.filter((u) => u.role === "student").length}</p>
+                </div>
+                <GraduationCap className="h-8 w-8 text-blue-500" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-green-500">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-green-600">Pacientes</p>
+                  <p className="text-2xl font-bold text-green-900">
+                    {users.filter((u) => u.role === "patient").length}
+                  </p>
+                </div>
+                <UserPlus className="h-8 w-8 text-green-500" />
+              </div>
+            </CardContent>
+          </Card>
+          <Card className="border-l-4 border-l-orange-500">
+            <CardContent className="p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-orange-600">Secretarios</p>
+                  <p className="text-2xl font-bold text-orange-900">
+                    {users.filter((u) => u.role === "secretary").length}
+                  </p>
+                </div>
+                <Shield className="h-8 w-8 text-orange-500" />
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">Estado</Label>
-              <Select value={newUser.status} onValueChange={(value) => setNewUser({ ...newUser, status: value })}>
-                <SelectTrigger className="h-11">
-                  <SelectValue />
+        {/* Filters */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <Filter className="h-5 w-5" />
+              Filtros y Búsqueda
+            </CardTitle>
+            <CardDescription>Busca y filtra usuarios por diferentes criterios</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="flex flex-col lg:flex-row gap-4">
+              <div className="flex-1">
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                  <Input
+                    placeholder="Buscar por nombre, email o cédula..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-10 h-11"
+                  />
+                </div>
+              </div>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger className="w-full lg:w-48 h-11">
+                  <SelectValue placeholder="Filtrar por rol" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="active">Activo</SelectItem>
-                  <SelectItem value="inactive">Inactivo</SelectItem>
+                  <SelectItem value="all">Todos los roles</SelectItem>
+                  <SelectItem value="admin">Administrador</SelectItem>
+                  <SelectItem value="professor">Profesor</SelectItem>
+                  <SelectItem value="student">Estudiante</SelectItem>
+                  <SelectItem value="patient">Paciente</SelectItem>
+                  <SelectItem value="secretary">Secretario</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger className="w-full lg:w-48 h-11">
+                  <SelectValue placeholder="Filtrar por estado" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  <SelectItem value="active">Activos</SelectItem>
+                  <SelectItem value="inactive">Inactivos</SelectItem>
                 </SelectContent>
               </Select>
             </div>
-          </div>
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleCreateUser} className="bg-blue-600 hover:bg-blue-700">
-              Crear {getRoleLabel(createUserType)}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+          </CardContent>
+        </Card>
 
-      {/* View User Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Información del Usuario</DialogTitle>
-            <DialogDescription>Detalles completos del usuario</DialogDescription>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
+        {/* Users Table */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Lista de Usuarios</CardTitle>
+            <CardDescription>
+              {filteredUsers.length} usuario{filteredUsers.length !== 1 ? "s" : ""} encontrado
+              {filteredUsers.length !== 1 ? "s" : ""}
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="overflow-x-auto">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="min-w-[250px]">Usuario</TableHead>
+                    <TableHead className="hidden sm:table-cell">Rol</TableHead>
+                    <TableHead className="hidden md:table-cell">Especialidad</TableHead>
+                    <TableHead className="hidden lg:table-cell">Estado</TableHead>
+                    <TableHead className="hidden xl:table-cell">Fecha</TableHead>
+                    <TableHead className="text-center">Acciones</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredUsers.map((user) => (
+                    <TableRow key={user.id} className="hover:bg-gray-50">
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium shadow-md">
+                            {user.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .slice(0, 2)}
+                          </div>
+                          <div className="min-w-0">
+                            <div className="font-medium text-gray-900 truncate">{user.name}</div>
+                            <div className="text-sm text-gray-500 flex items-center gap-1 truncate">
+                              <Mail className="h-3 w-3 flex-shrink-0" />
+                              <span className="truncate">{user.email}</span>
+                            </div>
+                            {user.phone && (
+                              <div className="text-sm text-gray-500 flex items-center gap-1 truncate sm:hidden">
+                                <Phone className="h-3 w-3 flex-shrink-0" />
+                                <span className="truncate">{user.phone}</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </TableCell>
+                      <TableCell className="hidden sm:table-cell">{getRoleBadge(user.role)}</TableCell>
+                      <TableCell className="hidden md:table-cell">
+                        {user.specialty ? (
+                          <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200 text-xs">
+                            {user.specialty}
+                          </Badge>
+                        ) : (
+                          <span className="text-gray-400 text-sm">-</span>
+                        )}
+                      </TableCell>
+                      <TableCell className="hidden lg:table-cell">{getStatusBadge(user.status)}</TableCell>
+                      <TableCell className="hidden xl:table-cell text-sm text-gray-600">
+                        {new Date(user.createdAt).toLocaleDateString("es-ES", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                        })}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center justify-center gap-1">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedUser(user)
+                              setIsViewDialogOpen(true)
+                            }}
+                            className="h-8 w-8 p-0 hover:bg-blue-100"
+                          >
+                            <Eye className="h-4 w-4 text-blue-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => {
+                              setSelectedUser(user)
+                              setIsEditDialogOpen(true)
+                            }}
+                            className="h-8 w-8 p-0 hover:bg-green-100"
+                          >
+                            <Edit className="h-4 w-4 text-green-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleToggleStatus(user.id, user.status)}
+                            className="h-8 w-8 p-0 hover:bg-yellow-100"
+                          >
+                            {user.status === "active" ? (
+                              <Lock className="h-4 w-4 text-yellow-600" />
+                            ) : (
+                              <Unlock className="h-4 w-4 text-yellow-600" />
+                            )}
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="h-8 w-8 p-0 hover:bg-red-100">
+                                <Trash2 className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="max-w-md">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
+                                <AlertDialogDescription>
+                                  Esta acción eliminará permanentemente el usuario <strong>{user.name}</strong> y todos
+                                  sus datos asociados. Esta acción no se puede deshacer.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteUser(user.id)}
+                                  className="bg-red-600 hover:bg-red-700"
+                                >
+                                  Eliminar
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Create User Dialog */}
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-xl">Crear Nuevo {getRoleLabel(createUserType)}</DialogTitle>
+              <DialogDescription>
+                Completa la información del nuevo {getRoleLabel(createUserType).toLowerCase()}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-6">
+              {/* Basic Information */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Nombre</Label>
-                  <p className="text-gray-900 font-medium">{selectedUser.name}</p>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Nombre Completo *</Label>
+                  <Input
+                    value={newUser.name}
+                    onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
+                    placeholder="Nombre y apellidos completos"
+                    className="h-11"
+                  />
                 </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Cédula</Label>
-                  <p className="text-gray-900">{selectedUser.cedula}</p>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Cédula *</Label>
+                  <Input
+                    value={newUser.cedula}
+                    onChange={(e) => setNewUser({ ...newUser, cedula: e.target.value })}
+                    placeholder="1234567890"
+                    className="h-11"
+                  />
                 </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Email</Label>
-                  <p className="text-gray-900">{selectedUser.email}</p>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Email *</Label>
+                  <Input
+                    type="email"
+                    value={newUser.email}
+                    onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
+                    placeholder={createUserType === "patient" ? "email@ejemplo.com" : "usuario@uleam.edu.ec"}
+                    className="h-11"
+                  />
                 </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Teléfono</Label>
-                  <p className="text-gray-900">{selectedUser.phone}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Rol</Label>
-                  <div className="mt-1">{getRoleBadge(selectedUser.role)}</div>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Estado</Label>
-                  <div className="mt-1">{getStatusBadge(selectedUser.status)}</div>
-                </div>
-                {selectedUser.specialty && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Especialidad</Label>
-                    <p className="text-gray-900">{selectedUser.specialty}</p>
-                  </div>
-                )}
-                {selectedUser.department && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Departamento</Label>
-                    <p className="text-gray-900">{selectedUser.department}</p>
-                  </div>
-                )}
-                {selectedUser.semester && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Semestre</Label>
-                    <p className="text-gray-900">{selectedUser.semester}°</p>
-                  </div>
-                )}
-                {selectedUser.experience && (
-                  <div>
-                    <Label className="text-sm font-medium text-gray-600">Experiencia</Label>
-                    <p className="text-gray-900">{selectedUser.experience}</p>
-                  </div>
-                )}
-                {selectedUser.address && (
-                  <div className="col-span-2">
-                    <Label className="text-sm font-medium text-gray-600">Dirección</Label>
-                    <p className="text-gray-900">{selectedUser.address}</p>
-                  </div>
-                )}
-                <div>
-                  <Label className="text-sm font-medium text-gray-600">Fecha de Registro</Label>
-                  <p className="text-gray-900">
-                    {new Date(selectedUser.createdAt).toLocaleDateString("es-ES", {
-                      year: "numeric",
-                      month: "long",
-                      day: "numeric",
-                    })}
-                  </p>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Teléfono *</Label>
+                  <Input
+                    value={newUser.phone}
+                    onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
+                    placeholder="+593 99 123 4567"
+                    className="h-11"
+                  />
                 </div>
               </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
 
-      {/* Edit User Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar Usuario</DialogTitle>
-            <DialogDescription>Modifica la información del usuario</DialogDescription>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Nombre</Label>
-                  <Input
-                    value={selectedUser.name}
-                    onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Email</Label>
-                  <Input
-                    value={selectedUser.email}
-                    onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Teléfono</Label>
-                  <Input
-                    value={selectedUser.phone || ""}
-                    onChange={(e) => setSelectedUser({ ...selectedUser, phone: e.target.value })}
-                    className="h-11"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Estado</Label>
-                  <Select
-                    value={selectedUser.status}
-                    onValueChange={(value) =>
-                      setSelectedUser({ ...selectedUser, status: value as "active" | "inactive" })
-                    }
-                  >
-                    <SelectTrigger className="h-11">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Activo</SelectItem>
-                      <SelectItem value="inactive">Inactivo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                {(selectedUser.role === "professor" || selectedUser.role === "student") && (
+              {/* Address */}
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Dirección</Label>
+                <Input
+                  value={newUser.address}
+                  onChange={(e) => setNewUser({ ...newUser, address: e.target.value })}
+                  placeholder="Dirección completa"
+                  className="h-11"
+                />
+              </div>
+
+              {/* Role-specific fields */}
+              {(createUserType === "professor" || createUserType === "student") && (
+                <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium">Especialidad</Label>
+                    <Label className="text-sm font-medium">Especialidad *</Label>
                     <Select
-                      value={selectedUser.specialty || ""}
-                      onValueChange={(value) => setSelectedUser({ ...selectedUser, specialty: value })}
+                      value={newUser.specialty}
+                      onValueChange={(value) => setNewUser({ ...newUser, specialty: value })}
                     >
                       <SelectTrigger className="h-11">
-                        <SelectValue />
+                        <SelectValue placeholder="Seleccionar especialidad" />
                       </SelectTrigger>
                       <SelectContent>
                         {specialties.map((specialty) => (
@@ -1019,51 +804,282 @@ export default function AdminUsersPage() {
                       </SelectContent>
                     </Select>
                   </div>
-                )}
-                {selectedUser.role === "student" && (
+
+                  {createUserType === "professor" && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Departamento</Label>
+                      <Input
+                        value={newUser.department}
+                        onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
+                        placeholder="Departamento de Odontología"
+                        className="h-11"
+                      />
+                    </div>
+                  )}
+
+                  {createUserType === "student" && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Semestre *</Label>
+                        <Select
+                          value={newUser.semester}
+                          onValueChange={(value) => setNewUser({ ...newUser, semester: value })}
+                        >
+                          <SelectTrigger className="h-11">
+                            <SelectValue placeholder="Seleccionar semestre" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
+                              <SelectItem key={sem} value={sem.toString()}>
+                                {sem}° Semestre
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label className="text-sm font-medium">Nivel de Experiencia</Label>
+                        <Select
+                          value={newUser.experience}
+                          onValueChange={(value) => setNewUser({ ...newUser, experience: value })}
+                        >
+                          <SelectTrigger className="h-11">
+                            <SelectValue placeholder="Seleccionar nivel" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Básico">Básico</SelectItem>
+                            <SelectItem value="Intermedio">Intermedio</SelectItem>
+                            <SelectItem value="Avanzado">Avanzado</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="space-y-2">
+                <Label className="text-sm font-medium">Estado</Label>
+                <Select value={newUser.status} onValueChange={(value) => setNewUser({ ...newUser, status: value })}>
+                  <SelectTrigger className="h-11">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="active">Activo</SelectItem>
+                    <SelectItem value="inactive">Inactivo</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateUser} className="bg-blue-600 hover:bg-blue-700">
+                Crear {getRoleLabel(createUserType)}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+
+        {/* View User Dialog */}
+        <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Información del Usuario</DialogTitle>
+              <DialogDescription>Detalles completos del usuario</DialogDescription>
+            </DialogHeader>
+            {selectedUser && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Nombre</Label>
+                    <p className="text-gray-900 font-medium">{selectedUser.name}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Cédula</Label>
+                    <p className="text-gray-900">{selectedUser.cedula}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Email</Label>
+                    <p className="text-gray-900">{selectedUser.email}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Teléfono</Label>
+                    <p className="text-gray-900">{selectedUser.phone}</p>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Rol</Label>
+                    <div className="mt-1">{getRoleBadge(selectedUser.role)}</div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Estado</Label>
+                    <div className="mt-1">{getStatusBadge(selectedUser.status)}</div>
+                  </div>
+                  {selectedUser.specialty && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Especialidad</Label>
+                      <p className="text-gray-900">{selectedUser.specialty}</p>
+                    </div>
+                  )}
+                  {selectedUser.department && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Departamento</Label>
+                      <p className="text-gray-900">{selectedUser.department}</p>
+                    </div>
+                  )}
+                  {selectedUser.semester && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Semestre</Label>
+                      <p className="text-gray-900">{selectedUser.semester}°</p>
+                    </div>
+                  )}
+                  {selectedUser.experience && (
+                    <div>
+                      <Label className="text-sm font-medium text-gray-600">Experiencia</Label>
+                      <p className="text-gray-900">{selectedUser.experience}</p>
+                    </div>
+                  )}
+                  {selectedUser.address && (
+                    <div className="col-span-2">
+                      <Label className="text-sm font-medium text-gray-600">Dirección</Label>
+                      <p className="text-gray-900">{selectedUser.address}</p>
+                    </div>
+                  )}
+                  <div>
+                    <Label className="text-sm font-medium text-gray-600">Fecha de Registro</Label>
+                    <p className="text-gray-900">
+                      {new Date(selectedUser.createdAt).toLocaleDateString("es-ES", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+          </DialogContent>
+        </Dialog>
+
+        {/* Edit User Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl">
+            <DialogHeader>
+              <DialogTitle>Editar Usuario</DialogTitle>
+              <DialogDescription>Modifica la información del usuario</DialogDescription>
+            </DialogHeader>
+            {selectedUser && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium">Semestre</Label>
+                    <Label className="text-sm font-medium">Nombre</Label>
+                    <Input
+                      value={selectedUser.name}
+                      onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Email</Label>
+                    <Input
+                      value={selectedUser.email}
+                      onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Teléfono</Label>
+                    <Input
+                      value={selectedUser.phone || ""}
+                      onChange={(e) => setSelectedUser({ ...selectedUser, phone: e.target.value })}
+                      className="h-11"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Estado</Label>
                     <Select
-                      value={selectedUser.semester?.toString() || ""}
-                      onValueChange={(value) => setSelectedUser({ ...selectedUser, semester: Number.parseInt(value) })}
+                      value={selectedUser.status}
+                      onValueChange={(value) =>
+                        setSelectedUser({ ...selectedUser, status: value as "active" | "inactive" })
+                      }
                     >
                       <SelectTrigger className="h-11">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
-                          <SelectItem key={sem} value={sem.toString()}>
-                            {sem}° Semestre
-                          </SelectItem>
-                        ))}
+                        <SelectItem value="active">Activo</SelectItem>
+                        <SelectItem value="inactive">Inactivo</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+                  {(selectedUser.role === "professor" || selectedUser.role === "student") && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Especialidad</Label>
+                      <Select
+                        value={selectedUser.specialty || ""}
+                        onValueChange={(value) => setSelectedUser({ ...selectedUser, specialty: value })}
+                      >
+                        <SelectTrigger className="h-11">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {specialties.map((specialty) => (
+                            <SelectItem key={specialty} value={specialty}>
+                              {specialty}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  {selectedUser.role === "student" && (
+                    <div className="space-y-2">
+                      <Label className="text-sm font-medium">Semestre</Label>
+                      <Select
+                        value={selectedUser.semester?.toString() || ""}
+                        onValueChange={(value) =>
+                          setSelectedUser({ ...selectedUser, semester: Number.parseInt(value) })
+                        }
+                      >
+                        <SelectTrigger className="h-11">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((sem) => (
+                            <SelectItem key={sem} value={sem.toString()}>
+                              {sem}° Semestre
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                </div>
+                {selectedUser.address && (
+                  <div className="space-y-2">
+                    <Label className="text-sm font-medium">Dirección</Label>
+                    <Textarea
+                      value={selectedUser.address}
+                      onChange={(e) => setSelectedUser({ ...selectedUser, address: e.target.value })}
+                      rows={2}
+                      className="resize-none"
+                    />
+                  </div>
                 )}
               </div>
-              {selectedUser.address && (
-                <div className="space-y-2">
-                  <Label className="text-sm font-medium">Dirección</Label>
-                  <Textarea
-                    value={selectedUser.address}
-                    onChange={(e) => setSelectedUser({ ...selectedUser, address: e.target.value })}
-                    rows={2}
-                    className="resize-none"
-                  />
-                </div>
-              )}
-            </div>
-          )}
-          <DialogFooter className="gap-2">
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleEditUser} className="bg-green-600 hover:bg-green-700">
-              Guardar Cambios
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+            )}
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleEditUser} className="bg-green-600 hover:bg-green-700">
+                Guardar Cambios
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      </div>
     </div>
   )
 }

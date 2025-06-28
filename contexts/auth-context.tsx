@@ -4,7 +4,7 @@ import type React from "react"
 import { createContext, useContext, useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 
-export interface User {
+interface User {
   id: string
   name: string
   email: string
@@ -12,8 +12,7 @@ export interface User {
   specialty?: string
   department?: string
   semester?: number
-  status: "active" | "inactive"
-  createdAt: string
+  experience?: string
 }
 
 interface AuthContextType {
@@ -21,58 +20,56 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   isLoading: boolean
-  isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Mock users data
-const mockUsers: User[] = [
-  {
+// Mock users database
+const mockUsers: Record<string, User> = {
+  "admin@uleam.edu.ec": {
     id: "1",
-    name: "Administrador Principal",
+    name: "Administrador Sistema",
     email: "admin@uleam.edu.ec",
     role: "admin",
-    status: "active",
-    createdAt: "2024-01-01T00:00:00Z",
   },
-  {
+  "carlos.ruiz@uleam.edu.ec": {
     id: "2",
-    name: "Dr. Carlos Mendoza",
-    email: "profesor@uleam.edu.ec",
+    name: "Dr. Carlos Ruiz",
+    email: "carlos.ruiz@uleam.edu.ec",
     role: "professor",
     specialty: "Endodoncia",
     department: "Odontología",
-    status: "active",
-    createdAt: "2024-01-01T00:00:00Z",
   },
-  {
+  "juan.perez@uleam.edu.ec": {
     id: "3",
-    name: "Juan Estudiante",
-    email: "estudiante@uleam.edu.ec",
+    name: "Juan Pérez",
+    email: "juan.perez@uleam.edu.ec",
     role: "student",
     specialty: "Endodoncia",
     semester: 8,
-    status: "active",
-    createdAt: "2024-01-01T00:00:00Z",
+    experience: "Avanzado",
   },
-  {
+  "secretaria@uleam.edu.ec": {
     id: "4",
-    name: "María Paciente",
-    email: "paciente@uleam.edu.ec",
-    role: "patient",
-    status: "active",
-    createdAt: "2024-01-01T00:00:00Z",
-  },
-  {
-    id: "5",
     name: "Ana Secretaria",
     email: "secretaria@uleam.edu.ec",
     role: "secretary",
-    status: "active",
-    createdAt: "2024-01-01T00:00:00Z",
   },
-]
+  "paciente@email.com": {
+    id: "5",
+    name: "María Paciente",
+    email: "paciente@email.com",
+    role: "patient",
+  },
+}
+
+const mockPasswords: Record<string, string> = {
+  "admin@uleam.edu.ec": "admin123",
+  "carlos.ruiz@uleam.edu.ec": "prof123",
+  "juan.perez@uleam.edu.ec": "est123",
+  "secretaria@uleam.edu.ec": "sec123",
+  "paciente@email.com": "pac123",
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
@@ -80,12 +77,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter()
 
   useEffect(() => {
-    // Check for stored user session
-    const storedUser = localStorage.getItem("user")
-    if (storedUser) {
+    // Check for existing session
+    const savedUser = localStorage.getItem("user")
+    if (savedUser) {
       try {
-        setUser(JSON.parse(storedUser))
+        setUser(JSON.parse(savedUser))
       } catch (error) {
+        console.error("Error parsing saved user:", error)
         localStorage.removeItem("user")
       }
     }
@@ -95,20 +93,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true)
 
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    try {
+      // Simulate API delay
+      await new Promise((resolve) => setTimeout(resolve, 500))
 
-    const foundUser = mockUsers.find((u) => u.email === email)
+      const user = mockUsers[email]
+      const validPassword = mockPasswords[email]
 
-    if (foundUser) {
-      setUser(foundUser)
-      localStorage.setItem("user", JSON.stringify(foundUser))
+      if (user && validPassword === password) {
+        setUser(user)
+        localStorage.setItem("user", JSON.stringify(user))
+        setIsLoading(false)
+        return true
+      }
+
       setIsLoading(false)
-      return true
+      return false
+    } catch (error) {
+      console.error("Login error:", error)
+      setIsLoading(false)
+      return false
     }
-
-    setIsLoading(false)
-    return false
   }
 
   const logout = () => {
@@ -117,19 +122,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     router.push("/login")
   }
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        logout,
-        isLoading,
-        isAuthenticated: !!user,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
