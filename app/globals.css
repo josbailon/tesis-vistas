@@ -2,51 +2,139 @@
 @tailwind components;
 @tailwind utilities;
 
-/* CSS Custom Properties for better performance */
+/* Enhanced CSS Custom Properties for comprehensive color system */
 :root {
+  /* Base Colors */
   --background: 0 0% 100%;
   --foreground: 222.2 84% 4.9%;
   --card: 0 0% 100%;
   --card-foreground: 222.2 84% 4.9%;
   --popover: 0 0% 100%;
   --popover-foreground: 222.2 84% 4.9%;
-  --primary: 221.2 83.2% 53.3%;
-  --primary-foreground: 210 40% 98%;
-  --secondary: 210 40% 96%;
-  --secondary-foreground: 222.2 84% 4.9%;
   --muted: 210 40% 96%;
   --muted-foreground: 215.4 16.3% 46.9%;
   --accent: 210 40% 96%;
   --accent-foreground: 222.2 84% 4.9%;
-  --destructive: 0 84.2% 60.2%;
-  --destructive-foreground: 210 40% 98%;
   --border: 214.3 31.8% 91.4%;
   --input: 214.3 31.8% 91.4%;
   --ring: 221.2 83.2% 53.3%;
   --radius: 0.75rem;
 
-  /* Medical theme colors */
-  --medical-primary: 200 100% 40%;
-  --medical-secondary: 180 100% 35%;
-  --medical-accent: 160 100% 30%;
-  --medical-success: 120 100% 35%;
-  --medical-warning: 45 100% 50%;
-  --medical-error: 0 100% 50%;
+  /* Primary Brand Colors - Blue to Emerald Gradient System */
+  --primary: 221.2 83.2% 53.3%;
+  --primary-foreground: 210 40% 98%;
+  --primary-50: 219 100% 97%;
+  --primary-100: 218 100% 94%;
+  --primary-200: 221 83% 87%;
+  --primary-300: 221 83% 74%;
+  --primary-400: 221 83% 61%;
+  --primary-500: 221 83% 53%;
+  --primary-600: 221 83% 45%;
+  --primary-700: 221 83% 37%;
+  --primary-800: 221 83% 29%;
+  --primary-900: 221 83% 21%;
 
-  /* Specialty colors */
-  --endodoncia: 280 100% 40%;
-  --ortodoncia: 220 100% 50%;
-  --cirugia: 0 100% 45%;
-  --odontopediatria: 30 100% 50%;
-  --periodoncia: 120 100% 35%;
-  --protesis: 180 100% 40%;
+  /* Secondary Colors - Emerald System */
+  --secondary: 142 76% 36%;
+  --secondary-foreground: 210 40% 98%;
+  --secondary-50: 151 81% 96%;
+  --secondary-100: 149 80% 90%;
+  --secondary-200: 152 76% 80%;
+  --secondary-300: 156 72% 67%;
+  --secondary-400: 158 64% 52%;
+  --secondary-500: 160 84% 39%;
+  --secondary-600: 161 94% 30%;
+  --secondary-700: 163 94% 24%;
+  --secondary-800: 163 88% 20%;
+  --secondary-900: 164 86% 16%;
 
-  /* Role colors */
-  --admin: 0 70% 50%;
-  --profesor: 280 70% 50%;
-  --estudiante: 220 70% 50%;
-  --paciente: 120 70% 40%;
-  --secretario: 180 70% 45%;
+  /* Accent Colors - Purple System */
+  --accent-purple: 262 83% 58%;
+  --accent-purple-50: 270 100% 98%;
+  --accent-purple-100: 269 100% 95%;
+  --accent-purple-200: 269 100% 92%;
+  --accent-purple-300: 269 87% 85%;
+  --accent-purple-400: 270 95% 75%;
+  --accent-purple-500: 271 91% 65%;
+  --accent-purple-600: 271 81% 56%;
+  --accent-purple-700: 272 72% 47%;
+  --accent-purple-800: 272 67% 39%;
+  --accent-purple-900: 273 67% 32%;
+
+  /* Status Colors */
+  --success: 142 76% 36%;
+  --success-foreground: 210 40% 98%;
+  --warning: 38 92% 50%;
+  --warning-foreground: 48 96% 89%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 210 40% 98%;
+  --info: 199 89% 48%;
+  --info-foreground: 210 40% 98%;
+
+  /* Medical Theme Colors - Enhanced */
+  --medical-primary: 199 89% 48%;
+  --medical-secondary: 142 76% 36%;
+  --medical-accent: 262 83% 58%;
+  --medical-success: 142 76% 36%;
+  --medical-warning: 38 92% 50%;
+  --medical-error: 0 84% 60%;
+  --medical-info: 199 89% 48%;
+
+  /* Dental Specialty Colors - Enhanced */
+  --endodoncia: 262 83% 58%;
+  --endodoncia-light: 262 83% 85%;
+  --endodoncia-dark: 262 83% 35%;
+
+  --ortodoncia: 221 83% 53%;
+  --ortodoncia-light: 221 83% 85%;
+  --ortodoncia-dark: 221 83% 35%;
+
+  --cirugia: 0 84% 60%;
+  --cirugia-light: 0 84% 85%;
+  --cirugia-dark: 0 84% 40%;
+
+  --odontopediatria: 38 92% 50%;
+  --odontopediatria-light: 38 92% 85%;
+  --odontopediatria-dark: 38 92% 35%;
+
+  --periodoncia: 142 76% 36%;
+  --periodoncia-light: 142 76% 85%;
+  --periodoncia-dark: 142 76% 25%;
+
+  --protesis: 180 84% 40%;
+  --protesis-light: 180 84% 85%;
+  --protesis-dark: 180 84% 25%;
+
+  /* Role-based Colors - Enhanced */
+  --admin: 0 84% 60%;
+  --admin-light: 0 84% 85%;
+  --admin-dark: 0 84% 40%;
+
+  --profesor: 262 83% 58%;
+  --profesor-light: 262 83% 85%;
+  --profesor-dark: 262 83% 35%;
+
+  --estudiante: 142 76% 36%;
+  --estudiante-light: 142 76% 85%;
+  --estudiante-dark: 142 76% 25%;
+
+  --paciente: 199 89% 48%;
+  --paciente-light: 199 89% 85%;
+  --paciente-dark: 199 89% 35%;
+
+  --secretario: 262 83% 58%;
+  --secretario-light: 262 83% 85%;
+  --secretario-dark: 262 83% 35%;
+
+  /* UI Enhancement Colors */
+  --surface: 0 0% 100%;
+  --surface-variant: 210 40% 96%;
+  --on-surface: 222.2 84% 4.9%;
+  --on-surface-variant: 215.4 16.3% 46.9%;
+  --outline: 214.3 31.8% 91.4%;
+  --outline-variant: 220 13% 91%;
+  --shadow: 220 43% 11%;
+  --scrim: 0 0% 0%;
 }
 
 .dark {
@@ -58,7 +146,7 @@
   --popover-foreground: 210 40% 98%;
   --primary: 217.2 91.2% 59.8%;
   --primary-foreground: 222.2 84% 4.9%;
-  --secondary: 217.2 32.6% 17.5%;
+  --secondary: 142 76% 36%;
   --secondary-foreground: 210 40% 98%;
   --muted: 217.2 32.6% 17.5%;
   --muted-foreground: 215 20.2% 65.1%;
@@ -69,9 +157,13 @@
   --border: 217.2 32.6% 17.5%;
   --input: 217.2 32.6% 17.5%;
   --ring: 224.3 76.3% 94.1%;
+  --surface: 222.2 84% 4.9%;
+  --surface-variant: 217.2 32.6% 17.5%;
+  --on-surface: 210 40% 98%;
+  --on-surface-variant: 215 20.2% 65.1%;
 }
 
-/* Base styles with performance optimizations */
+/* Base styles with enhanced performance optimizations */
 * {
   border-color: hsl(var(--border));
 }
@@ -80,34 +172,42 @@ body {
   color: hsl(var(--foreground));
   background: hsl(var(--background));
   font-feature-settings: "rlig" 1, "calt" 1;
-  /* Enable hardware acceleration */
+  /* Enhanced hardware acceleration */
   transform: translateZ(0);
-  /* Improve text rendering */
+  /* Improved text rendering */
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Better font loading */
+  font-display: swap;
 }
 
-/* Performance optimized animations */
+/* Enhanced utility classes */
 @layer utilities {
+  /* Animation utilities */
   .animate-fade-in {
-    animation: fadeIn 0.3s ease-out forwards;
+    animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
   .animate-slide-up {
-    animation: slideUp 0.3s ease-out forwards;
+    animation: slideUp 0.4s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
   .animate-scale-in {
-    animation: scaleIn 0.2s ease-out forwards;
+    animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
   }
 
-  /* Hardware accelerated transforms */
+  .animate-bounce-gentle {
+    animation: bounceGentle 2s infinite;
+  }
+
+  /* Hardware acceleration utilities */
   .transform-gpu {
     transform: translateZ(0);
+    will-change: transform;
   }
 
-  /* Optimized shadows */
+  /* Enhanced shadow utilities */
   .shadow-soft {
     box-shadow: 0 2px 8px -2px rgba(0, 0, 0, 0.1), 0 4px 16px -4px rgba(0, 0, 0, 0.1);
   }
@@ -116,7 +216,19 @@ body {
     box-shadow: 0 4px 16px -4px rgba(0, 0, 0, 0.1), 0 8px 32px -8px rgba(0, 0, 0, 0.1);
   }
 
-  /* Medical gradients */
+  .shadow-soft-xl {
+    box-shadow: 0 8px 32px -8px rgba(0, 0, 0, 0.12), 0 16px 64px -16px rgba(0, 0, 0, 0.12);
+  }
+
+  .shadow-colored-blue {
+    box-shadow: 0 4px 16px -4px rgba(59, 130, 246, 0.3), 0 8px 32px -8px rgba(59, 130, 246, 0.15);
+  }
+
+  .shadow-colored-emerald {
+    box-shadow: 0 4px 16px -4px rgba(16, 185, 129, 0.3), 0 8px 32px -8px rgba(16, 185, 129, 0.15);
+  }
+
+  /* Enhanced gradient utilities */
   .bg-medical-gradient {
     background: linear-gradient(135deg, hsl(var(--medical-primary)) 0%, hsl(var(--medical-secondary)) 100%);
   }
@@ -125,86 +237,125 @@ body {
     background: linear-gradient(135deg, hsl(var(--medical-primary) / 0.1) 0%, hsl(var(--medical-secondary) / 0.1) 100%);
   }
 
-  /* Grid pattern for backgrounds */
+  .bg-primary-gradient {
+    background: linear-gradient(135deg, hsl(var(--primary)) 0%, hsl(var(--secondary)) 100%);
+  }
+
+  .bg-primary-gradient-soft {
+    background: linear-gradient(135deg, hsl(var(--primary) / 0.1) 0%, hsl(var(--secondary) / 0.1) 100%);
+  }
+
+  /* Enhanced pattern utilities */
   .bg-grid-pattern {
     background-image: radial-gradient(circle, rgba(0, 0, 0, 0.1) 1px, transparent 1px);
     background-size: 20px 20px;
   }
 
-  /* Specialty colors */
+  .bg-dot-pattern {
+    background-image: radial-gradient(circle, rgba(0, 0, 0, 0.05) 2px, transparent 2px);
+    background-size: 24px 24px;
+  }
+
+  /* Enhanced specialty color utilities */
   .specialty-endodoncia {
-    background-color: hsl(var(--endodoncia) / 0.1);
-    color: hsl(var(--endodoncia));
-    border-color: hsl(var(--endodoncia) / 0.2);
+    background-color: hsl(var(--endodoncia-light));
+    color: hsl(var(--endodoncia-dark));
+    border-color: hsl(var(--endodoncia) / 0.3);
   }
 
   .specialty-ortodoncia {
-    background-color: hsl(var(--ortodoncia) / 0.1);
-    color: hsl(var(--ortodoncia));
-    border-color: hsl(var(--ortodoncia) / 0.2);
+    background-color: hsl(var(--ortodoncia-light));
+    color: hsl(var(--ortodoncia-dark));
+    border-color: hsl(var(--ortodoncia) / 0.3);
   }
 
   .specialty-cirugia {
-    background-color: hsl(var(--cirugia) / 0.1);
-    color: hsl(var(--cirugia));
-    border-color: hsl(var(--cirugia) / 0.2);
+    background-color: hsl(var(--cirugia-light));
+    color: hsl(var(--cirugia-dark));
+    border-color: hsl(var(--cirugia) / 0.3);
   }
 
   .specialty-odontopediatria {
-    background-color: hsl(var(--odontopediatria) / 0.1);
-    color: hsl(var(--odontopediatria));
-    border-color: hsl(var(--odontopediatria) / 0.2);
+    background-color: hsl(var(--odontopediatria-light));
+    color: hsl(var(--odontopediatria-dark));
+    border-color: hsl(var(--odontopediatria) / 0.3);
   }
 
   .specialty-periodoncia {
-    background-color: hsl(var(--periodoncia) / 0.1);
-    color: hsl(var(--periodoncia));
-    border-color: hsl(var(--periodoncia) / 0.2);
+    background-color: hsl(var(--periodoncia-light));
+    color: hsl(var(--periodoncia-dark));
+    border-color: hsl(var(--periodoncia) / 0.3);
   }
 
   .specialty-protesis {
-    background-color: hsl(var(--protesis) / 0.1);
-    color: hsl(var(--protesis));
-    border-color: hsl(var(--protesis) / 0.2);
+    background-color: hsl(var(--protesis-light));
+    color: hsl(var(--protesis-dark));
+    border-color: hsl(var(--protesis) / 0.3);
   }
 
-  /* Role colors */
+  /* Enhanced role color utilities */
   .role-admin {
-    background-color: hsl(var(--admin) / 0.1);
-    color: hsl(var(--admin));
-    border-color: hsl(var(--admin) / 0.2);
+    background-color: hsl(var(--admin-light));
+    color: hsl(var(--admin-dark));
+    border-color: hsl(var(--admin) / 0.3);
   }
 
   .role-profesor {
-    background-color: hsl(var(--profesor) / 0.1);
-    color: hsl(var(--profesor));
-    border-color: hsl(var(--profesor) / 0.2);
+    background-color: hsl(var(--profesor-light));
+    color: hsl(var(--profesor-dark));
+    border-color: hsl(var(--profesor) / 0.3);
   }
 
   .role-estudiante {
-    background-color: hsl(var(--estudiante) / 0.1);
-    color: hsl(var(--estudiante));
-    border-color: hsl(var(--estudiante) / 0.2);
+    background-color: hsl(var(--estudiante-light));
+    color: hsl(var(--estudiante-dark));
+    border-color: hsl(var(--estudiante) / 0.3);
   }
 
   .role-paciente {
-    background-color: hsl(var(--paciente) / 0.1);
-    color: hsl(var(--paciente));
-    border-color: hsl(var(--paciente) / 0.2);
+    background-color: hsl(var(--paciente-light));
+    color: hsl(var(--paciente-dark));
+    border-color: hsl(var(--paciente) / 0.3);
   }
 
   .role-secretario {
-    background-color: hsl(var(--secretario) / 0.1);
-    color: hsl(var(--secretario));
-    border-color: hsl(var(--secretario) / 0.2);
+    background-color: hsl(var(--secretario-light));
+    color: hsl(var(--secretario-dark));
+    border-color: hsl(var(--secretario) / 0.3);
+  }
+
+  /* Glass morphism utilities */
+  .glass {
+    backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(255, 255, 255, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+
+  .glass-dark {
+    backdrop-filter: blur(16px) saturate(180%);
+    background-color: rgba(17, 25, 40, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.125);
+  }
+
+  /* Interactive utilities */
+  .interactive-scale {
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .interactive-scale:hover {
+    transform: scale(1.02);
+  }
+
+  .interactive-scale:active {
+    transform: scale(0.98);
   }
 }
 
-/* Keyframes for optimized animations */
+/* Enhanced keyframes */
 @keyframes fadeIn {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(16px);
   }
   to {
     opacity: 1;
@@ -215,7 +366,7 @@ body {
 @keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(20px);
+    transform: translateY(24px);
   }
   to {
     opacity: 1;
@@ -226,7 +377,7 @@ body {
 @keyframes scaleIn {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.9);
   }
   to {
     opacity: 1;
@@ -234,30 +385,48 @@ body {
   }
 }
 
-/* Scrollbar styling */
+@keyframes bounceGentle {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+/* Enhanced scrollbar styling */
 ::-webkit-scrollbar {
-  width: 6px;
-  height: 6px;
+  width: 8px;
+  height: 8px;
 }
 
 ::-webkit-scrollbar-track {
   background: hsl(var(--muted));
-  border-radius: 3px;
+  border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: hsl(var(--muted-foreground) / 0.3);
-  border-radius: 3px;
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.6), hsl(var(--secondary) / 0.6));
+  border-radius: 4px;
+  transition: background 0.2s ease;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: hsl(var(--muted-foreground) / 0.5);
+  background: linear-gradient(135deg, hsl(var(--primary) / 0.8), hsl(var(--secondary) / 0.8));
 }
 
-/* Focus styles for accessibility */
+/* Enhanced focus styles for accessibility */
 .focus-visible:focus-visible {
   outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Enhanced selection styles */
+::selection {
+  background-color: hsl(var(--primary) / 0.2);
+  color: hsl(var(--primary-foreground));
 }
 
 /* Print styles */
@@ -269,6 +438,11 @@ body {
   * {
     -webkit-print-color-adjust: exact !important;
     color-adjust: exact !important;
+  }
+
+  body {
+    background: white !important;
+    color: black !important;
   }
 }
 
@@ -287,7 +461,27 @@ body {
 /* High contrast mode support */
 @media (prefers-contrast: high) {
   :root {
-    --border: 0 0% 20%;
-    --ring: 0 0% 20%;
+    --border: 0 0% 30%;
+    --ring: 0 0% 30%;
+    --outline: 0 0% 30%;
+  }
+}
+
+/* Enhanced responsive typography */
+@media (max-width: 640px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (min-width: 1024px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+@media (min-width: 1280px) {
+  html {
+    font-size: 18px;
   }
 }
