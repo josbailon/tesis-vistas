@@ -1,459 +1,452 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Plus, Search, FileText, Eye, Edit, Calendar, User, Stethoscope } from "lucide-react"
-import { useToast } from "@/hooks/use-toast"
-import { useAuth } from "@/contexts/auth-context"
-
-interface ClinicalCase {
-  id: string
-  title: string
-  patientName: string
-  patientAge: number
-  specialty: string
-  diagnosis: string
-  treatment: string
-  observations: string
-  status: "draft" | "pending" | "approved" | "rejected"
-  createdAt: string
-  updatedAt: string
-  studentId: string
-  professorId?: string
-  professorComments?: string
-}
-
-const MOCK_CASES: ClinicalCase[] = [
-  {
-    id: "1",
-    title: "Endodoncia en Molar Superior",
-    patientName: "Ana Rodríguez",
-    patientAge: 35,
-    specialty: "Endodoncia",
-    diagnosis: "Pulpitis irreversible en pieza 16",
-    treatment: "Tratamiento endodóntico completo",
-    observations: "Paciente presenta dolor severo. Se realizó apertura cameral y medicación temporal.",
-    status: "pending",
-    createdAt: "2024-12-20T10:00:00Z",
-    updatedAt: "2024-12-20T10:00:00Z",
-    studentId: "3",
-  },
-  {
-    id: "2",
-    title: "Ortodoncia Interceptiva",
-    patientName: "Luis Mendoza",
-    patientAge: 12,
-    specialty: "Ortodoncia",
-    diagnosis: "Maloclusión Clase II División 1",
-    treatment: "Aparato funcional para corrección de sobremordida",
-    observations: "Paciente colaborador. Padres comprometidos con el tratamiento.",
-    status: "approved",
-    createdAt: "2024-12-18T14:30:00Z",
-    updatedAt: "2024-12-19T09:15:00Z",
-    studentId: "3",
-    professorId: "2",
-    professorComments: "Excelente diagnóstico y plan de tratamiento. Aprobado para continuar.",
-  },
-]
-
-const SPECIALTIES = ["Endodoncia", "Ortodoncia", "Periodoncia", "Cirugía", "Prótesis", "Pediatría", "Implantología"]
-
-const statusColors = {
-  draft: "bg-gray-100 text-gray-800",
-  pending: "bg-yellow-100 text-yellow-800",
-  approved: "bg-green-100 text-green-800",
-  rejected: "bg-red-100 text-red-800",
-}
-
-const statusLabels = {
-  draft: "Borrador",
-  pending: "Pendiente",
-  approved: "Aprobado",
-  rejected: "Rechazado",
-}
+import { Progress } from "@/components/ui/progress"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Plus, Edit, Eye, Upload, User, FileText, Clock, CheckCircle } from "lucide-react"
+import { clinicalCases, patients } from "@/lib/mock-data"
 
 export default function StudentClinicalCasesPage() {
-  const { user } = useAuth()
-  const { toast } = useToast()
-  const [cases, setCases] = useState<ClinicalCase[]>(MOCK_CASES)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [isDialogOpen, setIsDialogOpen] = useState(false)
-  const [editingCase, setEditingCase] = useState<ClinicalCase | null>(null)
-  const [formData, setFormData] = useState({
-    title: "",
-    patientName: "",
-    patientAge: "",
-    specialty: "",
-    diagnosis: "",
+  const [selectedCase, setSelectedCase] = useState<any>(null)
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [newCase, setNewCase] = useState({
+    patientId: "",
     treatment: "",
-    observations: "",
+    specialty: "",
+    description: "",
+    treatmentPlan: "",
+    expectedDuration: "",
+    priority: "medium",
   })
 
-  const filteredCases = cases.filter((clinicalCase) => {
-    const matchesSearch =
-      clinicalCase.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      clinicalCase.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      clinicalCase.diagnosis.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || clinicalCase.status === statusFilter
-    const isStudentCase = clinicalCase.studentId === user?.id
+  const userCases = clinicalCases.filter((case_) => case_.studentId === "s1") // Usuario actual
 
-    return matchesSearch && matchesStatus && isStudentCase
-  })
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case "in-progress":
+        return (
+          <Badge className="bg-blue-500">
+            <Clock className="h-3 w-3 mr-1" />
+            En Progreso
+          </Badge>
+        )
+      case "completed":
+        return (
+          <Badge className="bg-green-500">
+            <CheckCircle className="h-3 w-3 mr-1" />
+            Completado
+          </Badge>
+        )
+      case "cancelled":
+        return <Badge className="bg-red-500">Cancelado</Badge>
+      default:
+        return <Badge variant="secondary">{status}</Badge>
+    }
+  }
 
-  const resetForm = () => {
-    setFormData({
-      title: "",
-      patientName: "",
-      patientAge: "",
-      specialty: "",
-      diagnosis: "",
+  const handleCreateCase = () => {
+    console.log("Nuevo caso clínico:", newCase)
+    setIsCreateDialogOpen(false)
+    setNewCase({
+      patientId: "",
       treatment: "",
-      observations: "",
-    })
-    setEditingCase(null)
-  }
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
-
-    if (!formData.title || !formData.patientName || !formData.specialty || !formData.diagnosis) {
-      toast({
-        title: "Error",
-        description: "Por favor complete todos los campos obligatorios",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (editingCase) {
-      // Update existing case
-      setCases((prev) =>
-        prev.map((clinicalCase) =>
-          clinicalCase.id === editingCase.id
-            ? {
-                ...clinicalCase,
-                ...formData,
-                patientAge: Number.parseInt(formData.patientAge),
-                updatedAt: new Date().toISOString(),
-                status: "draft" as const, // Reset to draft when edited
-              }
-            : clinicalCase,
-        ),
-      )
-      toast({
-        title: "Caso actualizado",
-        description: "El caso clínico ha sido actualizado",
-      })
-    } else {
-      // Create new case
-      const newCase: ClinicalCase = {
-        id: Date.now().toString(),
-        ...formData,
-        patientAge: Number.parseInt(formData.patientAge),
-        status: "draft",
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-        studentId: user?.id || "",
-      }
-      setCases((prev) => [...prev, newCase])
-      toast({
-        title: "Caso creado",
-        description: "El nuevo caso clínico ha sido creado",
-      })
-    }
-
-    setIsDialogOpen(false)
-    resetForm()
-  }
-
-  const handleEdit = (clinicalCase: ClinicalCase) => {
-    setEditingCase(clinicalCase)
-    setFormData({
-      title: clinicalCase.title,
-      patientName: clinicalCase.patientName,
-      patientAge: clinicalCase.patientAge.toString(),
-      specialty: clinicalCase.specialty,
-      diagnosis: clinicalCase.diagnosis,
-      treatment: clinicalCase.treatment,
-      observations: clinicalCase.observations,
-    })
-    setIsDialogOpen(true)
-  }
-
-  const handleSubmitForApproval = (caseId: string) => {
-    setCases((prev) =>
-      prev.map((clinicalCase) =>
-        clinicalCase.id === caseId
-          ? { ...clinicalCase, status: "pending" as const, updatedAt: new Date().toISOString() }
-          : clinicalCase,
-      ),
-    )
-    toast({
-      title: "Caso enviado",
-      description: "El caso ha sido enviado para aprobación del profesor",
+      specialty: "",
+      description: "",
+      treatmentPlan: "",
+      expectedDuration: "",
+      priority: "medium",
     })
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Casos Clínicos</h1>
-          <p className="text-gray-600">Gestiona tus casos clínicos y tratamientos</p>
+          <h1 className="text-3xl font-bold">Casos Clínicos</h1>
+          <p className="text-muted-foreground">Gestiona tus casos clínicos y tratamientos</p>
         </div>
-        <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
           <DialogTrigger asChild>
-            <Button onClick={resetForm}>
+            <Button>
               <Plus className="mr-2 h-4 w-4" />
               Nuevo Caso
             </Button>
           </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="max-w-2xl">
             <DialogHeader>
-              <DialogTitle>{editingCase ? "Editar Caso Clínico" : "Nuevo Caso Clínico"}</DialogTitle>
-              <DialogDescription>
-                {editingCase
-                  ? "Actualiza la información del caso clínico"
-                  : "Registra un nuevo caso clínico para evaluación"}
-              </DialogDescription>
+              <DialogTitle>Crear Nuevo Caso Clínico</DialogTitle>
+              <DialogDescription>Registra un nuevo caso clínico para seguimiento</DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label>Paciente *</Label>
+                <Select
+                  value={newCase.patientId}
+                  onValueChange={(value) => setNewCase({ ...newCase, patientId: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Seleccionar paciente" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {patients.map((patient) => (
+                      <SelectItem key={patient.id} value={patient.id}>
+                        {patient.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="title">Título del Caso *</Label>
+                  <Label>Tratamiento *</Label>
                   <Input
-                    id="title"
-                    value={formData.title}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, title: e.target.value }))}
-                    placeholder="Ej: Endodoncia en Molar Superior"
-                    required
+                    value={newCase.treatment}
+                    onChange={(e) => setNewCase({ ...newCase, treatment: e.target.value })}
+                    placeholder="Ej: Endodoncia en molar superior"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="specialty">Especialidad *</Label>
+                  <Label>Especialidad *</Label>
                   <Select
-                    value={formData.specialty}
-                    onValueChange={(value) => setFormData((prev) => ({ ...prev, specialty: value }))}
+                    value={newCase.specialty}
+                    onValueChange={(value) => setNewCase({ ...newCase, specialty: value })}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Seleccionar especialidad" />
                     </SelectTrigger>
                     <SelectContent>
-                      {SPECIALTIES.map((specialty) => (
-                        <SelectItem key={specialty} value={specialty}>
-                          {specialty}
-                        </SelectItem>
-                      ))}
+                      <SelectItem value="Endodoncia">Endodoncia</SelectItem>
+                      <SelectItem value="Ortodoncia">Ortodoncia</SelectItem>
+                      <SelectItem value="Cirugía Oral">Cirugía Oral</SelectItem>
+                      <SelectItem value="Periodoncia">Periodoncia</SelectItem>
+                      <SelectItem value="Odontopediatría">Odontopediatría</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="patientName">Nombre del Paciente *</Label>
-                  <Input
-                    id="patientName"
-                    value={formData.patientName}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, patientName: e.target.value }))}
-                    placeholder="Nombre completo del paciente"
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="patientAge">Edad del Paciente</Label>
-                  <Input
-                    id="patientAge"
-                    type="number"
-                    value={formData.patientAge}
-                    onChange={(e) => setFormData((prev) => ({ ...prev, patientAge: e.target.value }))}
-                    placeholder="Edad en años"
-                    min="1"
-                    max="120"
-                  />
-                </div>
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="diagnosis">Diagnóstico *</Label>
+                <Label>Descripción del Caso</Label>
                 <Textarea
-                  id="diagnosis"
-                  value={formData.diagnosis}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, diagnosis: e.target.value }))}
-                  placeholder="Describe el diagnóstico del caso..."
-                  rows={3}
-                  required
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="treatment">Plan de Tratamiento</Label>
-                <Textarea
-                  id="treatment"
-                  value={formData.treatment}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, treatment: e.target.value }))}
-                  placeholder="Describe el plan de tratamiento propuesto..."
+                  value={newCase.description}
+                  onChange={(e) => setNewCase({ ...newCase, description: e.target.value })}
+                  placeholder="Describe el estado inicial del paciente y diagnóstico..."
                   rows={3}
                 />
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="observations">Observaciones</Label>
+                <Label>Plan de Tratamiento</Label>
                 <Textarea
-                  id="observations"
-                  value={formData.observations}
-                  onChange={(e) => setFormData((prev) => ({ ...prev, observations: e.target.value }))}
-                  placeholder="Observaciones adicionales, evolución del tratamiento..."
-                  rows={4}
+                  value={newCase.treatmentPlan}
+                  onChange={(e) => setNewCase({ ...newCase, treatmentPlan: e.target.value })}
+                  placeholder="Describe el plan de tratamiento a seguir..."
+                  rows={3}
                 />
               </div>
 
-              <div className="flex gap-4 pt-4">
-                <Button type="submit" className="flex-1">
-                  {editingCase ? "Actualizar" : "Crear"} Caso
-                </Button>
-                <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Duración Estimada</Label>
+                  <Input
+                    value={newCase.expectedDuration}
+                    onChange={(e) => setNewCase({ ...newCase, expectedDuration: e.target.value })}
+                    placeholder="Ej: 4 semanas"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label>Prioridad</Label>
+                  <Select
+                    value={newCase.priority}
+                    onValueChange={(value) => setNewCase({ ...newCase, priority: value })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="low">Baja</SelectItem>
+                      <SelectItem value="medium">Media</SelectItem>
+                      <SelectItem value="high">Alta</SelectItem>
+                      <SelectItem value="urgent">Urgente</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
-            </form>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={handleCreateCase}>Crear Caso</Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>
 
-      {/* Filters */}
-      <Card>
-        <CardContent className="pt-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="space-y-2">
-              <Label>Buscar</Label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Buscar por título, paciente o diagnóstico..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label>Estado</Label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todos los estados</SelectItem>
-                  <SelectItem value="draft">Borrador</SelectItem>
-                  <SelectItem value="pending">Pendiente</SelectItem>
-                  <SelectItem value="approved">Aprobado</SelectItem>
-                  <SelectItem value="rejected">Rechazado</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <Tabs defaultValue="active" className="w-full">
+        <TabsList>
+          <TabsTrigger value="active">Casos Activos</TabsTrigger>
+          <TabsTrigger value="completed">Completados</TabsTrigger>
+          <TabsTrigger value="all">Todos</TabsTrigger>
+        </TabsList>
 
-      {/* Cases Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Mis Casos Clínicos</CardTitle>
-          <CardDescription>{filteredCases.length} caso(s) encontrado(s)</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Caso</TableHead>
-                  <TableHead>Paciente</TableHead>
-                  <TableHead>Especialidad</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Última Actualización</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredCases.map((clinicalCase) => (
-                  <TableRow key={clinicalCase.id}>
-                    <TableCell>
+        <TabsContent value="active" className="space-y-4">
+          <div className="grid gap-4">
+            {userCases
+              .filter((case_) => case_.status === "in-progress")
+              .map((case_) => (
+                <Card key={case_.id} className="hover:shadow-md transition-shadow">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{case_.treatment}</CardTitle>
+                        <CardDescription className="flex items-center gap-2 mt-1">
+                          <User className="h-4 w-4" />
+                          {patients.find((p) => p.id === case_.patientId)?.name}
+                        </CardDescription>
+                      </div>
                       <div className="flex items-center gap-2">
-                        <FileText className="h-4 w-4 text-gray-400" />
+                        {getStatusBadge(case_.status)}
+                        <Badge variant="outline">{case_.specialty}</Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Progreso</span>
+                          <span>{case_.progress}%</span>
+                        </div>
+                        <Progress value={case_.progress} className="h-2" />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-4 text-sm">
                         <div>
-                          <p className="font-medium">{clinicalCase.title}</p>
-                          <p className="text-sm text-gray-500">{clinicalCase.diagnosis}</p>
+                          <Label className="text-xs text-muted-foreground">Fecha de Inicio</Label>
+                          <p>{new Date(case_.startDate).toLocaleDateString("es-ES")}</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Última Actualización</Label>
+                          <p>{new Date(case_.lastUpdate).toLocaleDateString("es-ES")}</p>
                         </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4 text-gray-400" />
+
+                      {case_.notes && (
                         <div>
-                          <p className="font-medium">{clinicalCase.patientName}</p>
-                          <p className="text-sm text-gray-500">{clinicalCase.patientAge} años</p>
+                          <Label className="text-xs text-muted-foreground">Notas</Label>
+                          <p className="text-sm">{case_.notes}</p>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Stethoscope className="h-4 w-4 text-gray-400" />
-                        {clinicalCase.specialty}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={statusColors[clinicalCase.status]}>{statusLabels[clinicalCase.status]}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4 text-gray-400" />
-                        {new Date(clinicalCase.updatedAt).toLocaleDateString()}
-                      </div>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button size="sm" variant="outline">
-                          <Eye className="h-4 w-4" />
+                      )}
+
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedCase(case_)
+                            setIsViewDialogOpen(true)
+                          }}
+                        >
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver Detalles
                         </Button>
-                        {(clinicalCase.status === "draft" || clinicalCase.status === "rejected") && (
-                          <Button size="sm" variant="outline" onClick={() => handleEdit(clinicalCase)}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                        )}
-                        {clinicalCase.status === "draft" && (
-                          <Button
-                            size="sm"
-                            onClick={() => handleSubmitForApproval(clinicalCase.id)}
-                            className="bg-blue-600 hover:bg-blue-700"
-                          >
-                            Enviar
-                          </Button>
-                        )}
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <Upload className="h-4 w-4 mr-1" />
+                          Subir Archivos
+                        </Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
           </div>
-        </CardContent>
-      </Card>
+        </TabsContent>
+
+        <TabsContent value="completed" className="space-y-4">
+          <div className="grid gap-4">
+            {userCases
+              .filter((case_) => case_.status === "completed")
+              .map((case_) => (
+                <Card key={case_.id} className="hover:shadow-md transition-shadow opacity-75">
+                  <CardHeader>
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <CardTitle className="text-lg">{case_.treatment}</CardTitle>
+                        <CardDescription className="flex items-center gap-2 mt-1">
+                          <User className="h-4 w-4" />
+                          {patients.find((p) => p.id === case_.patientId)?.name}
+                        </CardDescription>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {getStatusBadge(case_.status)}
+                        <Badge variant="outline">{case_.specialty}</Badge>
+                      </div>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="space-y-4">
+                      <div className="grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Fecha de Inicio</Label>
+                          <p>{new Date(case_.startDate).toLocaleDateString("es-ES")}</p>
+                        </div>
+                        <div>
+                          <Label className="text-xs text-muted-foreground">Fecha de Finalización</Label>
+                          <p>{new Date(case_.lastUpdate).toLocaleDateString("es-ES")}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex justify-end gap-2">
+                        <Button variant="outline" size="sm">
+                          <Eye className="h-4 w-4 mr-1" />
+                          Ver Detalles
+                        </Button>
+                        <Button variant="outline" size="sm">
+                          <FileText className="h-4 w-4 mr-1" />
+                          Exportar Reporte
+                        </Button>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+          </div>
+        </TabsContent>
+
+        <TabsContent value="all" className="space-y-4">
+          <div className="grid gap-4">
+            {userCases.map((case_) => (
+              <Card key={case_.id} className="hover:shadow-md transition-shadow">
+                <CardHeader>
+                  <div className="flex justify-between items-start">
+                    <div>
+                      <CardTitle className="text-lg">{case_.treatment}</CardTitle>
+                      <CardDescription className="flex items-center gap-2 mt-1">
+                        <User className="h-4 w-4" />
+                        {patients.find((p) => p.id === case_.patientId)?.name}
+                      </CardDescription>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      {getStatusBadge(case_.status)}
+                      <Badge variant="outline">{case_.specialty}</Badge>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {case_.status === "in-progress" && (
+                      <div>
+                        <div className="flex justify-between text-sm mb-1">
+                          <span>Progreso</span>
+                          <span>{case_.progress}%</span>
+                        </div>
+                        <Progress value={case_.progress} className="h-2" />
+                      </div>
+                    )}
+
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Fecha de Inicio</Label>
+                        <p>{new Date(case_.startDate).toLocaleDateString("es-ES")}</p>
+                      </div>
+                      <div>
+                        <Label className="text-xs text-muted-foreground">Última Actualización</Label>
+                        <p>{new Date(case_.lastUpdate).toLocaleDateString("es-ES")}</p>
+                      </div>
+                    </div>
+
+                    <div className="flex justify-end gap-2">
+                      <Button variant="outline" size="sm">
+                        <Eye className="h-4 w-4 mr-1" />
+                        Ver Detalles
+                      </Button>
+                      {case_.status === "in-progress" && (
+                        <Button variant="outline" size="sm">
+                          <Edit className="h-4 w-4 mr-1" />
+                          Editar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+      </Tabs>
+
+      {/* Dialog para ver detalles del caso */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Detalles del Caso Clínico</DialogTitle>
+            <DialogDescription>Información completa del caso</DialogDescription>
+          </DialogHeader>
+          {selectedCase && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label className="text-sm font-medium">Paciente</Label>
+                  <p>{patients.find((p) => p.id === selectedCase.patientId)?.name}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Tratamiento</Label>
+                  <p>{selectedCase.treatment}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Especialidad</Label>
+                  <p>{selectedCase.specialty}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Estado</Label>
+                  {getStatusBadge(selectedCase.status)}
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Fecha de Inicio</Label>
+                  <p>{new Date(selectedCase.startDate).toLocaleDateString("es-ES")}</p>
+                </div>
+                <div>
+                  <Label className="text-sm font-medium">Progreso</Label>
+                  <div className="flex items-center gap-2">
+                    <Progress value={selectedCase.progress} className="flex-1" />
+                    <span>{selectedCase.progress}%</span>
+                  </div>
+                </div>
+              </div>
+
+              {selectedCase.notes && (
+                <div>
+                  <Label className="text-sm font-medium">Notas del Caso</Label>
+                  <p className="text-sm bg-gray-50 p-3 rounded">{selectedCase.notes}</p>
+                </div>
+              )}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }

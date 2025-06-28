@@ -18,6 +18,7 @@ interface User {
 interface AuthContextType {
   user: User | null
   loading: boolean
+  isInitialized: boolean
   login: (email: string, password: string) => Promise<boolean>
   logout: () => Promise<void>
   updateUser: (userData: Partial<User>) => void
@@ -92,6 +93,7 @@ const ROLE_PERMISSIONS = {
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
+  const [isInitialized, setIsInitialized] = useState(false)
 
   const checkSession = useCallback(async () => {
     try {
@@ -105,6 +107,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem("dental_clinic_user")
     } finally {
       setLoading(false)
+      setIsInitialized(true)
     }
   }, [])
 
@@ -182,13 +185,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     () => ({
       user,
       loading,
+      isInitialized,
       login,
       logout,
       updateUser,
       hasPermission,
       isRole,
     }),
-    [user, loading, login, logout, updateUser, hasPermission, isRole],
+    [user, loading, isInitialized, login, logout, updateUser, hasPermission, isRole],
   )
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>

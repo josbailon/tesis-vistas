@@ -1,9 +1,3 @@
-import { LoadingSpinner } from "@/components/loading-spinner"
-
 export default function Loading() {
-  return (
-    <div className="flex items-center justify-center h-64">
-      <LoadingSpinner size="lg" text="Cargando pacientes..." variant="medical" />
-    </div>
-  )
+  return null
 }

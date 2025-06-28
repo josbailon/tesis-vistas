@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { Suspense, useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { LoadingSpinner } from "@/components/loading-spinner"
@@ -12,16 +12,24 @@ interface DashboardLayoutProps {
 }
 
 export default function DashboardLayout({ children }: DashboardLayoutProps) {
-  const { user, loading } = useAuth()
+  const { user, loading, isInitialized } = useAuth()
   const router = useRouter()
+  const [shouldRedirect, setShouldRedirect] = useState(false)
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push("/login")
+    if (isInitialized && !loading) {
+      if (!user) {
+        setShouldRedirect(true)
+        // Use setTimeout to avoid redirect during render
+        setTimeout(() => {
+          router.replace("/login")
+        }, 0)
+      }
     }
-  }, [user, loading, router])
+  }, [user, loading, isInitialized, router])
 
-  if (loading) {
+  // Show loading while auth is initializing
+  if (!isInitialized || loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoadingSpinner size="lg" text="Cargando dashboard..." variant="medical" />
@@ -29,7 +37,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     )
   }
 
-  if (!user) {
+  // Show loading while redirecting
+  if (!user || shouldRedirect) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
         <LoadingSpinner size="lg" text="Verificando acceso..." variant="medical" />
@@ -61,17 +70,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-6">
-            <Suspense
-              fallback={
-                <div className="flex items-center justify-center h-64">
-                  <LoadingSpinner size="lg" text="Cargando contenido..." variant="medical" />
-                </div>
-              }
-            >
-              {children}
-            </Suspense>
-          </main>
+          <main className="flex-1 overflow-y-auto p-6">{children}</main>
         </div>
       </div>
     </div>

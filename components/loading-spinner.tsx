@@ -1,4 +1,5 @@
-import { Loader2 } from "lucide-react"
+"use client"
+
 import { cn } from "@/lib/utils"
 
 interface LoadingSpinnerProps {
@@ -16,16 +17,24 @@ export function LoadingSpinner({ size = "md", text, variant = "default", classNa
   }
 
   const variantClasses = {
-    default: "text-blue-600",
-    medical: "text-teal-600",
-    minimal: "text-gray-400",
+    default: "border-blue-200 border-t-blue-600",
+    medical: "border-green-200 border-t-green-600",
+    minimal: "border-gray-200 border-t-gray-600",
   }
 
   return (
-    <div className={cn("flex flex-col items-center justify-center space-y-2", className)}>
-      <Loader2 className={cn("animate-spin", sizeClasses[size], variantClasses[variant])} />
+    <div className={cn("flex flex-col items-center justify-center", className)}>
+      <div className={cn("animate-spin rounded-full border-4", sizeClasses[size], variantClasses[variant])} />
       {text && (
-        <p className={cn("text-sm font-medium", variant === "medical" ? "text-teal-700" : "text-gray-600")}>{text}</p>
+        <p
+          className={cn(
+            "mt-2 font-medium",
+            variant === "medical" ? "text-green-800" : variant === "minimal" ? "text-gray-600" : "text-blue-800",
+            size === "lg" ? "text-lg" : size === "md" ? "text-base" : "text-sm",
+          )}
+        >
+          {text}
+        </p>
       )}
     </div>
   )
