@@ -59,30 +59,6 @@ module.exports = {
           4: "hsl(var(--chart-4))",
           5: "hsl(var(--chart-5))",
         },
-        // Medical theme colors
-        medical: {
-          50: "hsl(var(--medical-50))",
-          100: "hsl(var(--medical-100))",
-          200: "hsl(var(--medical-200))",
-          300: "hsl(var(--medical-300))",
-          400: "hsl(var(--medical-400))",
-          500: "hsl(var(--medical-500))",
-          600: "hsl(var(--medical-600))",
-          700: "hsl(var(--medical-700))",
-          800: "hsl(var(--medical-800))",
-          900: "hsl(var(--medical-900))",
-        },
-        // Dental condition colors
-        dental: {
-          healthy: "hsl(var(--healthy))",
-          caries: "hsl(var(--caries))",
-          restoration: "hsl(var(--restoration))",
-          missing: "hsl(var(--missing))",
-          crown: "hsl(var(--crown))",
-          implant: "hsl(var(--implant))",
-          bridge: "hsl(var(--bridge))",
-          extraction: "hsl(var(--extraction))",
-        },
       },
       borderRadius: {
         lg: "var(--radius)",
@@ -102,33 +78,16 @@ module.exports = {
           "0%, 100%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-20px)" },
         },
-        "pulse-slow": {
-          "0%, 100%": { opacity: "1" },
-          "50%": { opacity: "0.5" },
-        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         float: "float 6s ease-in-out infinite",
         "float-delayed": "float 6s ease-in-out infinite 2s",
-        "pulse-slow": "pulse-slow 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-      },
-      fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
-        mono: ["JetBrains Mono", "monospace"],
+        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
       },
       spacing: {
-        18: "4.5rem",
-        88: "22rem",
         128: "32rem",
-      },
-      maxWidth: {
-        "8xl": "88rem",
-        "9xl": "96rem",
-      },
-      scale: {
-        102: "1.02",
       },
     },
   },
