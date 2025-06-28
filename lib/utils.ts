@@ -22,71 +22,30 @@ export function formatTime(date: Date | string): string {
   })
 }
 
-export function formatDateTime(date: Date | string): string {
-  return `${formatDate(date)} ${formatTime(date)}`
+export function getSpecialtyColor(specialty: string): string {
+  const colors: Record<string, string> = {
+    endodoncia: "specialty-endodoncia",
+    ortodoncia: "specialty-ortodoncia",
+    cirugia: "specialty-cirugia",
+    odontopediatria: "specialty-odontopediatria",
+    periodoncia: "specialty-periodoncia",
+    protesis: "specialty-protesis",
+  }
+  return colors[specialty.toLowerCase()] || "bg-gray-100 text-gray-800"
 }
 
 export function getRoleColor(role: string): string {
-  switch (role.toLowerCase()) {
-    case "admin":
-    case "administrator":
-      return "bg-role-admin"
-    case "profesor":
-    case "teacher":
-      return "bg-role-profesor"
-    case "estudiante":
-    case "student":
-      return "bg-role-estudiante"
-    case "paciente":
-    case "patient":
-      return "bg-role-paciente"
-    case "secretario":
-    case "secretary":
-      return "bg-role-secretario"
-    default:
-      return "bg-secondary"
+  const colors: Record<string, string> = {
+    admin: "role-admin",
+    profesor: "role-profesor",
+    estudiante: "role-estudiante",
+    paciente: "role-paciente",
+    secretario: "role-secretario",
   }
+  return colors[role.toLowerCase()] || "bg-gray-100 text-gray-800"
 }
 
-export function getSpecialtyColor(specialty: string): string {
-  switch (specialty.toLowerCase()) {
-    case "endodoncia":
-      return "bg-specialty-endodoncia"
-    case "ortodoncia":
-      return "bg-specialty-ortodoncia"
-    case "cirugía oral":
-    case "cirugia":
-      return "bg-specialty-cirugia"
-    case "odontopediatría":
-    case "odontopediatria":
-      return "bg-specialty-odontopediatria"
-    case "periodoncia":
-      return "bg-specialty-periodoncia"
-    case "prótesis":
-    case "protesis":
-      return "bg-specialty-protesis"
-    default:
-      return "bg-accent"
-  }
-}
-
-export function getStatusColor(status: string): string {
-  switch (status.toLowerCase()) {
-    case "active":
-    case "activo":
-    case "completed":
-    case "completado":
-      return "bg-status-active"
-    case "inactive":
-    case "inactivo":
-      return "bg-status-inactive"
-    case "pending":
-    case "pendiente":
-      return "bg-status-pending"
-    case "cancelled":
-    case "cancelado":
-      return "bg-status-cancelled"
-    default:
-      return "bg-secondary"
-  }
+export function generatePDF(data: any, filename: string): void {
+  // Función para generar PDFs - implementar con jsPDF o similar
+  console.log("Generando PDF:", filename, data)
 }

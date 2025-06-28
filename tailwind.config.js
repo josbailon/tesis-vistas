@@ -52,63 +52,22 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
-        success: {
-          DEFAULT: "hsl(var(--success))",
-          foreground: "hsl(var(--success-foreground))",
+        // Colores específicos para especialidades dentales
+        dental: {
+          endodoncia: "hsl(var(--endodoncia))",
+          ortodoncia: "hsl(var(--ortodoncia))",
+          cirugia: "hsl(var(--cirugia))",
+          odontopediatria: "hsl(var(--odontopediatria))",
+          periodoncia: "hsl(var(--periodoncia))",
+          protesis: "hsl(var(--protesis))",
         },
-        warning: {
-          DEFAULT: "hsl(var(--warning))",
-          foreground: "hsl(var(--warning-foreground))",
-        },
-        info: {
-          DEFAULT: "hsl(var(--info))",
-          foreground: "hsl(var(--info-foreground))",
-        },
-        // Medical Specialties
-        endodoncia: {
-          DEFAULT: "hsl(var(--endodoncia))",
-          foreground: "hsl(var(--endodoncia-foreground))",
-        },
-        ortodoncia: {
-          DEFAULT: "hsl(var(--ortodoncia))",
-          foreground: "hsl(var(--ortodoncia-foreground))",
-        },
-        cirugia: {
-          DEFAULT: "hsl(var(--cirugia))",
-          foreground: "hsl(var(--cirugia-foreground))",
-        },
-        odontopediatria: {
-          DEFAULT: "hsl(var(--odontopediatria))",
-          foreground: "hsl(var(--odontopediatria-foreground))",
-        },
-        periodoncia: {
-          DEFAULT: "hsl(var(--periodoncia))",
-          foreground: "hsl(var(--periodoncia-foreground))",
-        },
-        protesis: {
-          DEFAULT: "hsl(var(--protesis))",
-          foreground: "hsl(var(--protesis-foreground))",
-        },
-        // User Roles
-        admin: {
-          DEFAULT: "hsl(var(--admin))",
-          foreground: "hsl(var(--admin-foreground))",
-        },
-        profesor: {
-          DEFAULT: "hsl(var(--profesor))",
-          foreground: "hsl(var(--profesor-foreground))",
-        },
-        estudiante: {
-          DEFAULT: "hsl(var(--estudiante))",
-          foreground: "hsl(var(--estudiante-foreground))",
-        },
-        paciente: {
-          DEFAULT: "hsl(var(--paciente))",
-          foreground: "hsl(var(--paciente-foreground))",
-        },
-        secretario: {
-          DEFAULT: "hsl(var(--secretario))",
-          foreground: "hsl(var(--secretario-foreground))",
+        // Colores por rol
+        role: {
+          admin: "hsl(var(--admin))",
+          profesor: "hsl(var(--profesor))",
+          estudiante: "hsl(var(--estudiante))",
+          paciente: "hsl(var(--paciente))",
+          secretario: "hsl(var(--secretario))",
         },
       },
       borderRadius: {
@@ -139,9 +98,6 @@ module.exports = {
         "accordion-up": "accordion-up 0.2s ease-out",
         "fade-in": "fade-in 0.3s ease-out",
         "slide-in": "slide-in 0.3s ease-out",
-      },
-      fontFamily: {
-        sans: ["Inter", "system-ui", "sans-serif"],
       },
     },
   },
