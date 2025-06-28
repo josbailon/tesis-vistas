@@ -1,343 +1,467 @@
 "use client"
 
+import type React from "react"
+
 import { useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
   DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
-import { Search, Edit, Trash2, Eye, Lock, Unlock, UserPlus, Download, Upload, Shield, Mail } from "lucide-react"
-import { professors, students, patients, admins } from "@/lib/mock-data"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { Switch } from "@/components/ui/switch"
+import { Plus, Search, Edit, Trash2, Download, Upload, Mail, Phone, Shield } from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+
+interface AdminUser {
+  id: string
+  name: string
+  email: string
+  role: "admin" | "profesor" | "estudiante" | "paciente" | "secretario"
+  specialty?: string
+  phone?: string
+  cedula?: string
+  isActive: boolean
+  createdAt: string
+  lastLogin?: string
+}
+
+const MOCK_USERS: AdminUser[] = [
+  {
+    id: "1",
+    name: "Dr. Carlos Administrador",
+    email: "admin@uleam.edu.ec",
+    role: "admin",
+    phone: "+593 99 123 4567",
+    cedula: "1234567890",
+    isActive: true,
+    createdAt: "2024-01-01T00:00:00Z",
+    lastLogin: "2024-12-28T10:00:00Z",
+  },
+  {
+    id: "2",
+    name: "Dr. Carlos Ruiz",
+    email: "carlos.ruiz@uleam.edu.ec",
+    role: "profesor",
+    specialty: "Endodoncia",
+    phone: "+593 99 234 5678",
+    cedula: "2345678901",
+    isActive: true,
+    createdAt: "2024-01-15T00:00:00Z",
+    lastLogin: "2024-12-27T15:30:00Z",
+  },
+  {
+    id: "3",
+    name: "Juan Pérez",
+    email: "juan.perez@uleam.edu.ec",
+    role: "estudiante",
+    phone: "+593 99 345 6789",
+    cedula: "3456789012",
+    isActive: true,
+    createdAt: "2024-02-01T00:00:00Z",
+    lastLogin: "2024-12-28T08:45:00Z",
+  },
+  {
+    id: "4",
+    name: "Ana Rodríguez",
+    email: "ana.rodriguez@gmail.com",
+    role: "paciente",
+    phone: "+593 99 456 7890",
+    cedula: "4567890123",
+    isActive: true,
+    createdAt: "2024-02-15T00:00:00Z",
+  },
+  {
+    id: "5",
+    name: "María Secretaria",
+    email: "secretaria@uleam.edu.ec",
+    role: "secretario",
+    phone: "+593 99 567 8901",
+    cedula: "5678901234",
+    isActive: true,
+    createdAt: "2024-03-01T00:00:00Z",
+    lastLogin: "2024-12-28T09:15:00Z",
+  },
+]
+
+const ROLES = [
+  { value: "admin", label: "Administrador" },
+  { value: "profesor", label: "Profesor" },
+  { value: "estudiante", label: "Estudiante" },
+  { value: "paciente", label: "Paciente" },
+  { value: "secretario", label: "Secretario" },
+]
+
+const SPECIALTIES = ["Endodoncia", "Ortodoncia", "Periodoncia", "Cirugía", "Prótesis", "Pediatría", "Implantología"]
+
+const roleColors = {
+  admin: "bg-red-100 text-red-800",
+  profesor: "bg-blue-100 text-blue-800",
+  estudiante: "bg-green-100 text-green-800",
+  paciente: "bg-purple-100 text-purple-800",
+  secretario: "bg-orange-100 text-orange-800",
+}
 
 export default function AdminUsersPage() {
+  const { toast } = useToast()
+  const [users, setUsers] = useState<AdminUser[]>(MOCK_USERS)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [selectedUser, setSelectedUser] = useState<any>(null)
-  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false)
-  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
-  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
-  const [newUser, setNewUser] = useState({
+  const [isDialogOpen, setIsDialogOpen] = useState(false)
+  const [editingUser, setEditingUser] = useState<AdminUser | null>(null)
+  const [formData, setFormData] = useState({
     name: "",
     email: "",
-    role: "",
-    password: "",
+    role: "estudiante" as AdminUser["role"],
     specialty: "",
-    department: "",
     phone: "",
-    status: "active",
+    cedula: "",
+    isActive: true,
   })
 
-  const allUsers = [...professors, ...students, ...patients, ...admins]
-
-  const filteredUsers = allUsers.filter((user) => {
+  const filteredUsers = users.filter((user) => {
     const matchesSearch =
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
+      user.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      user.cedula?.includes(searchTerm) ||
+      user.phone?.includes(searchTerm)
     const matchesRole = roleFilter === "all" || user.role === roleFilter
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
+    const matchesStatus =
+      statusFilter === "all" ||
+      (statusFilter === "active" && user.isActive) ||
+      (statusFilter === "inactive" && !user.isActive)
 
     return matchesSearch && matchesRole && matchesStatus
   })
 
-  const getRoleBadge = (role: string) => {
-    const roleColors = {
-      admin: "bg-red-100 text-red-800",
-      professor: "bg-purple-100 text-purple-800",
-      student: "bg-blue-100 text-blue-800",
-      patient: "bg-green-100 text-green-800",
-    }
-    const roleLabels = {
-      admin: "Administrador",
-      professor: "Profesor",
-      student: "Estudiante",
-      patient: "Paciente",
-    }
-    return (
-      <Badge className={roleColors[role as keyof typeof roleColors]}>
-        {roleLabels[role as keyof typeof roleLabels]}
-      </Badge>
-    )
-  }
-
-  const getStatusBadge = (status: string) => {
-    return (
-      <Badge className={status === "active" ? "bg-green-100 text-green-800" : "bg-gray-100 text-gray-800"}>
-        {status === "active" ? "Activo" : "Inactivo"}
-      </Badge>
-    )
-  }
-
-  const handleCreateUser = () => {
-    console.log("Crear usuario:", newUser)
-    setIsCreateDialogOpen(false)
-    setNewUser({
+  const resetForm = () => {
+    setFormData({
       name: "",
       email: "",
-      role: "",
-      password: "",
+      role: "estudiante",
       specialty: "",
-      department: "",
       phone: "",
-      status: "active",
+      cedula: "",
+      isActive: true,
+    })
+    setEditingUser(null)
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!formData.name || !formData.email || !formData.cedula) {
+      toast({
+        title: "Error",
+        description: "Por favor complete todos los campos obligatorios",
+        variant: "destructive",
+      })
+      return
+    }
+
+    // Check for duplicate email or cedula
+    const existingUser = users.find(
+      (user) => (user.email === formData.email || user.cedula === formData.cedula) && user.id !== editingUser?.id,
+    )
+
+    if (existingUser) {
+      toast({
+        title: "Error",
+        description: "Ya existe un usuario con ese email o cédula",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (editingUser) {
+      // Update existing user
+      setUsers((prev) => prev.map((user) => (user.id === editingUser.id ? { ...user, ...formData } : user)))
+      toast({
+        title: "Usuario actualizado",
+        description: "La información del usuario ha sido actualizada",
+      })
+    } else {
+      // Create new user
+      const newUser: AdminUser = {
+        id: Date.now().toString(),
+        ...formData,
+        createdAt: new Date().toISOString(),
+      }
+      setUsers((prev) => [...prev, newUser])
+      toast({
+        title: "Usuario creado",
+        description: "El nuevo usuario ha sido creado exitosamente",
+      })
+    }
+
+    setIsDialogOpen(false)
+    resetForm()
+  }
+
+  const handleEdit = (user: AdminUser) => {
+    setEditingUser(user)
+    setFormData({
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      specialty: user.specialty || "",
+      phone: user.phone || "",
+      cedula: user.cedula || "",
+      isActive: user.isActive,
+    })
+    setIsDialogOpen(true)
+  }
+
+  const handleDelete = (userId: string) => {
+    setUsers((prev) => prev.filter((user) => user.id !== userId))
+    toast({
+      title: "Usuario eliminado",
+      description: "El usuario ha sido eliminado del sistema",
     })
   }
 
-  const handleEditUser = () => {
-    console.log("Editar usuario:", selectedUser)
-    setIsEditDialogOpen(false)
+  const handleToggleStatus = (userId: string) => {
+    setUsers((prev) => prev.map((user) => (user.id === userId ? { ...user, isActive: !user.isActive } : user)))
+    toast({
+      title: "Estado actualizado",
+      description: "El estado del usuario ha sido actualizado",
+    })
   }
 
-  const handleDeleteUser = (userId: string) => {
-    console.log("Eliminar usuario:", userId)
-  }
+  const handleExportUsers = () => {
+    const csvContent = [
+      ["Nombre", "Email", "Rol", "Especialidad", "Teléfono", "Cédula", "Estado", "Fecha Creación"],
+      ...filteredUsers.map((user) => [
+        user.name,
+        user.email,
+        user.role,
+        user.specialty || "",
+        user.phone || "",
+        user.cedula || "",
+        user.isActive ? "Activo" : "Inactivo",
+        new Date(user.createdAt).toLocaleDateString(),
+      ]),
+    ]
+      .map((row) => row.join(","))
+      .join("\n")
 
-  const handleToggleStatus = (userId: string, currentStatus: string) => {
-    console.log("Cambiar estado usuario:", userId, currentStatus)
+    const blob = new Blob([csvContent], { type: "text/csv" })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement("a")
+    a.href = url
+    a.download = "usuarios.csv"
+    a.click()
+    URL.revokeObjectURL(url)
+
+    toast({
+      title: "Exportación completada",
+      description: "Los usuarios han sido exportados a CSV",
+    })
   }
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Gestión de Usuarios</h1>
-          <p className="text-muted-foreground">Administra todos los usuarios del sistema</p>
+          <h1 className="text-3xl font-bold text-gray-900">Gestión de Usuarios</h1>
+          <p className="text-gray-600">Administra todos los usuarios del sistema</p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={handleExportUsers}>
+            <Download className="mr-2 h-4 w-4" />
+            Exportar
+          </Button>
           <Button variant="outline">
             <Upload className="mr-2 h-4 w-4" />
             Importar
           </Button>
-          <Button variant="outline">
-            <Download className="mr-2 h-4 w-4" />
-            Exportar
-          </Button>
-          <Dialog open={isCreateDialogOpen} onOpenChange={setIsCreateDialogOpen}>
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogTrigger asChild>
-              <Button>
-                <UserPlus className="mr-2 h-4 w-4" />
+              <Button onClick={resetForm}>
+                <Plus className="mr-2 h-4 w-4" />
                 Nuevo Usuario
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl">
               <DialogHeader>
-                <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-                <DialogDescription>Completa la información del nuevo usuario</DialogDescription>
+                <DialogTitle>{editingUser ? "Editar Usuario" : "Nuevo Usuario"}</DialogTitle>
+                <DialogDescription>
+                  {editingUser ? "Actualiza la información del usuario" : "Crea un nuevo usuario en el sistema"}
+                </DialogDescription>
               </DialogHeader>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label>Nombre Completo *</Label>
+                    <Label htmlFor="name">Nombre Completo *</Label>
                     <Input
-                      value={newUser.name}
-                      onChange={(e) => setNewUser({ ...newUser, name: e.target.value })}
-                      placeholder="Nombre y apellidos"
+                      id="name"
+                      value={formData.name}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, name: e.target.value }))}
+                      placeholder="Nombre completo del usuario"
+                      required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Email *</Label>
+                    <Label htmlFor="email">Email *</Label>
                     <Input
+                      id="email"
                       type="email"
-                      value={newUser.email}
-                      onChange={(e) => setNewUser({ ...newUser, email: e.target.value })}
-                      placeholder="email@ejemplo.com"
+                      value={formData.email}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, email: e.target.value }))}
+                      placeholder="usuario@uleam.edu.ec"
+                      required
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label>Rol *</Label>
-                    <Select value={newUser.role} onValueChange={(value) => setNewUser({ ...newUser, role: value })}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar rol" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="admin">Administrador</SelectItem>
-                        <SelectItem value="professor">Profesor</SelectItem>
-                        <SelectItem value="student">Estudiante</SelectItem>
-                        <SelectItem value="patient">Paciente</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Contraseña *</Label>
-                    <Input
-                      type="password"
-                      value={newUser.password}
-                      onChange={(e) => setNewUser({ ...newUser, password: e.target.value })}
-                      placeholder="••••••••"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Teléfono</Label>
-                    <Input
-                      value={newUser.phone}
-                      onChange={(e) => setNewUser({ ...newUser, phone: e.target.value })}
-                      placeholder="+593 99 123 4567"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Estado</Label>
-                    <Select value={newUser.status} onValueChange={(value) => setNewUser({ ...newUser, status: value })}>
+                    <Label htmlFor="role">Rol *</Label>
+                    <Select
+                      value={formData.role}
+                      onValueChange={(value: AdminUser["role"]) => setFormData((prev) => ({ ...prev, role: value }))}
+                    >
                       <SelectTrigger>
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="active">Activo</SelectItem>
-                        <SelectItem value="inactive">Inactivo</SelectItem>
+                        {ROLES.map((role) => (
+                          <SelectItem key={role.value} value={role.value}>
+                            {role.label}
+                          </SelectItem>
+                        ))}
                       </SelectContent>
                     </Select>
+                  </div>
+                  {formData.role === "profesor" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="specialty">Especialidad</Label>
+                      <Select
+                        value={formData.specialty}
+                        onValueChange={(value) => setFormData((prev) => ({ ...prev, specialty: value }))}
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Seleccionar especialidad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {SPECIALTIES.map((specialty) => (
+                            <SelectItem key={specialty} value={specialty}>
+                              {specialty}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  )}
+                  <div className="space-y-2">
+                    <Label htmlFor="cedula">Cédula *</Label>
+                    <Input
+                      id="cedula"
+                      value={formData.cedula}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, cedula: e.target.value }))}
+                      placeholder="1234567890"
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">Teléfono</Label>
+                    <Input
+                      id="phone"
+                      value={formData.phone}
+                      onChange={(e) => setFormData((prev) => ({ ...prev, phone: e.target.value }))}
+                      placeholder="+593 99 123 4567"
+                    />
                   </div>
                 </div>
 
-                {(newUser.role === "professor" || newUser.role === "student") && (
-                  <div className="space-y-2">
-                    <Label>Especialidad</Label>
-                    <Select
-                      value={newUser.specialty}
-                      onValueChange={(value) => setNewUser({ ...newUser, specialty: value })}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Seleccionar especialidad" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Endodoncia">Endodoncia</SelectItem>
-                        <SelectItem value="Ortodoncia">Ortodoncia</SelectItem>
-                        <SelectItem value="Cirugía Oral">Cirugía Oral</SelectItem>
-                        <SelectItem value="Periodoncia">Periodoncia</SelectItem>
-                        <SelectItem value="Odontopediatría">Odontopediatría</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                )}
+                <div className="flex items-center space-x-2">
+                  <Switch
+                    id="isActive"
+                    checked={formData.isActive}
+                    onCheckedChange={(checked) => setFormData((prev) => ({ ...prev, isActive: checked }))}
+                  />
+                  <Label htmlFor="isActive">Usuario activo</Label>
+                </div>
 
-                {newUser.role === "professor" && (
-                  <div className="space-y-2">
-                    <Label>Departamento</Label>
-                    <Input
-                      value={newUser.department}
-                      onChange={(e) => setNewUser({ ...newUser, department: e.target.value })}
-                      placeholder="Departamento de..."
-                    />
-                  </div>
-                )}
-              </div>
-              <DialogFooter>
-                <Button variant="outline" onClick={() => setIsCreateDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={handleCreateUser}>Crear Usuario</Button>
-              </DialogFooter>
+                <div className="flex gap-4 pt-4">
+                  <Button type="submit" className="flex-1">
+                    {editingUser ? "Actualizar" : "Crear"} Usuario
+                  </Button>
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)}>
+                    Cancelar
+                  </Button>
+                </div>
+              </form>
             </DialogContent>
           </Dialog>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Usuarios</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{allUsers.length}</div>
-            <p className="text-xs text-muted-foreground">Registrados en el sistema</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Profesores</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{professors.length}</div>
-            <p className="text-xs text-muted-foreground">Activos</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Estudiantes</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{students.length}</div>
-            <p className="text-xs text-muted-foreground">Registrados</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pacientes</CardTitle>
-            <Shield className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{patients.length}</div>
-            <p className="text-xs text-muted-foreground">En el sistema</p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>Busca y filtra usuarios</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Search className="h-5 w-5" />
+            Filtros
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <Label>Buscar</Label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar por nombre o email..."
+                  placeholder="Buscar por nombre, email, cédula..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
-            <Select value={roleFilter} onValueChange={setRoleFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Rol" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los roles</SelectItem>
-                <SelectItem value="admin">Administrador</SelectItem>
-                <SelectItem value="professor">Profesor</SelectItem>
-                <SelectItem value="student">Estudiante</SelectItem>
-                <SelectItem value="patient">Paciente</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="active">Activos</SelectItem>
-                <SelectItem value="inactive">Inactivos</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <Label>Rol</Label>
+              <Select value={roleFilter} onValueChange={setRoleFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los roles</SelectItem>
+                  {ROLES.map((role) => (
+                    <SelectItem key={role.value} value={role.value}>
+                      {role.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Estado</Label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos</SelectItem>
+                  <SelectItem value="active">Activos</SelectItem>
+                  <SelectItem value="inactive">Inactivos</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>Estadísticas</Label>
+              <div className="text-sm text-gray-600">
+                <p>Total: {users.length}</p>
+                <p>Activos: {users.filter((u) => u.isActive).length}</p>
+              </div>
+            </div>
           </div>
         </CardContent>
       </Card>
@@ -345,215 +469,88 @@ export default function AdminUsersPage() {
       {/* Users Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Usuarios</CardTitle>
-          <CardDescription>{filteredUsers.length} usuarios encontrados</CardDescription>
+          <CardTitle>Usuarios del Sistema</CardTitle>
+          <CardDescription>{filteredUsers.length} usuario(s) encontrado(s)</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Usuario</TableHead>
-                <TableHead>Rol</TableHead>
-                <TableHead>Especialidad</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Último Acceso</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredUsers.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-green-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                        {user.name
-                          .split(" ")
-                          .map((n) => n[0])
-                          .join("")}
-                      </div>
-                      <div>
-                        <div className="font-medium">{user.name}</div>
-                        <div className="text-sm text-muted-foreground flex items-center gap-1">
-                          <Mail className="h-3 w-3" />
-                          {user.email}
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Usuario</TableHead>
+                  <TableHead>Contacto</TableHead>
+                  <TableHead>Rol</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Último Acceso</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Shield className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <p className="font-medium">{user.name}</p>
+                          <p className="text-sm text-gray-500">CI: {user.cedula}</p>
                         </div>
                       </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{getRoleBadge(user.role)}</TableCell>
-                  <TableCell>
-                    {"specialty" in user && user.specialty ? (
-                      <Badge variant="outline">{user.specialty}</Badge>
-                    ) : (
-                      <span className="text-muted-foreground">-</span>
-                    )}
-                  </TableCell>
-                  <TableCell>{getStatusBadge(user.status)}</TableCell>
-                  <TableCell className="text-sm text-muted-foreground">
-                    {new Date(user.createdAt).toLocaleDateString("es-ES")}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex items-center gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUser(user)
-                          setIsViewDialogOpen(true)
-                        }}
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedUser(user)
-                          setIsEditDialogOpen(true)
-                        }}
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleToggleStatus(user.id, user.status)}>
-                        {user.status === "active" ? <Lock className="h-4 w-4" /> : <Unlock className="h-4 w-4" />}
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="sm" className="text-red-600">
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Esta acción eliminará permanentemente el usuario {user.name} y todos sus datos asociados.
-                              Esta acción no se puede deshacer.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDeleteUser(user.id)}
-                              className="bg-red-600 hover:bg-red-700"
-                            >
-                              Eliminar
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <p className="text-sm flex items-center gap-1">
+                          <Mail className="h-3 w-3" />
+                          {user.email}
+                        </p>
+                        {user.phone && (
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                            <Phone className="h-3 w-3" />
+                            {user.phone}
+                          </p>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <Badge className={roleColors[user.role]}>
+                          {ROLES.find((r) => r.value === user.role)?.label}
+                        </Badge>
+                        {user.specialty && <p className="text-xs text-gray-500">{user.specialty}</p>}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Switch checked={user.isActive} onCheckedChange={() => handleToggleStatus(user.id)} size="sm" />
+                        <span className="text-sm">{user.isActive ? "Activo" : "Inactivo"}</span>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.lastLogin ? new Date(user.lastLogin).toLocaleDateString() : "Nunca"}</TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline" onClick={() => handleEdit(user)}>
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          <Shield className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleDelete(user.id)}
+                          className="text-red-600 hover:text-red-700"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
-
-      {/* View User Dialog */}
-      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Información del Usuario</DialogTitle>
-            <DialogDescription>Detalles completos del usuario</DialogDescription>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm font-medium">Nombre</Label>
-                  <p>{selectedUser.name}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Email</Label>
-                  <p>{selectedUser.email}</p>
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Rol</Label>
-                  {getRoleBadge(selectedUser.role)}
-                </div>
-                <div>
-                  <Label className="text-sm font-medium">Estado</Label>
-                  {getStatusBadge(selectedUser.status)}
-                </div>
-                {"specialty" in selectedUser && selectedUser.specialty && (
-                  <div>
-                    <Label className="text-sm font-medium">Especialidad</Label>
-                    <p>{selectedUser.specialty}</p>
-                  </div>
-                )}
-                {"department" in selectedUser && selectedUser.department && (
-                  <div>
-                    <Label className="text-sm font-medium">Departamento</Label>
-                    <p>{selectedUser.department}</p>
-                  </div>
-                )}
-                <div>
-                  <Label className="text-sm font-medium">Fecha de Registro</Label>
-                  <p>{new Date(selectedUser.createdAt).toLocaleDateString("es-ES")}</p>
-                </div>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      {/* Edit User Dialog */}
-      <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle>Editar Usuario</DialogTitle>
-            <DialogDescription>Modifica la información del usuario</DialogDescription>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label>Nombre</Label>
-                  <Input defaultValue={selectedUser.name} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Email</Label>
-                  <Input defaultValue={selectedUser.email} />
-                </div>
-                <div className="space-y-2">
-                  <Label>Rol</Label>
-                  <Select defaultValue={selectedUser.role}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="admin">Administrador</SelectItem>
-                      <SelectItem value="professor">Profesor</SelectItem>
-                      <SelectItem value="student">Estudiante</SelectItem>
-                      <SelectItem value="patient">Paciente</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label>Estado</Label>
-                  <Select defaultValue={selectedUser.status}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="active">Activo</SelectItem>
-                      <SelectItem value="inactive">Inactivo</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-            </div>
-          )}
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsEditDialogOpen(false)}>
-              Cancelar
-            </Button>
-            <Button onClick={handleEditUser}>Guardar Cambios</Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }

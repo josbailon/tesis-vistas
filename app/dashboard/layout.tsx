@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useEffect } from "react"
+import { Suspense, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { LoadingSpinner } from "@/components/loading-spinner"
@@ -61,7 +61,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-6">{children}</main>
+          <main className="flex-1 overflow-y-auto p-6">
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center h-64">
+                  <LoadingSpinner size="lg" text="Cargando contenido..." variant="medical" />
+                </div>
+              }
+            >
+              {children}
+            </Suspense>
+          </main>
         </div>
       </div>
     </div>

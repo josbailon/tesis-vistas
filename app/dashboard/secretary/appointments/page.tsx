@@ -1,301 +1,240 @@
 "use client"
 
 import { useState } from "react"
-import { Calendar, Clock, User, Phone, Search, Plus } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { useRouter } from "next/navigation"
-
-interface Appointment {
-  id: string
-  patientName: string
-  patientPhone: string
-  date: string
-  time: string
-  specialty: string
-  student: string
-  professor: string
-  status: "confirmada" | "pendiente" | "cancelada" | "completada"
-  notes?: string
-}
-
-const mockAppointments: Appointment[] = [
-  {
-    id: "1",
-    patientName: "María González",
-    patientPhone: "+593 99 123 4567",
-    date: "2024-01-15",
-    time: "09:00",
-    specialty: "Endodoncia",
-    student: "Juan Pérez",
-    professor: "Dr. Carlos Ruiz",
-    status: "confirmada",
-    notes: "Primera consulta",
-  },
-  {
-    id: "2",
-    patientName: "Carlos Mendoza",
-    patientPhone: "+593 99 234 5678",
-    date: "2024-01-15",
-    time: "10:30",
-    specialty: "Ortodoncia",
-    student: "Ana López",
-    professor: "Dra. Laura Martín",
-    status: "pendiente",
-    notes: "Revisión de brackets",
-  },
-  {
-    id: "3",
-    patientName: "Luis Rodríguez",
-    patientPhone: "+593 99 345 6789",
-    date: "2024-01-15",
-    time: "14:00",
-    specialty: "Cirugía Oral",
-    student: "Pedro Sánchez",
-    professor: "Dr. Roberto Silva",
-    status: "completada",
-    notes: "Extracción de muela del juicio",
-  },
-  {
-    id: "4",
-    patientName: "Ana Morales",
-    patientPhone: "+593 99 456 7890",
-    date: "2024-01-16",
-    time: "08:30",
-    specialty: "Odontopediatría",
-    student: "María García",
-    professor: "Dra. Carmen Vega",
-    status: "confirmada",
-    notes: "Control rutinario",
-  },
-]
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import { CalendarIcon, Plus, Search, Filter, Clock, User, Phone } from "lucide-react"
+import { useAppointments } from "@/contexts/appointment-context"
+import { format } from "date-fns"
+import { es } from "date-fns/locale"
 
 const statusColors = {
+  programada: "bg-blue-100 text-blue-800",
   confirmada: "bg-green-100 text-green-800",
-  pendiente: "bg-yellow-100 text-yellow-800",
+  completada: "bg-gray-100 text-gray-800",
   cancelada: "bg-red-100 text-red-800",
-  completada: "bg-blue-100 text-blue-800",
+  "no-asistio": "bg-orange-100 text-orange-800",
 }
 
 const statusLabels = {
+  programada: "Programada",
   confirmada: "Confirmada",
-  pendiente: "Pendiente",
-  cancelada: "Cancelada",
   completada: "Completada",
+  cancelada: "Cancelada",
+  "no-asistio": "No Asistió",
+}
+
+const priorityColors = {
+  low: "bg-gray-100 text-gray-800",
+  medium: "bg-yellow-100 text-yellow-800",
+  high: "bg-orange-100 text-orange-800",
+  urgent: "bg-red-100 text-red-800",
+}
+
+const priorityLabels = {
+  low: "Baja",
+  medium: "Media",
+  high: "Alta",
+  urgent: "Urgente",
 }
 
 export default function SecretaryAppointmentsPage() {
-  const [appointments, setAppointments] = useState<Appointment[]>(mockAppointments)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string>("all")
-  const [dateFilter, setDateFilter] = useState<string>("all")
-
   const router = useRouter()
+  const { appointments, updateAppointmentStatus } = useAppointments()
+  const [searchTerm, setSearchTerm] = useState("")
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [priorityFilter, setPriorityFilter] = useState("all")
 
   const filteredAppointments = appointments.filter((appointment) => {
     const matchesSearch =
       appointment.patientName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      appointment.patientPhone.includes(searchTerm) ||
-      appointment.student.toLowerCase().includes(searchTerm.toLowerCase())
-
+      appointment.title.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "all" || appointment.status === statusFilter
+    const matchesPriority = priorityFilter === "all" || appointment.priority === priorityFilter
 
-    const matchesDate = dateFilter === "all" || appointment.date === dateFilter
-
-    return matchesSearch && matchesStatus && matchesDate
+    return matchesSearch && matchesStatus && matchesPriority
   })
 
-  const updateAppointmentStatus = (id: string, newStatus: Appointment["status"]) => {
-    setAppointments((prev) => prev.map((apt) => (apt.id === id ? { ...apt, status: newStatus } : apt)))
+  const handleStatusChange = (appointmentId: string, newStatus: any) => {
+    updateAppointmentStatus(appointmentId, newStatus)
   }
-
-  const todayAppointments = appointments.filter((apt) => apt.date === new Date().toISOString().split("T")[0])
-  const pendingAppointments = appointments.filter((apt) => apt.status === "pendiente")
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold text-gray-900">Gestión de Citas</h1>
-          <p className="text-gray-600">Administra las citas de la clínica dental</p>
+          <p className="text-gray-600">Administra todas las citas de la clínica</p>
         </div>
-        <Button
-          className="bg-blue-600 hover:bg-blue-700"
-          onClick={() => router.push("/dashboard/secretary/appointments/create")}
-        >
+        <Button onClick={() => router.push("/dashboard/secretary/appointments/create")}>
           <Plus className="mr-2 h-4 w-4" />
           Nueva Cita
         </Button>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Citas Hoy</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{todayAppointments.length}</div>
-            <p className="text-xs text-muted-foreground">
-              {todayAppointments.filter((apt) => apt.status === "confirmada").length} confirmadas
-            </p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{pendingAppointments.length}</div>
-            <p className="text-xs text-muted-foreground">Requieren confirmación</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Citas</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{appointments.length}</div>
-            <p className="text-xs text-muted-foreground">En el sistema</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Completadas</CardTitle>
-            <User className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{appointments.filter((apt) => apt.status === "completada").length}</div>
-            <p className="text-xs text-muted-foreground">Este período</p>
-          </CardContent>
-        </Card>
-      </div>
-
       {/* Filters */}
       <Card>
         <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-          <CardDescription>Busca y filtra las citas</CardDescription>
+          <CardTitle className="flex items-center gap-2">
+            <Filter className="h-5 w-5" />
+            Filtros
+          </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Buscar</label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 <Input
-                  placeholder="Buscar por paciente, teléfono o estudiante..."
+                  placeholder="Buscar paciente o tratamiento..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
               </div>
             </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Estado" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todos los estados</SelectItem>
-                <SelectItem value="confirmada">Confirmada</SelectItem>
-                <SelectItem value="pendiente">Pendiente</SelectItem>
-                <SelectItem value="cancelada">Cancelada</SelectItem>
-                <SelectItem value="completada">Completada</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-full md:w-48">
-                <SelectValue placeholder="Fecha" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Todas las fechas</SelectItem>
-                <SelectItem value="2024-01-15">15 Enero 2024</SelectItem>
-                <SelectItem value="2024-01-16">16 Enero 2024</SelectItem>
-                <SelectItem value="2024-01-17">17 Enero 2024</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Estado</label>
+              <Select value={statusFilter} onValueChange={setStatusFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todos los estados</SelectItem>
+                  <SelectItem value="programada">Programada</SelectItem>
+                  <SelectItem value="confirmada">Confirmada</SelectItem>
+                  <SelectItem value="completada">Completada</SelectItem>
+                  <SelectItem value="cancelada">Cancelada</SelectItem>
+                  <SelectItem value="no-asistio">No Asistió</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Prioridad</label>
+              <Select value={priorityFilter} onValueChange={setPriorityFilter}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Todas las prioridades</SelectItem>
+                  <SelectItem value="low">Baja</SelectItem>
+                  <SelectItem value="medium">Media</SelectItem>
+                  <SelectItem value="high">Alta</SelectItem>
+                  <SelectItem value="urgent">Urgente</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Acciones</label>
+              <Button variant="outline" className="w-full bg-transparent">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                Ver Calendario
+              </Button>
+            </div>
           </div>
         </CardContent>
       </Card>
 
-      {/* Appointments List */}
+      {/* Appointments Table */}
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Citas</CardTitle>
-          <CardDescription>{filteredAppointments.length} citas encontradas</CardDescription>
+          <CardTitle>Citas Programadas</CardTitle>
+          <CardDescription>{filteredAppointments.length} cita(s) encontrada(s)</CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {filteredAppointments.map((appointment) => (
-              <div key={appointment.id} className="border rounded-lg p-4 hover:bg-gray-50 transition-colors">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-lg">{appointment.patientName}</h3>
-                      <Badge className={statusColors[appointment.status]}>{statusLabels[appointment.status]}</Badge>
-                    </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-gray-600">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Paciente</TableHead>
+                  <TableHead>Fecha y Hora</TableHead>
+                  <TableHead>Tratamiento</TableHead>
+                  <TableHead>Estudiante</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Prioridad</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredAppointments.map((appointment) => (
+                  <TableRow key={appointment.id}>
+                    <TableCell>
                       <div className="flex items-center gap-2">
-                        <Phone className="h-4 w-4" />
-                        {appointment.patientPhone}
+                        <User className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <p className="font-medium">{appointment.patientName}</p>
+                          {appointment.patientPhone && (
+                            <p className="text-sm text-gray-500 flex items-center gap-1">
+                              <Phone className="h-3 w-3" />
+                              {appointment.patientPhone}
+                            </p>
+                          )}
+                        </div>
                       </div>
+                    </TableCell>
+                    <TableCell>
                       <div className="flex items-center gap-2">
-                        <Calendar className="h-4 w-4" />
-                        {appointment.date} a las {appointment.time}
+                        <CalendarIcon className="h-4 w-4 text-gray-400" />
+                        <div>
+                          <p className="font-medium">
+                            {format(new Date(appointment.date), "dd/MM/yyyy", { locale: es })}
+                          </p>
+                          <p className="text-sm text-gray-500 flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {appointment.time} ({appointment.duration} min)
+                          </p>
+                        </div>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Estudiante: {appointment.student}
+                    </TableCell>
+                    <TableCell>
+                      <div>
+                        <p className="font-medium">{appointment.title}</p>
+                        {appointment.specialty && <p className="text-sm text-gray-500">{appointment.specialty}</p>}
                       </div>
-                      <div className="flex items-center gap-2">
-                        <User className="h-4 w-4" />
-                        Profesor: {appointment.professor}
-                      </div>
-                    </div>
-                    <div className="mt-2">
-                      <span className="text-sm font-medium text-blue-600">{appointment.specialty}</span>
-                      {appointment.notes && <p className="text-sm text-gray-500 mt-1">{appointment.notes}</p>}
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    {appointment.status === "pendiente" && (
-                      <Button
-                        size="sm"
-                        onClick={() => updateAppointmentStatus(appointment.id, "confirmada")}
-                        className="bg-green-600 hover:bg-green-700"
+                    </TableCell>
+                    <TableCell>{appointment.studentName || "No asignado"}</TableCell>
+                    <TableCell>
+                      <Select
+                        value={appointment.status}
+                        onValueChange={(value) => handleStatusChange(appointment.id, value)}
                       >
-                        Confirmar
-                      </Button>
-                    )}
-                    {appointment.status === "confirmada" && (
-                      <Button
-                        size="sm"
-                        onClick={() => updateAppointmentStatus(appointment.id, "completada")}
-                        className="bg-blue-600 hover:bg-blue-700"
-                      >
-                        Completar
-                      </Button>
-                    )}
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => updateAppointmentStatus(appointment.id, "cancelada")}
-                    >
-                      Cancelar
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
+                        <SelectTrigger className="w-32">
+                          <Badge className={statusColors[appointment.status]}>{statusLabels[appointment.status]}</Badge>
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="programada">Programada</SelectItem>
+                          <SelectItem value="confirmada">Confirmada</SelectItem>
+                          <SelectItem value="completada">Completada</SelectItem>
+                          <SelectItem value="cancelada">Cancelada</SelectItem>
+                          <SelectItem value="no-asistio">No Asistió</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={priorityColors[appointment.priority]}>
+                        {priorityLabels[appointment.priority]}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <Button size="sm" variant="outline">
+                          Ver
+                        </Button>
+                        <Button size="sm" variant="outline">
+                          Editar
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           </div>
         </CardContent>
       </Card>
