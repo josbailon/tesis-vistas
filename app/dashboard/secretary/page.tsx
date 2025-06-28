@@ -2,10 +2,68 @@
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Calendar, Users, Phone, Clock, UserPlus, FileText } from "lucide-react"
+import { Calendar, Users, Clock, Phone, FileText, UserPlus } from "lucide-react"
 import Link from "next/link"
 
 export default function SecretaryDashboard() {
+  const quickActions = [
+    {
+      title: "Nueva Cita",
+      description: "Agendar una nueva cita para un paciente",
+      href: "/dashboard/secretary/appointments/create",
+      icon: Calendar,
+      color: "bg-blue-500",
+    },
+    {
+      title: "Registrar Paciente",
+      description: "Agregar un nuevo paciente al sistema",
+      href: "/dashboard/secretary/patient-registration",
+      icon: UserPlus,
+      color: "bg-green-500",
+    },
+    {
+      title: "Agenda del Día",
+      description: "Ver todas las citas programadas para hoy",
+      href: "/dashboard/secretary/daily-agenda",
+      icon: Clock,
+      color: "bg-orange-500",
+    },
+    {
+      title: "Comunicaciones",
+      description: "Gestionar llamadas y mensajes",
+      href: "/dashboard/secretary/communications",
+      icon: Phone,
+      color: "bg-purple-500",
+    },
+  ]
+
+  const stats = [
+    {
+      title: "Citas Hoy",
+      value: "12",
+      description: "3 pendientes",
+      icon: Calendar,
+    },
+    {
+      title: "Pacientes Activos",
+      value: "156",
+      description: "+5 esta semana",
+      icon: Users,
+    },
+    {
+      title: "Llamadas Pendientes",
+      value: "8",
+      description: "2 urgentes",
+      icon: Phone,
+    },
+    {
+      title: "Reportes",
+      value: "4",
+      description: "Listos para enviar",
+      icon: FileText,
+    },
+  ]
+
   return (
     <div className="space-y-6">
       <div>
@@ -13,145 +71,77 @@ export default function SecretaryDashboard() {
         <p className="text-gray-600">Gestiona citas, pacientes y comunicaciones</p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Calendar className="mr-2 h-5 w-5" />
-              Gestión de Citas
-            </CardTitle>
-            <CardDescription>Programa y administra las citas de los pacientes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/secretary/appointments">
-              <Button className="w-full">Ver Citas</Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <UserPlus className="mr-2 h-5 w-5" />
-              Registro de Pacientes
-            </CardTitle>
-            <CardDescription>Registra nuevos pacientes en el sistema</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/secretary/patient-registration">
-              <Button className="w-full">Registrar Paciente</Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Clock className="mr-2 h-5 w-5" />
-              Agenda Diaria
-            </CardTitle>
-            <CardDescription>Revisa la agenda del día actual</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/secretary/daily-agenda">
-              <Button className="w-full">Ver Agenda</Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Phone className="mr-2 h-5 w-5" />
-              Comunicaciones
-            </CardTitle>
-            <CardDescription>Gestiona llamadas y mensajes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/secretary/communications">
-              <Button className="w-full">Ver Comunicaciones</Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <Users className="mr-2 h-5 w-5" />
-              Gestión de Pacientes
-            </CardTitle>
-            <CardDescription>Administra la información de pacientes</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/secretary/patients">
-              <Button className="w-full">Ver Pacientes</Button>
-            </Link>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center">
-              <FileText className="mr-2 h-5 w-5" />
-              Reportes
-            </CardTitle>
-            <CardDescription>Genera reportes y estadísticas</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Link href="/dashboard/secretary/reports">
-              <Button className="w-full">Ver Reportes</Button>
-            </Link>
-          </CardContent>
-        </Card>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {stats.map((stat, index) => (
+          <Card key={index}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">{stat.title}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stat.value}</div>
+              <p className="text-xs text-muted-foreground">{stat.description}</p>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <Card>
-          <CardHeader>
-            <CardTitle>Citas de Hoy</CardTitle>
-            <CardDescription>Resumen de las citas programadas para hoy</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-blue-50 rounded-lg">
-                <div>
-                  <p className="font-medium">Juan Pérez</p>
-                  <p className="text-sm text-gray-600">09:00 - Consulta General</p>
+      {/* Quick Actions */}
+      <div>
+        <h2 className="text-xl font-semibold mb-4">Acciones Rápidas</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {quickActions.map((action, index) => (
+            <Card key={index} className="hover:shadow-md transition-shadow">
+              <CardHeader>
+                <div className={`w-12 h-12 rounded-lg ${action.color} flex items-center justify-center mb-3`}>
+                  <action.icon className="h-6 w-6 text-white" />
                 </div>
-                <span className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Confirmada</span>
-              </div>
-              <div className="flex justify-between items-center p-3 bg-yellow-50 rounded-lg">
-                <div>
-                  <p className="font-medium">María García</p>
-                  <p className="text-sm text-gray-600">14:30 - Emergencia</p>
-                </div>
-                <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">Pendiente</span>
+                <CardTitle className="text-lg">{action.title}</CardTitle>
+                <CardDescription>{action.description}</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <Button asChild className="w-full">
+                  <Link href={action.href}>Ir a {action.title}</Link>
+                </Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </div>
+
+      {/* Recent Activity */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Actividad Reciente</CardTitle>
+          <CardDescription>Últimas acciones realizadas en el sistema</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Cita agendada para María González</p>
+                <p className="text-xs text-gray-500">Hace 15 minutos</p>
               </div>
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Acciones Rápidas</CardTitle>
-            <CardDescription>Tareas frecuentes del día a día</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            <Button variant="outline" className="w-full justify-start bg-transparent">
-              <Calendar className="mr-2 h-4 w-4" />
-              Agendar Nueva Cita
-            </Button>
-            <Button variant="outline" className="w-full justify-start bg-transparent">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Registrar Paciente
-            </Button>
-            <Button variant="outline" className="w-full justify-start bg-transparent">
-              <Phone className="mr-2 h-4 w-4" />
-              Llamar a Paciente
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Nuevo paciente registrado: Carlos Pérez</p>
+                <p className="text-xs text-gray-500">Hace 30 minutos</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              <div className="flex-1">
+                <p className="text-sm font-medium">Llamada pendiente de confirmación</p>
+                <p className="text-xs text-gray-500">Hace 1 hora</p>
+              </div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
