@@ -16,7 +16,7 @@ export interface Appointment {
   type: string
   notes: string
   priority: string
-  status: "programada" | "confirmada" | "completada" | "cancelada"
+  status: "programada" | "confirmada" | "en_progreso" | "completada" | "cancelada"
   createdAt: string
   studentName: string
   specialty: string
@@ -28,6 +28,7 @@ interface AppointmentContextType {
   updateAppointment: (id: string, appointment: Partial<Appointment>) => void
   deleteAppointment: (id: string) => void
   getAppointmentsByDate: (date: string) => Appointment[]
+  getAppointmentsByStudent: (studentName: string) => Appointment[]
 }
 
 const AppointmentContext = createContext<AppointmentContextType | undefined>(undefined)
@@ -37,38 +38,56 @@ export function AppointmentProvider({ children }: { children: React.ReactNode })
     {
       id: "1",
       title: "Endodoncia - María González",
-      patientName: "María González",
+      patientName: "María González Pérez",
       patientPhone: "+593 99 123 4567",
-      patientEmail: "maria@email.com",
+      patientEmail: "maria.gonzalez@email.com",
       patientCedula: "1234567890",
       date: "2024-12-30",
       time: "09:00",
       duration: "90",
       type: "tratamiento",
-      notes: "Primera sesión de endodoncia",
+      notes: "Tratamiento de conducto en molar superior derecho",
       priority: "medium",
       status: "programada",
       createdAt: "2024-12-28T10:00:00Z",
-      studentName: "Juan Pérez",
+      studentName: "Juan Carlos Pérez Mendoza",
       specialty: "Endodoncia",
     },
     {
       id: "2",
       title: "Ortodoncia - Carlos Ruiz",
-      patientName: "Carlos Ruiz",
+      patientName: "Carlos Ruiz Mendoza",
       patientPhone: "+593 99 234 5678",
-      patientEmail: "carlos@email.com",
+      patientEmail: "carlos.ruiz@email.com",
       patientCedula: "2345678901",
       date: "2024-12-30",
       time: "14:30",
       duration: "60",
       type: "consulta",
-      notes: "Control mensual de brackets",
+      notes: "Evaluación para brackets",
       priority: "low",
       status: "confirmada",
       createdAt: "2024-12-28T11:00:00Z",
-      studentName: "Ana López",
+      studentName: "Ana María López Silva",
       specialty: "Ortodoncia",
+    },
+    {
+      id: "3",
+      title: "Cirugía - Laura Martínez",
+      patientName: "Laura Martínez Silva",
+      patientPhone: "+593 99 345 6789",
+      patientEmail: "laura.martinez@email.com",
+      patientCedula: "3456789012",
+      date: "2024-12-31",
+      time: "08:00",
+      duration: "120",
+      type: "cirugia",
+      notes: "Extracción de muela del juicio",
+      priority: "high",
+      status: "programada",
+      createdAt: "2024-12-28T12:00:00Z",
+      studentName: "Pedro Antonio Silva Castro",
+      specialty: "Cirugía Oral y Maxilofacial",
     },
   ])
 
@@ -90,6 +109,10 @@ export function AppointmentProvider({ children }: { children: React.ReactNode })
     return appointments.filter((appointment) => appointment.date === date)
   }
 
+  const getAppointmentsByStudent = (studentName: string) => {
+    return appointments.filter((appointment) => appointment.studentName === studentName)
+  }
+
   return (
     <AppointmentContext.Provider
       value={{
@@ -98,6 +121,7 @@ export function AppointmentProvider({ children }: { children: React.ReactNode })
         updateAppointment,
         deleteAppointment,
         getAppointmentsByDate,
+        getAppointmentsByStudent,
       }}
     >
       {children}
