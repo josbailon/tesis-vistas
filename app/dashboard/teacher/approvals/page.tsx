@@ -4,9 +4,10 @@ import { useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import {
   Dialog,
   DialogContent,
@@ -16,488 +17,553 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { useToast } from "@/hooks/use-toast"
-import { CheckCircle, XCircle, Clock, FileText, User, Calendar, Eye, MessageSquare } from "lucide-react"
+import { CheckCircle, XCircle, Eye, Clock, FileText } from "lucide-react"
 
 interface ApprovalRequest {
   id: string
-  title: string
-  student: {
-    name: string
-    id: string
-    email: string
-  }
-  patient: {
-    name: string
-    id: string
-  }
-  submittedDate: string
-  dueDate: string
-  status: "pending" | "approved" | "rejected" | "needs_revision"
-  priority: "low" | "medium" | "high"
-  type: "treatment_plan" | "case_study" | "procedure_approval" | "final_evaluation"
+  studentName: string
+  studentEmail: string
+  patientName: string
+  treatmentType: string
+  specialty: string
   description: string
-  attachments: string[]
-  feedback?: string
-  lastReviewed?: string
+  requestDate: string
+  urgency: "low" | "medium" | "high" | "urgent"
+  status: "pending" | "approved" | "rejected" | "revision"
+  documents: string[]
+  estimatedDuration: number
+  notes?: string
+  professorFeedback?: string
 }
 
 export default function TeacherApprovalsPage() {
   const { toast } = useToast()
+  const [statusFilter, setStatusFilter] = useState("all")
+  const [urgencyFilter, setUrgencyFilter] = useState("all")
   const [selectedRequest, setSelectedRequest] = useState<ApprovalRequest | null>(null)
-  const [isReviewDialogOpen, setIsReviewDialogOpen] = useState(false)
+  const [isViewDialogOpen, setIsViewDialogOpen] = useState(false)
+  const [isApprovalDialogOpen, setIsApprovalDialogOpen] = useState(false)
+  const [approvalAction, setApprovalAction] = useState<"approve" | "reject" | "revision">("approve")
   const [feedback, setFeedback] = useState("")
-  const [reviewAction, setReviewAction] = useState<"approve" | "reject" | "revision" | null>(null)
 
-  const [approvalRequests, setApprovalRequests] = useState<ApprovalRequest[]>([
+  const [requests, setRequests] = useState<ApprovalRequest[]>([
     {
-      id: "ar1",
-      title: "Plan de Tratamiento - Endodoncia Molar Superior",
-      student: {
-        name: "Pedro Gómez",
-        id: "E12345",
-        email: "pedro.gomez@uleam.edu.ec",
-      },
-      patient: {
-        name: "Ana García",
-        id: "P001",
-      },
-      submittedDate: "2025-05-20",
-      dueDate: "2025-05-25",
-      status: "pending",
-      priority: "high",
-      type: "treatment_plan",
+      id: "1",
+      studentName: "Juan Carlos Pérez",
+      studentEmail: "juan.perez@uleam.edu.ec",
+      patientName: "María González",
+      treatmentType: "Endodoncia",
+      specialty: "Endodoncia",
       description:
-        "Solicitud de aprobación para plan de tratamiento de endodoncia en molar superior derecho. Paciente presenta dolor agudo y pruebas de vitalidad negativas.",
-      attachments: ["radiografia_panoramica.jpg", "plan_tratamiento.pdf", "consentimiento_informado.pdf"],
+        "Tratamiento de conducto en molar superior derecho. Paciente presenta dolor severo y sensibilidad al frío.",
+      requestDate: "2024-12-28T10:00:00Z",
+      urgency: "high",
+      status: "pending",
+      documents: ["Radiografía periapical", "Historia clínica", "Consentimiento informado"],
+      estimatedDuration: 90,
+      notes: "Paciente con historial de diabetes tipo 2. Requiere precauciones especiales.",
     },
     {
-      id: "ar2",
-      title: "Caso Clínico - Ortodoncia Correctiva",
-      student: {
-        name: "Laura Torres",
-        id: "E12346",
-        email: "laura.torres@uleam.edu.ec",
-      },
-      patient: {
-        name: "Carlos López",
-        id: "P002",
-      },
-      submittedDate: "2025-05-18",
-      dueDate: "2025-05-23",
-      status: "needs_revision",
-      priority: "medium",
-      type: "case_study",
-      description: "Documentación completa de caso de ortodoncia correctiva para maloclusión clase II.",
-      attachments: ["caso_clinico.pdf", "fotografias_intraorales.zip", "radiografias.zip"],
-      feedback:
-        "El caso está bien documentado, pero necesita incluir el análisis cefalométrico completo y las proyecciones de crecimiento.",
-      lastReviewed: "2025-05-19",
+      id: "2",
+      studentName: "Ana María López",
+      studentEmail: "ana.lopez@uleam.edu.ec",
+      patientName: "Carlos Ruiz",
+      treatmentType: "Colocación de Brackets",
+      specialty: "Ortodoncia",
+      description: "Instalación de aparatos ortodónticos fijos. Paciente de 16 años con maloclusión clase II.",
+      requestDate: "2024-12-28T14:30:00Z",
+      urgency: "medium",
+      status: "pending",
+      documents: ["Radiografía panorámica", "Modelos de estudio", "Fotografías clínicas"],
+      estimatedDuration: 120,
+      notes: "Primera fase del tratamiento ortodóntico. Duración estimada del tratamiento: 24 meses.",
     },
     {
-      id: "ar3",
-      title: "Aprobación de Procedimiento Quirúrgico",
-      student: {
-        name: "Miguel Sánchez",
-        id: "E12347",
-        email: "miguel.sanchez@uleam.edu.ec",
-      },
-      patient: {
-        name: "María Fernández",
-        id: "P003",
-      },
-      submittedDate: "2025-05-15",
-      dueDate: "2025-05-20",
+      id: "3",
+      studentName: "Pedro Silva",
+      studentEmail: "pedro.silva@uleam.edu.ec",
+      patientName: "Laura Martínez",
+      treatmentType: "Extracción Simple",
+      specialty: "Cirugía Oral",
+      description: "Extracción de tercer molar inferior izquierdo. Pieza dental con caries extensa no restaurable.",
+      requestDate: "2024-12-27T16:00:00Z",
+      urgency: "medium",
       status: "approved",
-      priority: "high",
-      type: "procedure_approval",
-      description: "Solicitud de aprobación para extracción quirúrgica de terceros molares impactados.",
-      attachments: ["tomografia.dcm", "plan_quirurgico.pdf", "evaluacion_riesgos.pdf"],
-      feedback: "Plan quirúrgico aprobado. Excelente evaluación de riesgos y protocolo post-operatorio bien definido.",
-      lastReviewed: "2025-05-16",
+      documents: ["Radiografía panorámica", "Evaluación preoperatoria"],
+      estimatedDuration: 45,
+      professorFeedback: "Aprobado. Procedimiento estándar. Recordar protocolo de anestesia local.",
+    },
+    {
+      id: "4",
+      studentName: "Carmen Torres",
+      studentEmail: "carmen.torres@uleam.edu.ec",
+      patientName: "Roberto Díaz",
+      treatmentType: "Limpieza Periodontal",
+      specialty: "Periodoncia",
+      description: "Raspado y alisado radicular en cuadrante superior derecho. Paciente con gingivitis moderada.",
+      requestDate: "2024-12-27T11:15:00Z",
+      urgency: "low",
+      status: "revision",
+      documents: ["Sondaje periodontal", "Fotografías intraorales"],
+      estimatedDuration: 60,
+      professorFeedback: "Requiere evaluación adicional. Solicitar radiografías periapicales del área afectada.",
+    },
+    {
+      id: "5",
+      studentName: "Luis Morales",
+      studentEmail: "luis.morales@uleam.edu.ec",
+      patientName: "Sofía Herrera",
+      treatmentType: "Sellantes de Fosetas",
+      specialty: "Odontopediatría",
+      description: "Aplicación de sellantes preventivos en molares permanentes. Paciente de 8 años.",
+      requestDate: "2024-12-28T09:30:00Z",
+      urgency: "low",
+      status: "pending",
+      documents: ["Examen clínico", "Autorización parental"],
+      estimatedDuration: 30,
+      notes: "Paciente colaboradora. Primera visita dental.",
     },
   ])
 
+  const filteredRequests = requests.filter((request) => {
+    const matchesStatus = statusFilter === "all" || request.status === statusFilter
+    const matchesUrgency = urgencyFilter === "all" || request.urgency === urgencyFilter
+    return matchesStatus && matchesUrgency
+  })
+
+  const getUrgencyBadge = (urgency: string) => {
+    const colors = {
+      low: "bg-green-100 text-green-800",
+      medium: "bg-yellow-100 text-yellow-800",
+      high: "bg-orange-100 text-orange-800",
+      urgent: "bg-red-100 text-red-800",
+    }
+    const labels = {
+      low: "Baja",
+      medium: "Media",
+      high: "Alta",
+      urgent: "Urgente",
+    }
+    return <Badge className={colors[urgency as keyof typeof colors]}>{labels[urgency as keyof typeof labels]}</Badge>
+  }
+
   const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return (
-          <Badge className="bg-yellow-500">
-            <Clock className="h-3 w-3 mr-1" />
-            Pendiente
-          </Badge>
-        )
-      case "approved":
-        return (
-          <Badge className="bg-green-500">
-            <CheckCircle className="h-3 w-3 mr-1" />
-            Aprobado
-          </Badge>
-        )
-      case "rejected":
-        return (
-          <Badge className="bg-red-500">
-            <XCircle className="h-3 w-3 mr-1" />
-            Rechazado
-          </Badge>
-        )
-      case "needs_revision":
-        return (
-          <Badge className="bg-orange-500">
-            <FileText className="h-3 w-3 mr-1" />
-            Necesita Revisión
-          </Badge>
-        )
-      default:
-        return <Badge variant="secondary">{status}</Badge>
+    const colors = {
+      pending: "bg-yellow-100 text-yellow-800",
+      approved: "bg-green-100 text-green-800",
+      rejected: "bg-red-100 text-red-800",
+      revision: "bg-blue-100 text-blue-800",
     }
-  }
-
-  const getPriorityBadge = (priority: string) => {
-    switch (priority) {
-      case "high":
-        return <Badge variant="destructive">Alta</Badge>
-      case "medium":
-        return (
-          <Badge variant="outline" className="border-yellow-500 text-yellow-700">
-            Media
-          </Badge>
-        )
-      case "low":
-        return <Badge variant="outline">Baja</Badge>
-      default:
-        return <Badge variant="outline">{priority}</Badge>
+    const labels = {
+      pending: "Pendiente",
+      approved: "Aprobado",
+      rejected: "Rechazado",
+      revision: "Revisión",
     }
+    return <Badge className={colors[status as keyof typeof colors]}>{labels[status as keyof typeof labels]}</Badge>
   }
 
-  const getTypeLabel = (type: string) => {
-    switch (type) {
-      case "treatment_plan":
-        return "Plan de Tratamiento"
-      case "case_study":
-        return "Caso Clínico"
-      case "procedure_approval":
-        return "Aprobación de Procedimiento"
-      case "final_evaluation":
-        return "Evaluación Final"
-      default:
-        return type
+  const handleApprovalAction = () => {
+    if (!selectedRequest) return
+
+    if (!feedback.trim() && (approvalAction === "reject" || approvalAction === "revision")) {
+      toast({
+        title: "Error",
+        description: "Por favor proporciona retroalimentación para esta acción",
+        variant: "destructive",
+      })
+      return
     }
-  }
 
-  const handleReview = (request: ApprovalRequest, action: "approve" | "reject" | "revision") => {
-    setSelectedRequest(request)
-    setReviewAction(action)
-    setFeedback(request.feedback || "")
-    setIsReviewDialogOpen(true)
-  }
-
-  const submitReview = () => {
-    if (!selectedRequest || !reviewAction) return
-
-    const updatedRequest: ApprovalRequest = {
+    const updatedRequest = {
       ...selectedRequest,
-      status: reviewAction === "approve" ? "approved" : reviewAction === "reject" ? "rejected" : "needs_revision",
-      feedback,
-      lastReviewed: new Date().toISOString().split("T")[0],
+      status: approvalAction === "approve" ? "approved" : approvalAction === "reject" ? "rejected" : "revision",
+      professorFeedback: feedback.trim() || undefined,
     }
 
-    setApprovalRequests((prev) => prev.map((req) => (req.id === selectedRequest.id ? updatedRequest : req)))
+    setRequests((prev) => prev.map((req) => (req.id === selectedRequest.id ? updatedRequest : req)))
 
-    setIsReviewDialogOpen(false)
-    setSelectedRequest(null)
-    setFeedback("")
-    setReviewAction(null)
-
-    const actionText =
-      reviewAction === "approve" ? "aprobada" : reviewAction === "reject" ? "rechazada" : "marcada para revisión"
+    const actionLabels = {
+      approve: "aprobada",
+      reject: "rechazada",
+      revision: "marcada para revisión",
+    }
 
     toast({
       title: "Solicitud procesada",
-      description: `La solicitud de ${selectedRequest.student.name} ha sido ${actionText}`,
+      description: `La solicitud de ${selectedRequest.studentName} ha sido ${actionLabels[approvalAction]}`,
     })
+
+    setIsApprovalDialogOpen(false)
+    setFeedback("")
+    setSelectedRequest(null)
   }
 
-  const pendingRequests = approvalRequests.filter((req) => req.status === "pending")
-  const reviewedRequests = approvalRequests.filter((req) => req.status !== "pending")
+  const openApprovalDialog = (request: ApprovalRequest, action: "approve" | "reject" | "revision") => {
+    setSelectedRequest(request)
+    setApprovalAction(action)
+    setFeedback("")
+    setIsApprovalDialogOpen(true)
+  }
+
+  const pendingCount = requests.filter((r) => r.status === "pending").length
+  const approvedCount = requests.filter((r) => r.status === "approved").length
+  const rejectedCount = requests.filter((r) => r.status === "rejected").length
+  const revisionCount = requests.filter((r) => r.status === "revision").length
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Solicitudes de Aprobación</h1>
-          <p className="text-muted-foreground">Revisa y aprueba las solicitudes de tus estudiantes</p>
-        </div>
-        <div className="flex gap-2">
-          <Badge variant="outline" className="text-sm">
-            {pendingRequests.length} pendientes
-          </Badge>
+          <h1 className="text-3xl font-bold">Aprobaciones de Tratamientos</h1>
+          <p className="text-muted-foreground">Revisa y aprueba las solicitudes de tratamiento de los estudiantes</p>
         </div>
       </div>
 
-      <Tabs defaultValue="pending" className="w-full">
-        <TabsList>
-          <TabsTrigger value="pending">Pendientes ({pendingRequests.length})</TabsTrigger>
-          <TabsTrigger value="reviewed">Revisadas ({reviewedRequests.length})</TabsTrigger>
-          <TabsTrigger value="all">Todas</TabsTrigger>
-        </TabsList>
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Pendientes</CardTitle>
+            <Clock className="h-4 w-4 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-yellow-600">{pendingCount}</div>
+            <p className="text-xs text-muted-foreground">Esperando aprobación</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Aprobadas</CardTitle>
+            <CheckCircle className="h-4 w-4 text-green-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-green-600">{approvedCount}</div>
+            <p className="text-xs text-muted-foreground">Tratamientos aprobados</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Rechazadas</CardTitle>
+            <XCircle className="h-4 w-4 text-red-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-red-600">{rejectedCount}</div>
+            <p className="text-xs text-muted-foreground">Solicitudes rechazadas</p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">En Revisión</CardTitle>
+            <FileText className="h-4 w-4 text-blue-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold text-blue-600">{revisionCount}</div>
+            <p className="text-xs text-muted-foreground">Requieren revisión</p>
+          </CardContent>
+        </Card>
+      </div>
 
-        <TabsContent value="pending" className="space-y-4">
-          {pendingRequests.map((request) => (
-            <Card key={request.id} className="border-l-4 border-l-yellow-500">
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{request.title}</CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        {request.student.name} ({request.student.id})
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        Vence: {request.dueDate}
-                      </span>
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-col gap-2 items-end">
-                    {getStatusBadge(request.status)}
-                    {getPriorityBadge(request.priority)}
-                    <Badge variant="outline">{getTypeLabel(request.type)}</Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="font-medium mb-2">Descripción</h4>
-                    <p className="text-sm text-muted-foreground">{request.description}</p>
-                  </div>
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Filtros</CardTitle>
+          <CardDescription>Filtra las solicitudes por estado y urgencia</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-4">
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Estado" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todos los estados</SelectItem>
+                <SelectItem value="pending">Pendientes</SelectItem>
+                <SelectItem value="approved">Aprobadas</SelectItem>
+                <SelectItem value="rejected">Rechazadas</SelectItem>
+                <SelectItem value="revision">En Revisión</SelectItem>
+              </SelectContent>
+            </Select>
+            <Select value={urgencyFilter} onValueChange={setUrgencyFilter}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Urgencia" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas las urgencias</SelectItem>
+                <SelectItem value="urgent">Urgente</SelectItem>
+                <SelectItem value="high">Alta</SelectItem>
+                <SelectItem value="medium">Media</SelectItem>
+                <SelectItem value="low">Baja</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+      </Card>
 
-                  <div>
-                    <h4 className="font-medium mb-2">Paciente</h4>
-                    <p className="text-sm">
-                      {request.patient.name} (ID: {request.patient.id})
-                    </p>
-                  </div>
-
-                  <div>
-                    <h4 className="font-medium mb-2">Archivos Adjuntos ({request.attachments.length})</h4>
-                    <div className="flex flex-wrap gap-2">
-                      {request.attachments.map((attachment, index) => (
-                        <Badge key={index} variant="outline" className="gap-1">
-                          <FileText className="h-3 w-3" />
-                          {attachment}
-                        </Badge>
-                      ))}
+      {/* Requests Table */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Solicitudes de Aprobación</CardTitle>
+          <CardDescription>{filteredRequests.length} solicitudes encontradas</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Estudiante</TableHead>
+                <TableHead>Paciente</TableHead>
+                <TableHead>Tratamiento</TableHead>
+                <TableHead>Urgencia</TableHead>
+                <TableHead>Estado</TableHead>
+                <TableHead>Fecha</TableHead>
+                <TableHead>Acciones</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredRequests.map((request) => (
+                <TableRow key={request.id}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-br from-blue-600 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
+                        {request.studentName
+                          .split(" ")
+                          .map((n) => n[0])
+                          .join("")
+                          .slice(0, 2)}
+                      </div>
+                      <div>
+                        <div className="font-medium">{request.studentName}</div>
+                        <div className="text-sm text-muted-foreground">{request.specialty}</div>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <div className="text-sm text-muted-foreground">Enviado: {request.submittedDate}</div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => setSelectedRequest(request)}>
-                        <Eye className="h-4 w-4 mr-1" />
-                        Ver Detalles
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-red-600 hover:text-red-700 bg-transparent"
-                        onClick={() => handleReview(request, "reject")}
-                      >
-                        <XCircle className="h-4 w-4 mr-1" />
-                        Rechazar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-orange-600 hover:text-orange-700 bg-transparent"
-                        onClick={() => handleReview(request, "revision")}
-                      >
-                        <FileText className="h-4 w-4 mr-1" />
-                        Solicitar Revisión
-                      </Button>
-                      <Button
-                        size="sm"
-                        className="bg-green-600 hover:bg-green-700"
-                        onClick={() => handleReview(request, "approve")}
-                      >
-                        <CheckCircle className="h-4 w-4 mr-1" />
-                        Aprobar
-                      </Button>
+                  </TableCell>
+                  <TableCell>
+                    <div className="font-medium">{request.patientName}</div>
+                  </TableCell>
+                  <TableCell>
+                    <div>
+                      <div className="font-medium">{request.treatmentType}</div>
+                      <div className="text-sm text-muted-foreground">{request.estimatedDuration} min</div>
                     </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="reviewed" className="space-y-4">
-          {reviewedRequests.map((request) => (
-            <Card key={request.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{request.title}</CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        {request.student.name} ({request.student.id})
-                      </span>
-                      {request.lastReviewed && (
-                        <span className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          Revisado: {request.lastReviewed}
-                        </span>
+                  </TableCell>
+                  <TableCell>{getUrgencyBadge(request.urgency)}</TableCell>
+                  <TableCell>{getStatusBadge(request.status)}</TableCell>
+                  <TableCell className="text-sm text-muted-foreground">
+                    {new Date(request.requestDate).toLocaleDateString("es-ES")}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => {
+                          setSelectedRequest(request)
+                          setIsViewDialogOpen(true)
+                        }}
+                      >
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      {request.status === "pending" && (
+                        <>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-green-600 hover:text-green-700"
+                            onClick={() => openApprovalDialog(request, "approve")}
+                          >
+                            <CheckCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-red-600 hover:text-red-700"
+                            onClick={() => openApprovalDialog(request, "reject")}
+                          >
+                            <XCircle className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-blue-600 hover:text-blue-700"
+                            onClick={() => openApprovalDialog(request, "revision")}
+                          >
+                            <FileText className="h-4 w-4" />
+                          </Button>
+                        </>
                       )}
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-col gap-2 items-end">
-                    {getStatusBadge(request.status)}
-                    <Badge variant="outline">{getTypeLabel(request.type)}</Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* View Request Dialog */}
+      <Dialog open={isViewDialogOpen} onOpenChange={setIsViewDialogOpen}>
+        <DialogContent className="max-w-3xl">
+          <DialogHeader>
+            <DialogTitle>Detalles de la Solicitud</DialogTitle>
+            <DialogDescription>Información completa de la solicitud de tratamiento</DialogDescription>
+          </DialogHeader>
+          {selectedRequest && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium mb-2">Descripción</h4>
-                    <p className="text-sm text-muted-foreground">{request.description}</p>
-                  </div>
-
-                  {request.feedback && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h4 className="font-medium mb-2 text-blue-800">Retroalimentación</h4>
-                      <p className="text-sm text-blue-700">{request.feedback}</p>
-                    </div>
-                  )}
-
-                  <div className="flex justify-between items-center pt-4 border-t">
-                    <div className="text-sm text-muted-foreground">Enviado: {request.submittedDate}</div>
-                    <div className="flex gap-2">
-                      <Button variant="outline" size="sm">
-                        <Eye className="h-4 w-4 mr-1" />
-                        Ver Detalles
-                      </Button>
-                      <Button variant="outline" size="sm">
-                        <MessageSquare className="h-4 w-4 mr-1" />
-                        Contactar Estudiante
-                      </Button>
+                    <Label className="text-sm font-medium text-gray-500">Información del Estudiante</Label>
+                    <div className="mt-2 space-y-2">
+                      <div>
+                        <span className="text-sm font-medium">Nombre:</span>
+                        <p className="text-sm">{selectedRequest.studentName}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">Email:</span>
+                        <p className="text-sm">{selectedRequest.studentEmail}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">Especialidad:</span>
+                        <p className="text-sm">{selectedRequest.specialty}</p>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-
-        <TabsContent value="all" className="space-y-4">
-          {approvalRequests.map((request) => (
-            <Card key={request.id}>
-              <CardHeader>
-                <div className="flex justify-between items-start">
-                  <div>
-                    <CardTitle className="text-lg">{request.title}</CardTitle>
-                    <CardDescription className="flex items-center gap-4 mt-2">
-                      <span className="flex items-center gap-1">
-                        <User className="h-4 w-4" />
-                        {request.student.name} ({request.student.id})
-                      </span>
-                      <span className="flex items-center gap-1">
-                        <Calendar className="h-4 w-4" />
-                        {request.status === "pending"
-                          ? `Vence: ${request.dueDate}`
-                          : `Revisado: ${request.lastReviewed}`}
-                      </span>
-                    </CardDescription>
-                  </div>
-                  <div className="flex flex-col gap-2 items-end">
-                    {getStatusBadge(request.status)}
-                    {request.status === "pending" && getPriorityBadge(request.priority)}
-                    <Badge variant="outline">{getTypeLabel(request.type)}</Badge>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent>
                 <div className="space-y-4">
                   <div>
-                    <h4 className="font-medium mb-2">Descripción</h4>
-                    <p className="text-sm text-muted-foreground">{request.description}</p>
-                  </div>
-
-                  {request.feedback && (
-                    <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                      <h4 className="font-medium mb-2 text-blue-800">Retroalimentación</h4>
-                      <p className="text-sm text-blue-700">{request.feedback}</p>
+                    <Label className="text-sm font-medium text-gray-500">Información del Tratamiento</Label>
+                    <div className="mt-2 space-y-2">
+                      <div>
+                        <span className="text-sm font-medium">Paciente:</span>
+                        <p className="text-sm">{selectedRequest.patientName}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">Tipo de Tratamiento:</span>
+                        <p className="text-sm">{selectedRequest.treatmentType}</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">Duración Estimada:</span>
+                        <p className="text-sm">{selectedRequest.estimatedDuration} minutos</p>
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">Urgencia:</span>
+                        {getUrgencyBadge(selectedRequest.urgency)}
+                      </div>
+                      <div>
+                        <span className="text-sm font-medium">Estado:</span>
+                        {getStatusBadge(selectedRequest.status)}
+                      </div>
                     </div>
-                  )}
-
-                  <div className="flex justify-end gap-2">
-                    <Button variant="outline" size="sm">
-                      <Eye className="h-4 w-4 mr-1" />
-                      Ver Detalles
-                    </Button>
-                    {request.status === "pending" && (
-                      <>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="text-red-600 hover:text-red-700 bg-transparent"
-                          onClick={() => handleReview(request, "reject")}
-                        >
-                          <XCircle className="h-4 w-4 mr-1" />
-                          Rechazar
-                        </Button>
-                        <Button
-                          size="sm"
-                          className="bg-green-600 hover:bg-green-700"
-                          onClick={() => handleReview(request, "approve")}
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" />
-                          Aprobar
-                        </Button>
-                      </>
-                    )}
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          ))}
-        </TabsContent>
-      </Tabs>
+              </div>
+              <div>
+                <Label className="text-sm font-medium text-gray-500">Descripción del Tratamiento</Label>
+                <p className="mt-2 text-sm bg-gray-50 p-3 rounded-md">{selectedRequest.description}</p>
+              </div>
+              {selectedRequest.notes && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Notas del Estudiante</Label>
+                  <p className="mt-2 text-sm bg-blue-50 p-3 rounded-md">{selectedRequest.notes}</p>
+                </div>
+              )}
+              <div>
+                <Label className="text-sm font-medium text-gray-500">Documentos Adjuntos</Label>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {selectedRequest.documents.map((doc, index) => (
+                    <Badge key={index} variant="outline">
+                      {doc}
+                    </Badge>
+                  ))}
+                </div>
+              </div>
+              {selectedRequest.professorFeedback && (
+                <div>
+                  <Label className="text-sm font-medium text-gray-500">Retroalimentación del Profesor</Label>
+                  <p className="mt-2 text-sm bg-green-50 p-3 rounded-md">{selectedRequest.professorFeedback}</p>
+                </div>
+              )}
+              <div>
+                <span className="text-sm font-medium">Fecha de Solicitud:</span>
+                <p className="text-sm">{new Date(selectedRequest.requestDate).toLocaleString("es-ES")}</p>
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
 
-      {/* Review Dialog */}
-      <Dialog open={isReviewDialogOpen} onOpenChange={setIsReviewDialogOpen}>
-        <DialogContent className="sm:max-w-[600px]">
+      {/* Approval Action Dialog */}
+      <Dialog open={isApprovalDialogOpen} onOpenChange={setIsApprovalDialogOpen}>
+        <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>
-              {reviewAction === "approve" && "Aprobar Solicitud"}
-              {reviewAction === "reject" && "Rechazar Solicitud"}
-              {reviewAction === "revision" && "Solicitar Revisión"}
+              {approvalAction === "approve" && "Aprobar Solicitud"}
+              {approvalAction === "reject" && "Rechazar Solicitud"}
+              {approvalAction === "revision" && "Solicitar Revisión"}
             </DialogTitle>
-            <DialogDescription>Proporciona retroalimentación para el estudiante sobre su solicitud.</DialogDescription>
+            <DialogDescription>
+              {approvalAction === "approve" && "Confirma la aprobación de esta solicitud de tratamiento"}
+              {approvalAction === "reject" && "Proporciona las razones para rechazar esta solicitud"}
+              {approvalAction === "revision" && "Indica qué aspectos requieren revisión"}
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="feedback">Comentarios y Retroalimentación</Label>
-              <Textarea
-                id="feedback"
-                placeholder="Escribe tus comentarios aquí..."
-                value={feedback}
-                onChange={(e) => setFeedback(e.target.value)}
-                rows={4}
-              />
+          {selectedRequest && (
+            <div className="space-y-4">
+              <div className="bg-gray-50 p-4 rounded-md">
+                <div className="grid grid-cols-2 gap-4 text-sm">
+                  <div>
+                    <span className="font-medium">Estudiante:</span> {selectedRequest.studentName}
+                  </div>
+                  <div>
+                    <span className="font-medium">Paciente:</span> {selectedRequest.patientName}
+                  </div>
+                  <div>
+                    <span className="font-medium">Tratamiento:</span> {selectedRequest.treatmentType}
+                  </div>
+                  <div>
+                    <span className="font-medium">Urgencia:</span> {getUrgencyBadge(selectedRequest.urgency)}
+                  </div>
+                </div>
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="feedback">
+                  {approvalAction === "approve" && "Comentarios (opcional)"}
+                  {approvalAction === "reject" && "Razones del rechazo *"}
+                  {approvalAction === "revision" && "Aspectos a revisar *"}
+                </Label>
+                <Textarea
+                  id="feedback"
+                  placeholder={
+                    approvalAction === "approve"
+                      ? "Comentarios adicionales para el estudiante..."
+                      : approvalAction === "reject"
+                        ? "Explica las razones del rechazo..."
+                        : "Indica qué aspectos necesitan revisión..."
+                  }
+                  value={feedback}
+                  onChange={(e) => setFeedback(e.target.value)}
+                  rows={4}
+                />
+              </div>
             </div>
-          </div>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsReviewDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setIsApprovalDialogOpen(false)}>
               Cancelar
             </Button>
-            <Button onClick={submitReview}>
-              {reviewAction === "approve" && "Aprobar"}
-              {reviewAction === "reject" && "Rechazar"}
-              {reviewAction === "revision" && "Solicitar Revisión"}
+            <Button
+              onClick={handleApprovalAction}
+              className={
+                approvalAction === "approve"
+                  ? "bg-green-600 hover:bg-green-700"
+                  : approvalAction === "reject"
+                    ? "bg-red-600 hover:bg-red-700"
+                    : "bg-blue-600 hover:bg-blue-700"
+              }
+            >
+              {approvalAction === "approve" && "Aprobar"}
+              {approvalAction === "reject" && "Rechazar"}
+              {approvalAction === "revision" && "Solicitar Revisión"}
             </Button>
           </DialogFooter>
         </DialogContent>
