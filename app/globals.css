@@ -6,45 +6,45 @@
   :root {
     /* Base Colors - Professional Medical Theme */
     --background: 0 0% 100%;
-    --foreground: 215 25% 27%;
+    --foreground: 222.2 84% 4.9%;
 
     /* Card Colors */
     --card: 0 0% 100%;
-    --card-foreground: 215 25% 27%;
+    --card-foreground: 222.2 84% 4.9%;
 
     /* Popover Colors */
     --popover: 0 0% 100%;
-    --popover-foreground: 215 25% 27%;
+    --popover-foreground: 222.2 84% 4.9%;
 
     /* Primary - Medical Blue */
-    --primary: 210 100% 56%;
-    --primary-foreground: 0 0% 100%;
-    --primary-50: 210 100% 97%;
-    --primary-100: 210 100% 92%;
-    --primary-200: 210 100% 82%;
-    --primary-300: 210 100% 72%;
-    --primary-400: 210 100% 62%;
-    --primary-500: 210 100% 56%;
-    --primary-600: 210 100% 50%;
-    --primary-700: 210 100% 44%;
-    --primary-800: 210 100% 38%;
-    --primary-900: 210 100% 32%;
+    --primary: 214 88% 52%; /* Blue-600 */
+    --primary-foreground: 0 0% 98%;
+    --primary-50: 214 88% 97%;
+    --primary-100: 214 88% 92%;
+    --primary-200: 214 88% 82%;
+    --primary-300: 214 88% 72%;
+    --primary-400: 214 88% 62%;
+    --primary-500: 214 88% 52%;
+    --primary-600: 214 88% 50%;
+    --primary-700: 214 88% 44%;
+    --primary-800: 214 88% 38%;
+    --primary-900: 214 88% 32%;
 
     /* Secondary - Soft Blue Gray */
-    --secondary: 210 17% 95%;
-    --secondary-foreground: 215 25% 27%;
+    --secondary: 173 58% 39%; /* Teal-600 */
+    --secondary-foreground: 0 0% 98%;
 
     /* Muted Colors */
-    --muted: 210 17% 95%;
-    --muted-foreground: 215 16% 47%;
+    --muted: 210 40% 98%;
+    --muted-foreground: 215.4 16.3% 46.9%;
 
     /* Accent - Teal */
-    --accent: 174 62% 47%;
-    --accent-foreground: 0 0% 100%;
+    --accent: 210 40% 98%;
+    --accent-foreground: 222.2 84% 4.9%;
 
     /* Destructive - Medical Red */
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 0 0% 100%;
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
 
     /* Success - Medical Green */
     --success: 142 71% 45%;
@@ -59,19 +59,17 @@
     --info-foreground: 0 0% 100%;
 
     /* Border and Input */
-    --border: 210 20% 88%;
-    --input: 210 20% 88%;
-    --ring: 210 100% 56%;
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 214 88% 52%;
+    --radius: 0.5rem;
 
     /* Chart Colors - Professional Medical Palette */
-    --chart-1: 210 100% 56%;
-    --chart-2: 174 62% 47%;
-    --chart-3: 142 71% 45%;
-    --chart-4: 38 92% 50%;
-    --chart-5: 262 83% 58%;
-
-    /* Radius */
-    --radius: 0.75rem;
+    --chart-1: 214 88% 52%;
+    --chart-2: 173 58% 39%;
+    --chart-3: 271 81% 56%; /* Purple-600 */
+    --chart-4: 142 71% 45%; /* Green-600 */
+    --chart-5: 45 93% 58%; /* Yellow-500 */
 
     /* Sidebar Colors */
     --sidebar-background: 210 17% 98%;
@@ -84,12 +82,10 @@
     --sidebar-ring: 210 100% 56%;
 
     /* Medical Specialty Colors */
-    --endodoncia: 262 83% 58%;
-    --endodoncia-foreground: 0 0% 100%;
-    --ortodoncia: 217 91% 60%;
-    --ortodoncia-foreground: 0 0% 100%;
-    --cirugia: 0 72% 51%;
-    --cirugia-foreground: 0 0% 100%;
+    --endodoncia: 271 81% 56%; /* Purple-600 */
+    --ortodoncia: 142 71% 45%; /* Green-600 */
+    --cirugia: 0 84% 60%; /* Red-500 */
+    --pediatria: 45 93% 58%; /* Yellow-500 */
     --odontopediatria: 38 92% 50%;
     --odontopediatria-foreground: 0 0% 100%;
     --periodoncia: 142 71% 45%;
@@ -98,38 +94,33 @@
     --protesis-foreground: 0 0% 100%;
 
     /* Role Colors */
-    --admin: 0 72% 51%;
-    --admin-foreground: 0 0% 100%;
-    --profesor: 262 83% 58%;
-    --profesor-foreground: 0 0% 100%;
-    --estudiante: 210 100% 56%;
-    --estudiante-foreground: 0 0% 100%;
-    --paciente: 142 71% 45%;
-    --paciente-foreground: 0 0% 100%;
-    --secretario: 174 62% 47%;
-    --secretario-foreground: 0 0% 100%;
+    --admin: 214 88% 52%; /* Blue-600 */
+    --profesor: 271 81% 56%; /* Purple-600 */
+    --estudiante: 142 71% 45%; /* Green-600 */
+    --paciente: 173 58% 39%; /* Teal-600 */
+    --secretario: 45 93% 58%; /* Yellow-600 */
   }
 
   .dark {
-    --background: 215 28% 17%;
-    --foreground: 210 20% 98%;
-    --card: 215 28% 17%;
-    --card-foreground: 210 20% 98%;
-    --popover: 215 28% 17%;
-    --popover-foreground: 210 20% 98%;
-    --primary: 210 100% 56%;
-    --primary-foreground: 215 28% 17%;
-    --secondary: 215 28% 25%;
-    --secondary-foreground: 210 20% 98%;
-    --muted: 215 28% 25%;
-    --muted-foreground: 215 20% 65%;
-    --accent: 174 62% 47%;
-    --accent-foreground: 215 28% 17%;
-    --destructive: 0 72% 51%;
-    --destructive-foreground: 210 20% 98%;
-    --border: 215 28% 25%;
-    --input: 215 28% 25%;
-    --ring: 210 100% 56%;
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 214 88% 52%;
+    --primary-foreground: 222.2 84% 4.9%;
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 214 88% 52%;
   }
 }
 
@@ -238,77 +229,63 @@
 
   /* Medical Gradients */
   .bg-medical-gradient {
-    background: linear-gradient(135deg, hsl(210 100% 56%) 0%, hsl(174 62% 47%) 100%);
+    @apply bg-gradient-to-br from-blue-50 via-white to-teal-50;
+  }
+
+  .bg-primary-gradient {
+    @apply bg-gradient-to-r from-blue-600 to-teal-600;
+  }
+
+  .text-primary-gradient {
+    @apply bg-gradient-to-r from-blue-600 to-teal-600 bg-clip-text text-transparent;
+  }
+
+  .border-specialty-endodoncia {
+    @apply border-purple-200;
+  }
+
+  .border-specialty-ortodoncia {
+    @apply border-green-200;
+  }
+
+  .border-specialty-cirugia {
+    @apply border-red-200;
+  }
+
+  .border-specialty-pediatria {
+    @apply border-yellow-200;
   }
 
   .bg-specialty-endodoncia {
-    background: linear-gradient(135deg, hsl(262 83% 58%) 0%, hsl(262 83% 48%) 100%);
+    @apply bg-purple-50;
   }
 
   .bg-specialty-ortodoncia {
-    background: linear-gradient(135deg, hsl(217 91% 60%) 0%, hsl(217 91% 50%) 100%);
+    @apply bg-green-50;
   }
 
   .bg-specialty-cirugia {
-    background: linear-gradient(135deg, hsl(0 72% 51%) 0%, hsl(0 72% 41%) 100%);
+    @apply bg-red-50;
   }
 
-  .bg-specialty-odontopediatria {
-    background: linear-gradient(135deg, hsl(38 92% 50%) 0%, hsl(38 92% 40%) 100%);
+  .bg-specialty-pediatria {
+    @apply bg-yellow-50;
   }
 
-  .bg-specialty-periodoncia {
-    background: linear-gradient(135deg, hsl(142 71% 45%) 0%, hsl(142 71% 35%) 100%);
+  .text-specialty-endodoncia {
+    @apply text-purple-700;
   }
 
-  .bg-specialty-protesis {
-    background: linear-gradient(135deg, hsl(174 62% 47%) 0%, hsl(174 62% 37%) 100%);
+  .text-specialty-ortodoncia {
+    @apply text-green-700;
   }
 
-  /* Role Colors */
-  .text-role-admin {
-    color: hsl(0 72% 51%);
+  .text-specialty-cirugia {
+    @apply text-red-700;
   }
 
-  .text-role-profesor {
-    color: hsl(262 83% 58%);
-  }
-
-  .text-role-estudiante {
-    color: hsl(210 100% 56%);
-  }
-
-  .text-role-paciente {
-    color: hsl(142 71% 45%);
-  }
-
-  .text-role-secretario {
-    color: hsl(174 62% 47%);
-  }
-
-  .bg-role-admin {
-    background-color: hsl(0 72% 51%);
-    color: hsl(0 0% 100%);
-  }
-
-  .bg-role-profesor {
-    background-color: hsl(262 83% 58%);
-    color: hsl(0 0% 100%);
-  }
-
-  .bg-role-estudiante {
-    background-color: hsl(210 100% 56%);
-    color: hsl(0 0% 100%);
-  }
-
-  .bg-role-paciente {
-    background-color: hsl(142 71% 45%);
-    color: hsl(0 0% 100%);
-  }
-
-  .bg-role-secretario {
-    background-color: hsl(174 62% 47%);
-    color: hsl(0 0% 100%);
+  .text-specialty-pediatria {
+    @apply text-yellow-700;
   }
 
   /* Status Colors */
@@ -362,5 +339,125 @@
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
+  }
+
+  /* Medical Form Styles */
+  .medical-form {
+    @apply space-y-6 p-6 bg-white rounded-lg shadow-sm border border-gray-200;
+  }
+
+  .medical-form .form-section {
+    @apply space-y-4 pb-4 border-b border-gray-100 last:border-b-0 last:pb-0;
+  }
+
+  .medical-form .form-section h3 {
+    @apply text-lg font-semibold text-gray-900 mb-3;
+  }
+
+  .medical-form .form-group {
+    @apply space-y-2;
+  }
+
+  .medical-form .form-row {
+    @apply grid grid-cols-1 md:grid-cols-2 gap-4;
+  }
+
+  .medical-form .form-row-3 {
+    @apply grid grid-cols-1 md:grid-cols-3 gap-4;
+  }
+
+  /* Dental Chart Styles */
+  .tooth-chart {
+    @apply grid gap-1 p-4 bg-gray-50 rounded-lg;
+  }
+
+  .tooth-adult {
+    @apply grid-cols-8;
+  }
+
+  .tooth-child {
+    @apply grid-cols-5;
+  }
+
+  .tooth-item {
+    @apply w-8 h-8 border-2 border-gray-300 rounded cursor-pointer transition-all duration-200 flex items-center justify-center text-xs font-medium;
+  }
+
+  .tooth-item:hover {
+    @apply border-blue-400 bg-blue-50;
+  }
+
+  .tooth-item.selected {
+    @apply border-blue-600 bg-blue-100 text-blue-800;
+  }
+
+  .tooth-item.healthy {
+    @apply border-green-400 bg-green-50 text-green-800;
+  }
+
+  .tooth-item.caries {
+    @apply border-red-400 bg-red-50 text-red-800;
+  }
+
+  .tooth-item.filled {
+    @apply border-yellow-400 bg-yellow-50 text-yellow-800;
+  }
+
+  .tooth-item.missing {
+    @apply border-gray-400 bg-gray-100 text-gray-600;
+  }
+
+  /* Print Styles */
+  @media print {
+    .no-print {
+      display: none !important;
+    }
+
+    .print-only {
+      display: block !important;
+    }
+
+    body {
+      @apply text-black bg-white;
+    }
+
+    .medical-form {
+      @apply shadow-none border-0;
+    }
+  }
+
+  /* Responsive Utilities */
+  .container-medical {
+    @apply container mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .grid-medical-cards {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4;
+  }
+
+  .grid-medical-stats {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4;
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }

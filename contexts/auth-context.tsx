@@ -1,7 +1,6 @@
 "use client"
 
 import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
-import { useRouter } from "next/navigation"
 
 export interface User {
   id: string
@@ -84,6 +83,38 @@ export const TEST_USERS: (User & { password: string })[] = [
     },
   },
   {
+    id: "prof3",
+    name: "Dr. Roberto Silva",
+    email: "roberto.silva@uleam.edu.ec",
+    password: "prof123",
+    role: "profesor",
+    specialty: "cirugia",
+    phone: "+593 99 456 7890",
+    department: "Cirugía Oral",
+    permissions: ["manage_students", "approve_treatments", "create_assignments"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
+  },
+  {
+    id: "prof4",
+    name: "Dra. Carmen Vega",
+    email: "carmen.vega@uleam.edu.ec",
+    password: "prof123",
+    role: "profesor",
+    specialty: "pediatria",
+    phone: "+593 99 567 8901",
+    department: "Odontopediatría",
+    permissions: ["manage_students", "approve_treatments", "create_assignments"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
+  },
+  {
     id: "est1",
     name: "Juan Pérez",
     email: "juan.perez@uleam.edu.ec",
@@ -120,6 +151,24 @@ export const TEST_USERS: (User & { password: string })[] = [
     },
   },
   {
+    id: "est3",
+    name: "Carlos Mendoza",
+    email: "carlos.mendoza@uleam.edu.ec",
+    password: "est123",
+    role: "estudiante",
+    specialty: "cirugia",
+    semester: 9,
+    studentId: "2020-003",
+    professorId: "prof3",
+    phone: "+593 99 678 9012",
+    permissions: ["view_patients", "create_cases", "submit_assignments"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
+  },
+  {
     id: "pac1",
     name: "Ana Rodríguez",
     email: "ana.rodriguez@gmail.com",
@@ -134,9 +183,23 @@ export const TEST_USERS: (User & { password: string })[] = [
     },
   },
   {
+    id: "pac2",
+    name: "Luis Morales",
+    email: "luis.morales@gmail.com",
+    password: "pac123",
+    role: "paciente",
+    phone: "+593 99 789 0123",
+    permissions: ["view_appointments", "view_records"],
+    preferences: {
+      theme: "light",
+      language: "es",
+      notifications: true,
+    },
+  },
+  {
     id: "sec1",
-    name: "Carmen Vega",
-    email: "carmen.vega@uleam.edu.ec",
+    name: "Carmen Secretaria",
+    email: "secretaria@uleam.edu.ec",
     password: "sec123",
     role: "secretario",
     phone: "+593 99 789 0123",
@@ -153,7 +216,6 @@ export const TEST_USERS: (User & { password: string })[] = [
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
 
   useEffect(() => {
     // Check for existing session
@@ -178,7 +240,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const logout = () => {
     setUser(null)
     localStorage.removeItem("dental_clinic_user")
-    router.push("/login")
   }
 
   const updateUser = (updates: Partial<User>) => {
