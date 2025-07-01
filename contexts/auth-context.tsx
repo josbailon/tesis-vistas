@@ -71,6 +71,9 @@ const mockPasswords: Record<string, string> = {
   "paciente@email.com": "pac123",
 }
 
+// Export TEST_USERS for testing purposes
+export const TEST_USERS = mockUsers
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
