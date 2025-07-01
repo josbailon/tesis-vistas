@@ -1,93 +1,78 @@
 "use client"
 
-import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
 
-interface User {
+export interface User {
   id: string
-  name: string
   email: string
+  name: string
   role: "admin" | "professor" | "student" | "patient" | "secretary"
   specialty?: string
-  department?: string
-  semester?: number
-  experience?: string
+  avatar?: string
 }
+
+export const TEST_USERS: User[] = [
+  {
+    id: "1",
+    email: "admin@uleam.edu.ec",
+    name: "Dr. Carlos Administrador",
+    role: "admin",
+    avatar: "/placeholder-user.jpg",
+  },
+  {
+    id: "2",
+    email: "profesor@uleam.edu.ec",
+    name: "Dr. María Profesora",
+    role: "professor",
+    specialty: "Endodoncia",
+    avatar: "/placeholder-user.jpg",
+  },
+  {
+    id: "3",
+    email: "estudiante@uleam.edu.ec",
+    name: "Juan Estudiante",
+    role: "student",
+    avatar: "/placeholder-user.jpg",
+  },
+  {
+    id: "4",
+    email: "paciente@gmail.com",
+    name: "Ana Paciente",
+    role: "patient",
+    avatar: "/placeholder-user.jpg",
+  },
+  {
+    id: "5",
+    email: "secretaria@uleam.edu.ec",
+    name: "Laura Secretaria",
+    role: "secretary",
+    avatar: "/placeholder-user.jpg",
+  },
+]
 
 interface AuthContextType {
   user: User | null
   login: (email: string, password: string) => Promise<boolean>
   logout: () => void
   isLoading: boolean
+  isAuthenticated: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
-// Mock users database
-const mockUsers: Record<string, User> = {
-  "admin@uleam.edu.ec": {
-    id: "1",
-    name: "Administrador Sistema",
-    email: "admin@uleam.edu.ec",
-    role: "admin",
-  },
-  "carlos.ruiz@uleam.edu.ec": {
-    id: "2",
-    name: "Dr. Carlos Ruiz",
-    email: "carlos.ruiz@uleam.edu.ec",
-    role: "professor",
-    specialty: "Endodoncia",
-    department: "Odontología",
-  },
-  "juan.perez@uleam.edu.ec": {
-    id: "3",
-    name: "Juan Pérez",
-    email: "juan.perez@uleam.edu.ec",
-    role: "student",
-    specialty: "Endodoncia",
-    semester: 8,
-    experience: "Avanzado",
-  },
-  "secretaria@uleam.edu.ec": {
-    id: "4",
-    name: "Ana Secretaria",
-    email: "secretaria@uleam.edu.ec",
-    role: "secretary",
-  },
-  "paciente@email.com": {
-    id: "5",
-    name: "María Paciente",
-    email: "paciente@email.com",
-    role: "patient",
-  },
-}
-
-const mockPasswords: Record<string, string> = {
-  "admin@uleam.edu.ec": "admin123",
-  "carlos.ruiz@uleam.edu.ec": "prof123",
-  "juan.perez@uleam.edu.ec": "est123",
-  "secretaria@uleam.edu.ec": "sec123",
-  "paciente@email.com": "pac123",
-}
-
-// Export TEST_USERS for testing purposes
-export const TEST_USERS = mockUsers
-
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const router = useRouter()
 
   useEffect(() => {
     // Check for existing session
-    const savedUser = localStorage.getItem("user")
+    const savedUser = localStorage.getItem("dental-clinic-user")
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser))
       } catch (error) {
         console.error("Error parsing saved user:", error)
-        localStorage.removeItem("user")
+        localStorage.removeItem("dental-clinic-user")
       }
     }
     setIsLoading(false)
@@ -96,36 +81,37 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const login = async (email: string, password: string): Promise<boolean> => {
     setIsLoading(true)
 
-    try {
-      // Simulate API delay
-      await new Promise((resolve) => setTimeout(resolve, 500))
+    // Simulate API call delay
+    await new Promise((resolve) => setTimeout(resolve, 1000))
 
-      const user = mockUsers[email]
-      const validPassword = mockPasswords[email]
+    // Find user in TEST_USERS
+    const foundUser = TEST_USERS.find((u) => u.email === email)
 
-      if (user && validPassword === password) {
-        setUser(user)
-        localStorage.setItem("user", JSON.stringify(user))
-        setIsLoading(false)
-        return true
-      }
-
+    if (foundUser && password === "password123") {
+      setUser(foundUser)
+      localStorage.setItem("dental-clinic-user", JSON.stringify(foundUser))
       setIsLoading(false)
-      return false
-    } catch (error) {
-      console.error("Login error:", error)
-      setIsLoading(false)
-      return false
+      return true
     }
+
+    setIsLoading(false)
+    return false
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem("user")
-    router.push("/login")
+    localStorage.removeItem("dental-clinic-user")
   }
 
-  return <AuthContext.Provider value={{ user, login, logout, isLoading }}>{children}</AuthContext.Provider>
+  const value = {
+    user,
+    login,
+    logout,
+    isLoading,
+    isAuthenticated: !!user,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {
