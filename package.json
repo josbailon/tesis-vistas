@@ -1,12 +1,39 @@
 {
-  "name": "dental-clinic-management",
-  "version": "0.1.0",
+  "name": "dental-clinic-vue",
+  "version": "1.0.0",
   "private": true,
+  "description": "Sistema de gestión para clínica dental universitaria ULEAM - Frontend Vue.js",
+  "keywords": [
+    "vue",
+    "dental-clinic",
+    "university",
+    "healthcare",
+    "odontology",
+    "uleam",
+    "frontend",
+    "spa"
+  ],
+  "homepage": "https://github.com/uleam/dental-clinic-vue#readme",
+  "bugs": {
+    "url": "https://github.com/uleam/dental-clinic-vue/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/uleam/dental-clinic-vue.git"
+  },
+  "license": "MIT",
+  "author": "ULEAM - Universidad Laica Eloy Alfaro de Manabí",
+  "type": "module",
   "scripts": {
-    "build": "next build",
-    "dev": "next dev",
-    "lint": "next lint",
-    "start": "next start"
+    "build": "vite build",
+    "dev": "vite",
+    "format": "prettier --write src/",
+    "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs --fix --ignore-path .gitignore",
+    "preview": "vite preview",
+    "start": "next start",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "test:ui": "vitest --ui"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",
@@ -42,7 +69,7 @@
     "@testing-library/jest-dom": "latest",
     "@testing-library/react": "latest",
     "@testing-library/user-event": "latest",
-    "@vitejs/plugin-vue": "latest",
+    "@vueuse/core": "^10.5.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "cmdk": "latest",
@@ -55,6 +82,7 @@
     "less": "latest",
     "lightningcss": "latest",
     "lucide-react": "^0.454.0",
+    "lucide-vue-next": "^0.294.0",
     "next": "14.2.16",
     "next-themes": "latest",
     "node-notifier": "latest",
@@ -72,7 +100,7 @@
     "stylus": "latest",
     "sugarss": "latest",
     "tailwind-merge": "^2.5.5",
-    "tailwindcss": "^3.4.17",
+    "tailwindcss": "^3.3.6",
     "tailwindcss-animate": "^1.0.7",
     "terser": "latest",
     "tsx": "latest",
@@ -86,10 +114,18 @@
     "@types/node": "^22",
     "@types/react": "^18",
     "@types/react-dom": "^18",
-    "autoprefixer": "^10.4.20",
-    "eslint": "^8.57.1",
+    "@vitejs/plugin-vue": "^4.5.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "@vitest/ui": "^1.0.0",
+    "@vue/test-utils": "^2.4.2",
+    "autoprefixer": "^10.4.16",
+    "eslint": "^8.54.0",
     "eslint-config-next": "14.2.18",
+    "eslint-plugin-vue": "^9.18.1",
+    "jsdom": "^23.0.1",
     "postcss": "^8.5",
-    "typescript": "^5"
+    "prettier": "^3.1.0",
+    "typescript": "^5",
+    "vitest": "^1.0.0"
   }
 }
