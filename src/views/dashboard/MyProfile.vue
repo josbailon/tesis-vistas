@@ -1,309 +1,230 @@
 <!--
   PÁGINA DE PERFIL DE USUARIO
   
-  Esta página permite a los usuarios ver y editar su información personal.
-  Se adapta según el rol del usuario para mostrar campos relevantes.
+  Permite a los usuarios ver y editar su información personal,
+  cambiar contraseña y configurar preferencias
 -->
 <template>
-  <div class="space-y-6">
-    
-    <!-- HEADER DE LA PÁGINA -->
-    <div class="flex items-center justify-between">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Mi Perfil</h1>
-        <p class="text-gray-600 mt-2">
-          Gestiona tu información personal y configuración de cuenta
-        </p>
-      </div>
-      
-      <!-- BOTÓN DE EDITAR -->
-      <button
-        @click="toggleEditMode"
-        :class="`px-4 py-2 rounded-md transition-colors ${
-          isEditing 
-            ? 'bg-gray-600 hover:bg-gray-700 text-white' 
-            : 'bg-blue-600 hover:bg-blue-700 text-white'
-        }`"
-      >
-        {{ isEditing ? 'Cancelar' : 'Editar Perfil' }}
-      </button>
+  <div class="min-h-screen bg-gray-50 p-6">
+    <!-- Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900 mb-2">Mi Perfil</h1>
+      <p class="text-gray-600">
+        Gestiona tu información personal y configuraciones de cuenta
+      </p>
     </div>
 
-    <!-- TARJETA DE INFORMACIÓN PERSONAL -->
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
-      <div class="p-6 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
-          <User class="h-5 w-5 text-blue-600" />
-          Información Personal
-        </h2>
-      </div>
-      
-      <div class="p-6">
-        <form @submit.prevent="handleSaveProfile" class="space-y-6">
-          
-          <!-- AVATAR Y NOMBRE -->
-          <div class="flex items-center gap-6">
+    <div class="max-w-4xl mx-auto space-y-6">
+      <!-- Información Personal -->
+      <div class="bg-white rounded-lg shadow-sm border">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-900">Información Personal</h2>
+        </div>
+        <div class="p-6">
+          <form @submit.prevent="updateProfile" class="space-y-6">
             <!-- Avatar -->
-            <div class="relative">
-              <div class="w-24 h-24 bg-gradient-to-br from-blue-600 to-blue-700 rounded-full flex items-center justify-center text-white text-2xl font-bold shadow-lg">
-                {{ profileData.name.charAt(0).toUpperCase() }}
+            <div class="flex items-center space-x-6">
+              <div class="relative">
+                <img 
+                  :src="profileForm.avatar || '/placeholder-user.jpg'" 
+                  :alt="profileForm.name"
+                  class="w-24 h-24 rounded-full object-cover border-4 border-white shadow-lg"
+                >
+                <button 
+                  type="button"
+                  @click="changeAvatar"
+                  class="absolute bottom-0 right-0 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 shadow-lg"
+                >
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                  </svg>
+                </button>
               </div>
-              <button
-                v-if="isEditing"
-                type="button"
-                class="absolute -bottom-2 -right-2 bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-full shadow-lg transition-colors"
-              >
-                <Camera class="h-4 w-4" />
-              </button>
-            </div>
-            
-            <!-- Información básica -->
-            <div class="flex-1">
-              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Nombre Completo
-                  </label>
-                  <input
-                    v-model="profileData.name"
-                    :disabled="!isEditing"
-                    type="text"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                  />
-                </div>
-                
-                <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">
-                    Correo Electrónico
-                  </label>
-                  <input
-                    v-model="profileData.email"
-                    :disabled="!isEditing"
-                    type="email"
-                    class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                  />
-                </div>
+              <div>
+                <h3 class="text-lg font-medium text-gray-900">{{ user.name }}</h3>
+                <p class="text-gray-500">{{ getRoleDisplayName(user.role) }}</p>
+                <p class="text-sm text-gray-400">Miembro desde enero 2024</p>
               </div>
             </div>
-          </div>
 
-          <!-- INFORMACIÓN DE CONTACTO -->
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Teléfono
-              </label>
-              <input
-                v-model="profileData.phone"
-                :disabled="!isEditing"
-                type="tel"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-              />
-            </div>
-            
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">
-                Fecha de Nacimiento
-              </label>
-              <input
-                v-model="profileData.birthDate"
-                :disabled="!isEditing"
-                type="date"
-                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-              />
-            </div>
-          </div>
-
-          <!-- DIRECCIÓN -->
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Dirección
-            </label>
-            <textarea
-              v-model="profileData.address"
-              :disabled="!isEditing"
-              rows="3"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-            ></textarea>
-          </div>
-
-          <!-- INFORMACIÓN ESPECÍFICA POR ROL -->
-          <div v-if="authStore.user?.role === 'student'" class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Información Académica</h3>
-            
+            <!-- Campos del formulario -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  Número de Matrícula
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Nombre Completo
                 </label>
-                <input
-                  v-model="profileData.studentId"
-                  disabled
-                  type="text"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-50 text-gray-500"
-                />
+                <input 
+                  v-model="profileForm.name"
+                  type="text" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
               </div>
               
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  Semestre Actual
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Email
                 </label>
-                <input
-                  v-model="profileData.currentSemester"
-                  :disabled="!isEditing"
-                  type="text"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                />
+                <input 
+                  v-model="profileForm.email"
+                  type="email" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  required
+                >
               </div>
-            </div>
-          </div>
 
-          <div v-if="authStore.user?.role === 'professor'" class="border-t border-gray-200 pt-6">
-            <h3 class="text-lg font-semibold text-gray-900 mb-4">Información Profesional</h3>
-            
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Teléfono
+                </label>
+                <input 
+                  v-model="profileForm.phone"
+                  type="tel" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Fecha de Nacimiento
+                </label>
+                <input 
+                  v-model="profileForm.birthDate"
+                  type="date" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+              </div>
+
+              <div v-if="user.role === 'professor' || user.role === 'student'" class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
                   Especialidad
                 </label>
-                <input
-                  v-model="profileData.specialty"
-                  :disabled="!isEditing"
-                  type="text"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                />
+                <select 
+                  v-model="profileForm.specialty"
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                >
+                  <option value="">Seleccionar especialidad...</option>
+                  <option value="Odontología General">Odontología General</option>
+                  <option value="Endodoncia">Endodoncia</option>
+                  <option value="Ortodoncia">Ortodoncia</option>
+                  <option value="Periodoncia">Periodoncia</option>
+                  <option value="Cirugía Oral">Cirugía Oral</option>
+                  <option value="Odontopediatría">Odontopediatría</option>
+                </select>
               </div>
-              
-              <div>
-                <label class="block text-sm font-medium text-gray-700 mb-1">
-                  Años de Experiencia
+
+              <div class="md:col-span-2">
+                <label class="block text-sm font-medium text-gray-700 mb-2">
+                  Biografía
                 </label>
-                <input
-                  v-model="profileData.experience"
-                  :disabled="!isEditing"
-                  type="number"
-                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 disabled:bg-gray-50 disabled:text-gray-500"
-                />
+                <textarea 
+                  v-model="profileForm.bio"
+                  rows="4" 
+                  class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  placeholder="Cuéntanos un poco sobre ti..."
+                ></textarea>
               </div>
             </div>
-          </div>
 
-          <!-- BOTONES DE ACCIÓN -->
-          <div v-if="isEditing" class="flex justify-end gap-3 pt-6 border-t border-gray-200">
-            <button
-              type="button"
-              @click="cancelEdit"
-              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              :disabled="saving"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors disabled:opacity-50"
-            >
-              {{ saving ? 'Guardando...' : 'Guardar Cambios' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-
-    <!-- TARJETA DE SEGURIDAD -->
-    <div class="bg-white border border-gray-200 rounded-lg shadow-sm">
-      <div class="p-6 border-b border-gray-200">
-        <h2 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
-          <Shield class="h-5 w-5 text-green-600" />
-          Seguridad de la Cuenta
-        </h2>
-      </div>
-      
-      <div class="p-6 space-y-4">
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div>
-            <h3 class="font-medium text-gray-900">Cambiar Contraseña</h3>
-            <p class="text-sm text-gray-600">Actualiza tu contraseña regularmente para mayor seguridad</p>
-          </div>
-          <button
-            @click="showChangePassword = true"
-            class="px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md transition-colors"
-          >
-            Cambiar
-          </button>
-        </div>
-        
-        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
-          <div>
-            <h3 class="font-medium text-gray-900">Autenticación de Dos Factores</h3>
-            <p class="text-sm text-gray-600">Agrega una capa extra de seguridad a tu cuenta</p>
-          </div>
-          <button
-            class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-          >
-            Configurar
-          </button>
+            <!-- Botones de acción -->
+            <div class="flex justify-end space-x-4">
+              <button 
+                type="button"
+                @click="resetForm"
+                class="px-4 py-2 text-gray-700 bg-gray-100 rounded-md hover:bg-gray-200"
+              >
+                Cancelar
+              </button>
+              <button 
+                type="submit"
+                :disabled="loading"
+                class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50"
+              >
+                {{ loading ? 'Guardando...' : 'Guardar Cambios' }}
+              </button>
+            </div>
+          </form>
         </div>
       </div>
-    </div>
 
-    <!-- MODAL CAMBIAR CONTRASEÑA -->
-    <div v-if="showChangePassword" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg p-6 w-full max-w-md">
-        <h3 class="text-lg font-semibold text-gray-900 mb-4">Cambiar Contraseña</h3>
-        
-        <form @submit.prevent="handleChangePassword" class="space-y-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña Actual
-            </label>
-            <input
-              v-model="passwordData.current"
-              type="password"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
+      <!-- Cambiar Contraseña -->
+      <div class="bg-white rounded-lg shadow-sm border">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-900">Cambiar Contraseña</h2>
+        </div>
+        <div class="p-6">
+          <form @submit.prevent="changePassword" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Contraseña Actual
+              </label>
+              <input 
+                v-model="passwordForm.current"
+                type="password" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Nueva Contraseña
+              </label>
+              <input 
+                v-model="passwordForm.new"
+                type="password" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-2">
+                Confirmar Nueva Contraseña
+              </label>
+              <input 
+                v-model="passwordForm.confirm"
+                type="password" 
+                class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                required
+              >
+            </div>
+
+            <div class="flex justify-end">
+              <button 
+                type="submit"
+                :disabled="passwordLoading"
+                class="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 disabled:opacity-50"
+              >
+                {{ passwordLoading ? 'Cambiando...' : 'Cambiar Contraseña' }}
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Estadísticas del Usuario -->
+      <div v-if="user.role === 'student' || user.role === 'professor'" class="bg-white rounded-lg shadow-sm border">
+        <div class="px-6 py-4 border-b border-gray-200">
+          <h2 class="text-xl font-semibold text-gray-900">Estadísticas</h2>
+        </div>
+        <div class="p-6">
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+              <div class="text-3xl font-bold text-blue-600 mb-2">{{ userStats.totalPatients }}</div>
+              <div class="text-gray-600">Pacientes Atendidos</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-green-600 mb-2">{{ userStats.completedTreatments }}</div>
+              <div class="text-gray-600">Tratamientos Completados</div>
+            </div>
+            <div class="text-center">
+              <div class="text-3xl font-bold text-purple-600 mb-2">{{ userStats.hoursLogged }}</div>
+              <div class="text-gray-600">Horas Registradas</div>
+            </div>
           </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Nueva Contraseña
-            </label>
-            <input
-              v-model="passwordData.new"
-              type="password"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          
-          <div>
-            <label class="block text-sm font-medium text-gray-700 mb-1">
-              Confirmar Nueva Contraseña
-            </label>
-            <input
-              v-model="passwordData.confirm"
-              type="password"
-              required
-              class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-            />
-          </div>
-          
-          <div class="flex justify-end gap-3 pt-4">
-            <button
-              type="button"
-              @click="cancelChangePassword"
-              class="px-4 py-2 border border-gray-300 text-gray-700 rounded-md hover:bg-gray-50 transition-colors"
-            >
-              Cancelar
-            </button>
-            <button
-              type="submit"
-              class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors"
-            >
-              Cambiar Contraseña
-            </button>
-          </div>
-        </form>
+        </div>
       </div>
     </div>
   </div>
@@ -311,215 +232,162 @@
 
 <script setup>
 /**
- * LÓGICA DE LA PÁGINA DE PERFIL
+ * LÓGICA DEL COMPONENTE MI PERFIL
  * 
- * Esta página maneja:
- * - Visualización y edición de información personal
- * - Campos específicos según el rol del usuario
- * - Cambio de contraseña
- * - Configuración de seguridad
+ * Maneja la edición de información personal, cambio de contraseña
+ * y visualización de estadísticas del usuario
  */
 
-// Importar hooks de Vue
 import { ref, reactive, onMounted } from 'vue'
-// Importar store de autenticación
-import { useAuthStore } from '../../stores/auth'
-// Importar iconos
-import { User, Shield, Camera } from 'lucide-vue-next'
+import { useAuthStore } from '@/stores/auth'
 
-// Obtener store de autenticación
+// Store de autenticación
 const authStore = useAuthStore()
+const { user, getRoleDisplayName } = authStore
 
-/**
- * ESTADO REACTIVO DEL COMPONENTE
- * 
- * Variables que controlan el estado de la página
- */
+// Estado reactivo
+const loading = ref(false)
+const passwordLoading = ref(false)
 
-// Estado de edición
-const isEditing = ref(false)
-const saving = ref(false)
-
-// Modal de cambio de contraseña
-const showChangePassword = ref(false)
-
-// Datos del perfil
-const profileData = reactive({
+// Formulario de perfil
+const profileForm = reactive({
   name: '',
   email: '',
   phone: '',
   birthDate: '',
-  address: '',
-  // Campos específicos por rol
-  studentId: '',
-  currentSemester: '',
   specialty: '',
-  experience: ''
+  bio: '',
+  avatar: ''
 })
 
-// Datos originales para cancelar edición
-const originalProfileData = reactive({})
-
-// Datos para cambio de contraseña
-const passwordData = reactive({
+// Formulario de contraseña
+const passwordForm = reactive({
   current: '',
   new: '',
   confirm: ''
 })
 
-/**
- * MÉTODOS DEL COMPONENTE
- * 
- * Funciones que manejan la lógica de la página
- */
+// Estadísticas del usuario
+const userStats = ref({
+  totalPatients: 0,
+  completedTreatments: 0,
+  hoursLogged: 0
+})
 
 /**
- * ALTERNAR MODO DE EDICIÓN
- * 
- * Activa o desactiva el modo de edición del perfil
+ * Inicializar datos del perfil
  */
-const toggleEditMode = () => {
-  if (isEditing.value) {
-    cancelEdit()
-  } else {
-    // Guardar datos originales para poder cancelar
-    Object.assign(originalProfileData, profileData)
-    isEditing.value = true
+onMounted(() => {
+  // Cargar datos del usuario actual
+  profileForm.name = user.name || ''
+  profileForm.email = user.email || ''
+  profileForm.specialty = user.specialty || ''
+  
+  // Datos de ejemplo adicionales
+  profileForm.phone = '0987654321'
+  profileForm.birthDate = '1995-05-15'
+  profileForm.bio = 'Estudiante de odontología comprometido con brindar la mejor atención a los pacientes.'
+  
+  // Estadísticas de ejemplo
+  if (user.role === 'student' || user.role === 'professor') {
+    userStats.value = {
+      totalPatients: user.role === 'student' ? 15 : 45,
+      completedTreatments: user.role === 'student' ? 8 : 32,
+      hoursLogged: user.role === 'student' ? 120 : 480
+    }
   }
-}
+})
 
 /**
- * CANCELAR EDICIÓN
- * 
- * Restaura los datos originales y sale del modo de edición
+ * Actualizar perfil
  */
-const cancelEdit = () => {
-  // Restaurar datos originales
-  Object.assign(profileData, originalProfileData)
-  isEditing.value = false
-}
-
-/**
- * MANEJAR GUARDADO DE PERFIL
- * 
- * Guarda los cambios realizados en el perfil
- */
-const handleSaveProfile = async () => {
-  saving.value = true
+const updateProfile = async () => {
+  loading.value = true
   
   try {
     // Simular llamada a API
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Actualizar datos en el store de autenticación
-    if (authStore.user) {
-      authStore.user.name = profileData.name
-      authStore.user.email = profileData.email
-      
-      // Persistir cambios en localStorage
-      localStorage.setItem('dental_clinic_user', JSON.stringify(authStore.user))
-    }
-    
-    // Salir del modo de edición
-    isEditing.value = false
+    // Actualizar datos en el store (simulado)
+    console.log('Perfil actualizado:', profileForm)
     
     alert('Perfil actualizado exitosamente')
-    
   } catch (error) {
-    console.error('Error al guardar perfil:', error)
-    alert('Error al guardar los cambios')
+    console.error('Error al actualizar perfil:', error)
+    alert('Error al actualizar el perfil')
   } finally {
-    saving.value = false
+    loading.value = false
   }
 }
 
 /**
- * MANEJAR CAMBIO DE CONTRASEÑA
- * 
- * Procesa el cambio de contraseña del usuario
+ * Cambiar contraseña
  */
-const handleChangePassword = async () => {
+const changePassword = async () => {
   // Validar que las contraseñas coincidan
-  if (passwordData.new !== passwordData.confirm) {
+  if (passwordForm.new !== passwordForm.confirm) {
     alert('Las contraseñas no coinciden')
     return
   }
   
   // Validar longitud mínima
-  if (passwordData.new.length < 6) {
+  if (passwordForm.new.length < 6) {
     alert('La contraseña debe tener al menos 6 caracteres')
     return
   }
+  
+  passwordLoading.value = true
   
   try {
     // Simular llamada a API
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Limpiar formulario
-    passwordData.current = ''
-    passwordData.new = ''
-    passwordData.confirm = ''
+    console.log('Contraseña cambiada')
     
-    // Cerrar modal
-    showChangePassword.value = false
+    // Limpiar formulario
+    passwordForm.current = ''
+    passwordForm.new = ''
+    passwordForm.confirm = ''
     
     alert('Contraseña cambiada exitosamente')
-    
   } catch (error) {
     console.error('Error al cambiar contraseña:', error)
     alert('Error al cambiar la contraseña')
+  } finally {
+    passwordLoading.value = false
   }
 }
 
 /**
- * CANCELAR CAMBIO DE CONTRASEÑA
- * 
- * Cierra el modal y limpia el formulario
+ * Cambiar avatar
  */
-const cancelChangePassword = () => {
-  passwordData.current = ''
-  passwordData.new = ''
-  passwordData.confirm = ''
-  showChangePassword.value = false
-}
-
-/**
- * CARGAR DATOS DEL PERFIL
- * 
- * Carga los datos del perfil desde el store o API
- */
-const loadProfileData = () => {
-  if (authStore.user) {
-    // Cargar datos básicos del usuario
-    profileData.name = authStore.user.name || ''
-    profileData.email = authStore.user.email || ''
-    
-    // Datos de ejemplo adicionales
-    profileData.phone = '0987654321'
-    profileData.birthDate = '1995-06-15'
-    profileData.address = 'Av. Principal 123, Manta, Ecuador'
-    
-    // Datos específicos por rol
-    if (authStore.user.role === 'student') {
-      profileData.studentId = 'EST2024001'
-      profileData.currentSemester = '8vo Semestre'
-    } else if (authStore.user.role === 'professor') {
-      profileData.specialty = authStore.user.specialty || 'Odontología General'
-      profileData.experience = '10'
+const changeAvatar = () => {
+  // Simular selección de archivo
+  const input = document.createElement('input')
+  input.type = 'file'
+  input.accept = 'image/*'
+  
+  input.onchange = (e) => {
+    const file = e.target.files[0]
+    if (file) {
+      // En una aplicación real, aquí se subiría el archivo
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        profileForm.avatar = e.target.result
+      }
+      reader.readAsDataURL(file)
     }
-    
-    // Guardar copia original
-    Object.assign(originalProfileData, profileData)
   }
+  
+  input.click()
 }
 
 /**
- * INICIALIZACIÓN DEL COMPONENTE
- * 
- * Se ejecuta cuando el componente se monta en el DOM
+ * Resetear formulario
  */
-onMounted(() => {
-  loadProfileData()
-  console.log('Página de perfil inicializada para:', authStore.user?.name)
-})
+const resetForm = () => {
+  profileForm.name = user.name || ''
+  profileForm.email = user.email || ''
+  profileForm.specialty = user.specialty || ''
+}
 </script>
