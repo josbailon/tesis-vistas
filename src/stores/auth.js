@@ -1,146 +1,193 @@
-// Store de autenticación usando Pinia (gestor de estado para Vue 3)
+/**
+ * STORE DE AUTENTICACIÓN CON PINIA
+ *
+ * Este store maneja todo el estado relacionado con la autenticación:
+ * - Usuario actual logueado
+ * - Estado de carga
+ * - Funciones de login/logout
+ * - Persistencia en localStorage
+ */
+
+// Importar defineStore de Pinia para crear el store
 import { defineStore } from "pinia"
+// Importar ref y computed para reactividad
 import { ref, computed } from "vue"
 
-// Array de usuarios de prueba para el sistema de clínica dental
-// Cada usuario tiene un rol específico que determina sus permisos y funcionalidades
+/**
+ * USUARIOS DE PRUEBA PARA DEMOSTRACIÓN
+ *
+ * Estos usuarios simulan una base de datos para testing
+ * En producción, estos datos vendrían de una API
+ */
 export const TEST_USERS = [
   {
-    id: "1",
-    email: "admin@uleam.edu.ec",
-    name: "Dr. Carlos Administrador",
-    role: "admin", // Administrador: acceso completo al sistema
+    id: 1,
+    email: "paciente@clinica.com",
+    password: "demo123",
+    name: "Ana López",
+    role: "patient",
     specialty: null,
-    avatar: "/placeholder-user.jpg",
   },
   {
-    id: "2",
-    email: "profesor@uleam.edu.ec",
-    name: "Dr. María Profesora",
-    role: "professor", // Profesor: supervisa estudiantes y aprueba tratamientos
-    specialty: "Endodoncia", // Especialidad médica del profesor
-    avatar: "/placeholder-user.jpg",
+    id: 2,
+    email: "estudiante@clinica.com",
+    password: "demo123",
+    name: "Juan Pérez",
+    role: "student",
+    specialty: "Odontología General",
   },
   {
-    id: "3",
-    email: "estudiante@uleam.edu.ec",
-    name: "Juan Estudiante",
-    role: "student", // Estudiante: realiza tratamientos bajo supervisión
-    specialty: null,
-    avatar: "/placeholder-user.jpg",
+    id: 3,
+    email: "profesor@clinica.com",
+    password: "demo123",
+    name: "Dr. María González",
+    role: "professor",
+    specialty: "Endodoncia",
   },
   {
-    id: "4",
-    email: "paciente@gmail.com",
-    name: "Ana Paciente",
-    role: "patient", // Paciente: recibe tratamientos dentales
+    id: 4,
+    email: "admin@clinica.com",
+    password: "demo123",
+    name: "Dr. Admin",
+    role: "admin",
     specialty: null,
-    avatar: "/placeholder-user.jpg",
-  },
-  {
-    id: "5",
-    email: "secretaria@uleam.edu.ec",
-    name: "Laura Secretaria",
-    role: "secretary", // Secretaria: gestiona citas y administración
-    specialty: null,
-    avatar: "/placeholder-user.jpg",
   },
 ]
 
-// Definición del store de autenticación usando Pinia
+/**
+ * DEFINICIÓN DEL STORE DE AUTENTICACIÓN
+ *
+ * useAuthStore es la función que retorna el store de autenticación
+ * Puede ser usado en cualquier componente de la aplicación
+ */
 export const useAuthStore = defineStore("auth", () => {
-  // Estados reactivos del store
-  const user = ref(null) // Usuario actualmente logueado (null si no hay sesión)
-  const isLoading = ref(true) // Estado de carga para mostrar spinners
-  const isInitialized = ref(false) // Indica si el store ya se inicializó
+  /**
+   * ESTADO REACTIVO DEL STORE
+   *
+   * Estas variables son reactivas y se actualizan automáticamente
+   * cuando cambian, triggereando re-renders en los componentes
+   */
 
-  // Computed property que determina si hay un usuario autenticado
-  const isAuthenticated = computed(() => !!user.value)
+  // Usuario actualmente logueado (null si no hay usuario)
+  const user = ref(null)
+
+  // Estado de carga para mostrar spinners durante operaciones async
+  const loading = ref(false)
 
   /**
-   * Función para inicializar el estado de autenticación
-   * Se ejecuta al cargar la aplicación para verificar si hay una sesión guardada
+   * PROPIEDADES COMPUTADAS
+   *
+   * Estas propiedades se calculan automáticamente basadas en el estado
+   * y se actualizan cuando sus dependencias cambian
+   */
+
+  // Verificar si hay un usuario autenticado
+  const isAuthenticated = computed(() => !!user.value)
+
+  // Obtener el rol del usuario actual
+  const userRole = computed(() => user.value?.role || null)
+
+  /**
+   * FUNCIÓN DE INICIALIZACIÓN DE AUTENTICACIÓN
+   *
+   * Se ejecuta al cargar la aplicación para verificar si hay
+   * una sesión guardada en localStorage
    */
   const initializeAuth = () => {
     try {
-      // Intenta recuperar datos de usuario del localStorage
-      const savedUser = localStorage.getItem("clinic_user")
-      const savedExpiry = localStorage.getItem("clinic_expiry")
+      // Intentar obtener datos del usuario desde localStorage
+      const savedUser = localStorage.getItem("dental_clinic_user")
 
-      // Verifica si existen datos guardados y si no han expirado
-      if (savedUser && savedExpiry) {
-        const expiry = Number.parseInt(savedExpiry)
-        // Compara la fecha actual con la fecha de expiración
-        if (Date.now() < expiry) {
-          // Si la sesión es válida, restaura el usuario
-          user.value = JSON.parse(savedUser)
-        } else {
-          // Si la sesión expiró, limpia el localStorage
-          localStorage.removeItem("clinic_user")
-          localStorage.removeItem("clinic_expiry")
+      if (savedUser) {
+        // Si hay datos guardados, parsear y restaurar el usuario
+        user.value = JSON.parse(savedUser)
+        console.log("Sesión restaurada para:", user.value.name)
+      }
+    } catch (error) {
+      // Si hay error al parsear, limpiar localStorage
+      console.error("Error al restaurar sesión:", error)
+      localStorage.removeItem("dental_clinic_user")
+    }
+  }
+
+  /**
+   * FUNCIÓN DE LOGIN
+   *
+   * Autentica al usuario con email y contraseña
+   * Retorna un objeto con el resultado de la operación
+   */
+  const login = async (email, password) => {
+    // Activar estado de carga
+    loading.value = true
+
+    try {
+      // Simular delay de red (en producción sería una llamada a API)
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Buscar usuario en la lista de usuarios de prueba
+      const foundUser = TEST_USERS.find((u) => u.email === email && u.password === password)
+
+      if (foundUser) {
+        // Si el usuario existe, crear objeto de usuario sin la contraseña
+        const { password: _, ...userWithoutPassword } = foundUser
+
+        // Guardar usuario en el estado reactivo
+        user.value = userWithoutPassword
+
+        // Persistir usuario en localStorage para mantener sesión
+        localStorage.setItem("dental_clinic_user", JSON.stringify(userWithoutPassword))
+
+        console.log("Login exitoso para:", user.value.name)
+
+        // Retornar resultado exitoso
+        return {
+          success: true,
+          user: user.value,
+          message: "Login exitoso",
+        }
+      } else {
+        // Si las credenciales son incorrectas
+        return {
+          success: false,
+          message: "Credenciales incorrectas",
         }
       }
     } catch (error) {
-      // Si hay error al parsear los datos, limpia todo
-      console.error("Error al inicializar autenticación:", error)
-      localStorage.removeItem("clinic_user")
-      localStorage.removeItem("clinic_expiry")
-    } finally {
-      // Siempre marca como inicializado y termina la carga
-      isLoading.value = false
-      isInitialized.value = true
-    }
-  }
-
-  /**
-   * Función para iniciar sesión
-   * @param {string} email - Correo electrónico del usuario
-   * @param {string} password - Contraseña del usuario
-   * @returns {Object} Objeto con resultado del login
-   */
-  const login = async (email, password) => {
-    // Busca el usuario en la lista de usuarios de prueba
-    const foundUser = TEST_USERS.find((u) => u.email === email && password === "password123")
-
-    if (foundUser) {
-      // Si las credenciales son correctas, crea el objeto de usuario
-      const userData = {
-        id: foundUser.id,
-        email: foundUser.email,
-        name: foundUser.name,
-        role: foundUser.role,
-        specialty: foundUser.specialty,
-        avatar: foundUser.avatar,
+      // Manejar errores inesperados
+      console.error("Error en login:", error)
+      return {
+        success: false,
+        message: "Error interno del servidor",
       }
-
-      // Guarda el usuario en el estado reactivo
-      user.value = userData
-
-      // Persiste la sesión en localStorage con expiración de 24 horas
-      localStorage.setItem("clinic_user", JSON.stringify(userData))
-      localStorage.setItem("clinic_expiry", (Date.now() + 24 * 60 * 60 * 1000).toString())
-
-      return { success: true, user: userData }
+    } finally {
+      // Desactivar estado de carga sin importar el resultado
+      loading.value = false
     }
-
-    // Si las credenciales son incorrectas, retorna error
-    return { success: false, message: "Credenciales incorrectas" }
   }
 
   /**
-   * Función para cerrar sesión
-   * Limpia el estado y el localStorage
+   * FUNCIÓN DE LOGOUT
+   *
+   * Cierra la sesión del usuario actual y limpia todos los datos
    */
-  const logout = () => {
-    user.value = null
-    localStorage.removeItem("clinic_user")
-    localStorage.removeItem("clinic_expiry")
+  const logout = async () => {
+    try {
+      // Limpiar usuario del estado
+      user.value = null
+
+      // Limpiar datos persistidos en localStorage
+      localStorage.removeItem("dental_clinic_user")
+
+      console.log("Logout exitoso")
+    } catch (error) {
+      console.error("Error en logout:", error)
+    }
   }
 
   /**
-   * Función utilitaria para obtener el nombre del rol en español
-   * @param {string} role - Rol del usuario en inglés
-   * @returns {string} Nombre del rol en español
+   * FUNCIÓN PARA OBTENER NOMBRE LEGIBLE DEL ROL
+   *
+   * Convierte los roles técnicos en nombres amigables para el usuario
    */
   const getRoleDisplayName = (role) => {
     const roleNames = {
@@ -148,17 +195,26 @@ export const useAuthStore = defineStore("auth", () => {
       student: "Estudiante",
       professor: "Profesor",
       admin: "Administrador",
-      secretary: "Secretaria",
     }
     return roleNames[role] || "Usuario"
   }
 
-  // Retorna todas las propiedades y métodos que estarán disponibles en los componentes
+  /**
+   * RETORNAR API PÚBLICA DEL STORE
+   *
+   * Estas son las propiedades y métodos que pueden ser usados
+   * por los componentes que importen este store
+   */
   return {
+    // Estado reactivo
     user,
-    isLoading,
-    isInitialized,
+    loading,
+
+    // Propiedades computadas
     isAuthenticated,
+    userRole,
+
+    // Métodos/acciones
     initializeAuth,
     login,
     logout,
