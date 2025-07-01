@@ -39,7 +39,6 @@ const TOOTH_CONDITIONS = {
 
 const SURFACES = ["Vest", "Raz", "Oclu", "Ling", "Mesial", "Distal"]
 
-// Numeración FDI estándar
 const UPPER_TEETH = [18, 17, 16, 15, 14, 13, 12, 11, 21, 22, 23, 24, 25, 26, 27, 28]
 const LOWER_TEETH = [48, 47, 46, 45, 44, 43, 42, 41, 31, 32, 33, 34, 35, 36, 37, 38]
 
@@ -58,9 +57,7 @@ const createInitialTeeth = (): ToothData[] => {
 
 export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: OdontogramProps) {
   const [teeth, setTeeth] = useState<ToothData[]>(() => {
-    // Datos de ejemplo
     const initialTeeth = createInitialTeeth()
-    // Agregar algunos casos de ejemplo
     const exampleData = [
       { number: 21, condition: "CARIES OCLUSAL", surfaces: ["Oclu"], diagnosis: "CARIES OCLUSAL" },
       { number: 11, condition: "OBTURACIÓN", surfaces: ["Mesial", "Oclu"], diagnosis: "OBTURACIÓN MESIO-OCLUSAL" },
@@ -153,7 +150,6 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
           {conditionData.symbol}
         </div>
 
-        {/* Indicadores de superficies */}
         {tooth && tooth.surfaces.length > 0 && (
           <div className="flex mt-1 gap-0.5">
             {tooth.surfaces.slice(0, 3).map((surface, index) => (
@@ -198,7 +194,6 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
 
   return (
     <div className="w-full max-w-7xl mx-auto bg-white">
-      {/* Header con tabs */}
       <div className="bg-blue-600 text-white">
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="bg-blue-700 border-0 h-12">
@@ -228,11 +223,9 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
       </div>
 
       <div className="flex min-h-[600px]">
-        {/* Panel principal del odontograma */}
         <div className="flex-1 p-6 bg-gray-50">
           <TabsContent value="tratamientos" className="mt-0">
             <div className="bg-white p-8 rounded-lg shadow-sm border">
-              {/* Dientes superiores */}
               <div className="mb-12">
                 <div className="text-center text-sm font-semibold text-gray-700 mb-4 uppercase tracking-wide">
                   Maxilar Superior
@@ -241,7 +234,6 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
                   {UPPER_TEETH.map((toothNumber) => renderTooth(toothNumber, true))}
                 </div>
 
-                {/* Representación gráfica superior */}
                 <div className="flex justify-center gap-3">
                   {UPPER_TEETH.map((toothNumber) => {
                     const tooth = teeth.find((t) => t.number === toothNumber)
@@ -270,7 +262,6 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
                 </div>
               </div>
 
-              {/* Línea divisoria */}
               <div className="relative my-8">
                 <div className="absolute inset-0 flex items-center">
                   <div className="w-full border-t-2 border-gray-300"></div>
@@ -280,9 +271,7 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
                 </div>
               </div>
 
-              {/* Dientes inferiores */}
               <div>
-                {/* Representación gráfica inferior */}
                 <div className="flex justify-center gap-3 mb-6">
                   {LOWER_TEETH.map((toothNumber) => {
                     const tooth = teeth.find((t) => t.number === toothNumber)
@@ -376,10 +365,8 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
           </TabsContent>
         </div>
 
-        {/* Panel lateral derecho */}
         <div className="w-80 bg-white border-l border-gray-200">
           <div className="p-6 space-y-6">
-            {/* Información del paciente */}
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-sm flex items-center gap-2">
@@ -393,7 +380,6 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
               </CardContent>
             </Card>
 
-            {/* Diente seleccionado */}
             {selectedTooth && (
               <Card>
                 <CardHeader className="pb-3">
@@ -409,7 +395,6 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
                     )}
                   </div>
 
-                  {/* Superficies */}
                   <div>
                     <div className="font-semibold mb-3 text-sm">Superficies</div>
                     <div className="grid grid-cols-2 gap-2">
@@ -428,7 +413,6 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
                     </div>
                   </div>
 
-                  {/* Diagnóstico */}
                   <div>
                     <div className="font-semibold mb-3 text-sm">Diagnóstico</div>
                     <Select value={selectedCondition} onValueChange={setSelectedCondition}>
@@ -445,7 +429,6 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
                     </Select>
                   </div>
 
-                  {/* Botón Tratar */}
                   <Button
                     onClick={handleTreat}
                     className="w-full bg-green-600 hover:bg-green-700 text-white font-semibold"
@@ -457,7 +440,6 @@ export function Odontogram({ patientId, patientName = "Laura Medina", onSave }: 
               </Card>
             )}
 
-            {/* Botón Guardar */}
             <Button
               onClick={() => onSave?.(teeth)}
               className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold flex items-center gap-2"
