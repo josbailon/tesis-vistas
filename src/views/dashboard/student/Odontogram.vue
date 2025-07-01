@@ -1,40 +1,36 @@
 <!--
   PÁGINA DEL ODONTOGRAMA PARA ESTUDIANTES
   
-  Esta página permite a los estudiantes crear y editar odontogramas
-  para sus pacientes asignados. Incluye el componente profesional
-  de odontograma con todas sus funcionalidades.
+  Esta página permite a los estudiantes usar la herramienta profesional de odontograma
+  para registrar y gestionar el estado dental de sus pacientes asignados.
 -->
 <template>
-  <!-- Contenedor principal de la página -->
   <div class="space-y-6">
     
     <!-- HEADER DE LA PÁGINA -->
     <div class="flex items-center justify-between">
       <div>
-        <h1 class="text-3xl font-bold text-gray-900 flex items-center gap-3">
-          <Activity class="h-8 w-8 text-blue-600" />
-          Odontograma Digital
-        </h1>
+        <h1 class="text-3xl font-bold text-gray-900">Odontograma Digital</h1>
         <p class="text-gray-600 mt-2">
-          Herramienta profesional para el registro y seguimiento del estado dental de tus pacientes
+          Herramienta profesional para el registro del estado dental de pacientes
         </p>
       </div>
       
       <!-- SELECTOR DE PACIENTE -->
       <div class="flex items-center gap-4">
         <div class="min-w-0 flex-1">
-          <label class="block text-sm font-medium text-gray-700 mb-2">
+          <label for="patient-select" class="block text-sm font-medium text-gray-700 mb-1">
             Seleccionar Paciente
           </label>
           <select
+            id="patient-select"
             v-model="selectedPatientId"
-            @change="loadPatientOdontogram"
+            @change="handlePatientChange"
             class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           >
-            <option value="">Selecciona un paciente</option>
+            <option value="">Seleccionar paciente...</option>
             <option
-              v-for="patient in assignedPatients"
+              v-for="patient in availablePatients"
               :key="patient.id"
               :value="patient.id"
             >
@@ -45,33 +41,17 @@
       </div>
     </div>
 
-    <!-- INFORMACIÓN DEL ESTUDIANTE -->
-    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-      <div class="flex items-center gap-3">
-        <GraduationCap class="h-6 w-6 text-blue-600" />
-        <div>
-          <h3 class="font-semibold text-blue-900">{{ studentInfo.name }}</h3>
-          <p class="text-sm text-blue-700">
-            Estudiante de {{ studentInfo.semester }}° Semestre - {{ studentInfo.specialty }}
-          </p>
-          <p class="text-sm text-blue-700">
-            Supervisor: {{ studentInfo.supervisor }}
-          </p>
-        </div>
-      </div>
-    </div>
-
     <!-- MENSAJE SI NO HAY PACIENTE SELECCIONADO -->
     <div v-if="!selectedPatientId" class="text-center py-12 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
       <Users class="h-16 w-16 text-gray-400 mx-auto mb-4" />
       <h3 class="text-lg font-medium text-gray-900 mb-2">Selecciona un Paciente</h3>
       <p class="text-gray-600">
-        Para comenzar a trabajar con el odontograma, selecciona uno de tus pacientes asignados.
+        Elige un paciente de la lista para comenzar a trabajar con su odontograma
       </p>
     </div>
 
     <!-- COMPONENTE ODONTOGRAMA PROFESIONAL -->
-    <div v-if="selectedPatientId">
+    <div v-else>
       <ProfessionalOdontogram
         :patient-id="selectedPatientId"
         :initial-data="currentOdontogramData"
@@ -80,50 +60,83 @@
       />
     </div>
 
-    <!-- PANEL DE AYUDA -->
-    <div v-if="selectedPatientId" class="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
-      <div class="flex items-start gap-3">
-        <HelpCircle class="h-6 w-6 text-yellow-600 flex-shrink-0 mt-0.5" />
-        <div>
-          <h3 class="font-semibold text-yellow-900 mb-2">Instrucciones de Uso</h3>
-          <ul class="text-sm text-yellow-800 space-y-1">
-            <li>• Haz clic en un diente para seleccionarlo y registrar su condición</li>
-            <li>• Usa la leyenda de colores para aplicar diferentes condiciones dentales</li>
-            <li>• Marca las superficies afectadas en cada diente</li>
-            <li>• Agrega notas detalladas sobre tratamientos o observaciones</li>
-            <li>• Revisa las estadísticas para obtener un resumen del estado dental</li>
-            <li>• Consulta el historial para ver tratamientos previos</li>
-            <li>• Recuerda guardar tus cambios regularmente</li>
-          </ul>
+    <!-- HISTORIAL DE ODONTOGRAMAS -->
+    <div v-if="selectedPatientId && odontogramHistory.length > 0" class="bg-white border border-gray-200 rounded-lg">
+      <div class="p-6 border-b border-gray-200">
+        <h3 class="text-lg font-semibold text-gray-900 flex items-center gap-2">
+          <Clock class="h-5 w-5 text-blue-600" />
+          Historial de Odontogramas
+        </h3>
+      </div>
+      
+      <div class="p-6">
+        <div class="space-y-4">
+          <div
+            v-for="entry in odontogramHistory"
+            :key="entry.id"
+            class="flex items-center justify-between p-4 bg-gray-50 rounded-lg border hover:shadow-sm transition-shadow"
+          >
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-1">
+                <span class="font-medium text-gray-900">{{ entry.date }}</span>
+                <span class="text-sm text-gray-500">•</span>
+                <span class="text-sm text-gray-600">{{ entry.time }}</span>
+              </div>
+              <p class="text-sm text-gray-600">{{ entry.description }}</p>
+              <p class="text-xs text-gray-500 mt-1">
+                Modificado por: {{ entry.modifiedBy }}
+              </p>
+            </div>
+            
+            <div class="flex items-center gap-2">
+              <button
+                @click="loadOdontogramVersion(entry)"
+                class="text-blue-600 hover:text-blue-700 text-sm font-medium"
+              >
+                Cargar
+              </button>
+              <button
+                @click="compareOdontogramVersion(entry)"
+                class="text-green-600 hover:text-green-700 text-sm font-medium"
+              >
+                Comparar
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- PANEL DE SOLICITUD DE APROBACIÓN -->
-    <div v-if="selectedPatientId && needsApproval" class="bg-orange-50 border border-orange-200 rounded-lg p-6">
-      <div class="flex items-start justify-between">
-        <div class="flex items-start gap-3">
-          <AlertTriangle class="h-6 w-6 text-orange-600 flex-shrink-0 mt-0.5" />
-          <div>
-            <h3 class="font-semibold text-orange-900 mb-2">Solicitar Aprobación</h3>
-            <p class="text-sm text-orange-800 mb-4">
-              Algunos tratamientos requieren aprobación del supervisor antes de proceder.
-            </p>
-            <div class="space-y-2">
-              <div v-for="treatment in pendingTreatments" :key="treatment.id" 
-                   class="bg-white border border-orange-200 rounded p-3">
-                <p class="font-medium text-orange-900">{{ treatment.procedure }}</p>
-                <p class="text-sm text-orange-700">Diente: {{ treatment.tooth }}</p>
-              </div>
-            </div>
-          </div>
+    <!-- NOTAS Y OBSERVACIONES -->
+    <div v-if="selectedPatientId" class="bg-white border border-gray-200 rounded-lg p-6">
+      <h3 class="text-lg font-semibold text-gray-900 mb-4 flex items-center gap-2">
+        <FileText class="h-5 w-5 text-green-600" />
+        Notas y Observaciones
+      </h3>
+      
+      <div class="space-y-4">
+        <div>
+          <label for="session-notes" class="block text-sm font-medium text-gray-700 mb-2">
+            Notas de la Sesión Actual
+          </label>
+          <textarea
+            id="session-notes"
+            v-model="sessionNotes"
+            rows="4"
+            placeholder="Registra observaciones importantes sobre el estado dental del paciente, tratamientos realizados, recomendaciones, etc."
+            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500"
+          ></textarea>
         </div>
-        <button
-          @click="requestApproval"
-          class="bg-orange-600 hover:bg-orange-700 text-white px-4 py-2 rounded-md transition-colors"
-        >
-          Solicitar Aprobación
-        </button>
+        
+        <div class="flex justify-end gap-3">
+          <button
+            @click="saveSessionNotes"
+            :disabled="!sessionNotes.trim()"
+            class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            Guardar Notas
+          </button>
+        </div>
       </div>
     </div>
   </div>
@@ -135,19 +148,19 @@
  * 
  * Esta página maneja:
  * - Selección de pacientes asignados al estudiante
- * - Carga y guardado de datos del odontograma
- * - Solicitudes de aprobación para tratamientos
- * - Integración con el componente profesional de odontograma
+ * - Integración con el componente ProfessionalOdontogram
+ * - Gestión del historial de odontogramas
+ * - Notas y observaciones de sesiones
  */
 
 // Importar hooks de Vue
 import { ref, computed, onMounted } from 'vue'
 // Importar store de autenticación
 import { useAuthStore } from '../../../stores/auth'
-// Importar componente de odontograma
+// Importar componentes
 import ProfessionalOdontogram from '../../../components/ProfessionalOdontogram.vue'
 // Importar iconos
-import { Activity, GraduationCap, Users, HelpCircle, AlertTriangle } from 'lucide-vue-next'
+import { Users, Clock, FileText } from 'lucide-vue-next'
 
 // Obtener store de autenticación
 const authStore = useAuthStore()
@@ -161,82 +174,55 @@ const authStore = useAuthStore()
 // ID del paciente actualmente seleccionado
 const selectedPatientId = ref('')
 
-// Datos del odontograma actual
+// Datos actuales del odontograma
 const currentOdontogramData = ref({})
 
-// Estado de carga
-const loading = ref(false)
+// Notas de la sesión actual
+const sessionNotes = ref('')
 
 /**
- * INFORMACIÓN DEL ESTUDIANTE
+ * DATOS DE PACIENTES DISPONIBLES
  * 
- * Datos del estudiante logueado obtenidos del store de autenticación
- */
-const studentInfo = ref({
-  name: authStore.user?.name || 'Estudiante',
-  semester: '8',
-  specialty: 'Odontología General',
-  supervisor: 'Dr. María González'
-})
-
-/**
- * PACIENTES ASIGNADOS AL ESTUDIANTE
- * 
- * Lista de pacientes que el estudiante puede atender
+ * Lista de pacientes asignados al estudiante actual
  * En una aplicación real, estos datos vendrían de una API
  */
-const assignedPatients = ref([
+const availablePatients = ref([
   {
     id: 'PAT001',
-    name: 'María González',
+    name: 'María González Pérez',
     age: 28,
     phone: '0987654321',
-    lastVisit: '2024-01-15'
+    assignedDate: '2024-01-15'
   },
   {
     id: 'PAT002',
-    name: 'Carlos Rodríguez',
+    name: 'Carlos Rodríguez López',
     age: 35,
-    phone: '0987654322',
-    lastVisit: '2024-01-10'
+    phone: '0976543210',
+    assignedDate: '2024-01-20'
   },
   {
     id: 'PAT003',
-    name: 'Ana López',
+    name: 'Ana Martínez Silva',
     age: 42,
-    phone: '0987654323',
-    lastVisit: '2024-01-08'
+    phone: '0965432109',
+    assignedDate: '2024-01-25'
   },
   {
     id: 'PAT004',
-    name: 'Luis Martínez',
-    age: 25,
-    phone: '0987654324',
-    lastVisit: '2024-01-05'
+    name: 'Luis Hernández Castro',
+    age: 31,
+    phone: '0954321098',
+    assignedDate: '2024-02-01'
   }
 ])
 
 /**
- * TRATAMIENTOS PENDIENTES DE APROBACIÓN
+ * HISTORIAL DE ODONTOGRAMAS
  * 
- * Lista de tratamientos que requieren aprobación del supervisor
+ * Historial de versiones anteriores del odontograma del paciente seleccionado
  */
-const pendingTreatments = ref([
-  {
-    id: 1,
-    tooth: 16,
-    procedure: 'Endodoncia',
-    complexity: 'Alta',
-    estimatedTime: '2 horas'
-  },
-  {
-    id: 2,
-    tooth: 26,
-    procedure: 'Corona dental',
-    complexity: 'Media',
-    estimatedTime: '1.5 horas'
-  }
-])
+const odontogramHistory = ref([])
 
 /**
  * COMPUTED PROPERTIES
@@ -244,14 +230,9 @@ const pendingTreatments = ref([
  * Propiedades calculadas que se actualizan automáticamente
  */
 
-// Verificar si hay tratamientos que necesitan aprobación
-const needsApproval = computed(() => {
-  return pendingTreatments.value.length > 0
-})
-
 // Obtener información del paciente seleccionado
 const selectedPatient = computed(() => {
-  return assignedPatients.value.find(p => p.id === selectedPatientId.value)
+  return availablePatients.value.find(p => p.id === selectedPatientId.value)
 })
 
 /**
@@ -261,61 +242,134 @@ const selectedPatient = computed(() => {
  */
 
 /**
- * CARGAR ODONTOGRAMA DEL PACIENTE
+ * MANEJAR CAMBIO DE PACIENTE
  * 
- * Función que se ejecuta cuando se selecciona un paciente
- * Carga los datos existentes del odontograma si los hay
+ * Se ejecuta cuando el usuario selecciona un paciente diferente
  */
-const loadPatientOdontogram = async () => {
-  if (!selectedPatientId.value) {
+const handlePatientChange = async () => {
+  if (selectedPatientId.value) {
+    // Cargar datos del odontograma para el paciente seleccionado
+    await loadPatientOdontogram(selectedPatientId.value)
+    
+    // Cargar historial de odontogramas
+    await loadOdontogramHistory(selectedPatientId.value)
+    
+    // Limpiar notas de sesión
+    sessionNotes.value = ''
+  } else {
+    // Limpiar datos si no hay paciente seleccionado
     currentOdontogramData.value = {}
-    return
-  }
-  
-  loading.value = true
-  
-  try {
-    // Simular llamada a API para cargar datos del odontograma
-    await new Promise(resolve => setTimeout(resolve, 1000))
-    
-    // Datos de ejemplo para demostración
-    // En una aplicación real, estos datos vendrían del backend
-    const mockOdontogramData = {
-      16: { condition: 'caries', surfaces: ['oclusal'], notes: 'Caries profunda en superficie oclusal' },
-      26: { condition: 'restoration', surfaces: ['mesial', 'oclusal'], notes: 'Restauración con resina compuesta' },
-      36: { condition: 'healthy', surfaces: [], notes: '' },
-      46: { condition: 'crown', surfaces: ['todas'], notes: 'Corona de porcelana' }
-    }
-    
-    currentOdontogramData.value = mockOdontogramData
-    
-    console.log(`Odontograma cargado para paciente ${selectedPatientId.value}`)
-  } catch (error) {
-    console.error('Error al cargar odontograma:', error)
-    alert('Error al cargar los datos del odontograma')
-  } finally {
-    loading.value = false
+    odontogramHistory.value = []
+    sessionNotes.value = ''
   }
 }
 
 /**
- * MANEJAR GUARDADO DEL ODONTOGRAMA
+ * CARGAR ODONTOGRAMA DEL PACIENTE
  * 
- * Función que se ejecuta cuando se guarda el odontograma
- * desde el componente ProfessionalOdontogram
+ * Carga los datos existentes del odontograma para el paciente especificado
+ */
+const loadPatientOdontogram = async (patientId) => {
+  try {
+    // Simular llamada a API
+    await new Promise(resolve => setTimeout(resolve, 500))
+    
+    // Datos de ejemplo para demostración
+    const mockOdontogramData = {
+      16: { condition: 'caries', surfaces: ['oclusal'], notes: 'Caries profunda' },
+      21: { condition: 'restoration', surfaces: ['mesial', 'oclusal'], notes: 'Restauración con resina' },
+      36: { condition: 'crown', surfaces: [], notes: 'Corona de porcelana' }
+    }
+    
+    currentOdontogramData.value = mockOdontogramData
+    
+    console.log('Odontograma cargado para paciente:', patientId)
+  } catch (error) {
+    console.error('Error al cargar odontograma:', error)
+    currentOdontogramData.value = {}
+  }
+}
+
+/**
+ * CARGAR HISTORIAL DE ODONTOGRAMAS
+ * 
+ * Carga el historial de versiones anteriores del odontograma
+ */
+const loadOdontogramHistory = async (patientId) => {
+  try {
+    // Simular llamada a API
+    await new Promise(resolve => setTimeout(resolve, 300))
+    
+    // Datos de ejemplo para demostración
+    const mockHistory = [
+      {
+        id: 1,
+        date: '2024-02-15',
+        time: '10:30 AM',
+        description: 'Diagnóstico inicial - Detección de caries en diente 16',
+        modifiedBy: authStore.user?.name || 'Estudiante',
+        data: { 16: { condition: 'caries', surfaces: ['oclusal'], notes: 'Caries inicial' } }
+      },
+      {
+        id: 2,
+        date: '2024-02-10',
+        time: '2:15 PM',
+        description: 'Restauración completada en diente 21',
+        modifiedBy: authStore.user?.name || 'Estudiante',
+        data: { 21: { condition: 'restoration', surfaces: ['mesial'], notes: 'Restauración temporal' } }
+      },
+      {
+        id: 3,
+        date: '2024-02-05',
+        time: '9:00 AM',
+        description: 'Primera consulta - Evaluación general',
+        modifiedBy: authStore.user?.name || 'Estudiante',
+        data: {}
+      }
+    ]
+    
+    odontogramHistory.value = mockHistory
+    
+    console.log('Historial cargado para paciente:', patientId)
+  } catch (error) {
+    console.error('Error al cargar historial:', error)
+    odontogramHistory.value = []
+  }
+}
+
+/**
+ * MANEJAR GUARDADO DE ODONTOGRAMA
+ * 
+ * Se ejecuta cuando el componente ProfessionalOdontogram emite el evento 'save'
  */
 const handleSaveOdontogram = async (odontogramData) => {
   try {
-    // Simular llamada a API para guardar datos
+    console.log('Guardando odontograma:', odontogramData)
+    
+    // Simular llamada a API para guardar
     await new Promise(resolve => setTimeout(resolve, 1000))
     
-    // Actualizar datos locales
+    // Actualizar datos actuales
     currentOdontogramData.value = odontogramData.teeth
     
-    console.log('Odontograma guardado:', odontogramData)
+    // Agregar entrada al historial
+    const newHistoryEntry = {
+      id: odontogramHistory.value.length + 1,
+      date: new Date().toLocaleDateString('es-ES'),
+      time: new Date().toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }),
+      description: 'Odontograma actualizado',
+      modifiedBy: authStore.user?.name || 'Estudiante',
+      data: odontogramData.teeth
+    }
+    
+    odontogramHistory.value.unshift(newHistoryEntry)
     
     // Mostrar mensaje de éxito
     alert('Odontograma guardado exitosamente')
+    
   } catch (error) {
     console.error('Error al guardar odontograma:', error)
     alert('Error al guardar el odontograma')
@@ -323,25 +377,20 @@ const handleSaveOdontogram = async (odontogramData) => {
 }
 
 /**
- * MANEJAR EXPORTACIÓN DEL ODONTOGRAMA
+ * MANEJAR EXPORTACIÓN DE ODONTOGRAMA
  * 
- * Función que se ejecuta cuando se exporta el odontograma a PDF
+ * Se ejecuta cuando el componente ProfessionalOdontogram emite el evento 'export'
  */
-const handleExportOdontogram = (exportData) => {
+const handleExportOdontogram = async (exportData) => {
   try {
-    // Preparar datos para exportación
-    const reportData = {
-      ...exportData,
-      student: studentInfo.value,
-      date: new Date().toLocaleDateString(),
-      supervisor: studentInfo.value.supervisor
-    }
+    console.log('Exportando odontograma:', exportData)
     
-    console.log('Exportando odontograma:', reportData)
+    // Simular generación de PDF
+    await new Promise(resolve => setTimeout(resolve, 2000))
     
-    // En una aplicación real, aquí se generaría el PDF
-    // Por ahora, solo mostramos un mensaje
-    alert('Generando reporte PDF del odontograma...')
+    // En una aplicación real, aquí se generaría y descargaría el PDF
+    alert('Odontograma exportado exitosamente')
+    
   } catch (error) {
     console.error('Error al exportar odontograma:', error)
     alert('Error al exportar el odontograma')
@@ -349,33 +398,75 @@ const handleExportOdontogram = (exportData) => {
 }
 
 /**
- * SOLICITAR APROBACIÓN DE TRATAMIENTOS
+ * CARGAR VERSIÓN ESPECÍFICA DEL ODONTOGRAMA
  * 
- * Función para enviar solicitud de aprobación al supervisor
+ * Carga una versión anterior del odontograma desde el historial
  */
-const requestApproval = async () => {
-  try {
-    // Simular llamada a API para solicitar aprobación
-    await new Promise(resolve => setTimeout(resolve, 1000))
+const loadOdontogramVersion = (historyEntry) => {
+  if (confirm('¿Deseas cargar esta versión del odontograma? Los cambios no guardados se perderán.')) {
+    currentOdontogramData.value = historyEntry.data || {}
     
-    // Preparar datos de la solicitud
-    const approvalRequest = {
-      studentId: authStore.user?.id,
-      patientId: selectedPatientId.value,
-      treatments: pendingTreatments.value,
-      requestDate: new Date().toISOString(),
-      notes: 'Solicitud de aprobación para tratamientos complejos'
+    // Agregar nota sobre la versión cargada
+    sessionNotes.value = `Versión cargada del ${historyEntry.date} - ${historyEntry.description}`
+    
+    console.log('Versión cargada:', historyEntry)
+  }
+}
+
+/**
+ * COMPARAR VERSIÓN DEL ODONTOGRAMA
+ * 
+ * Muestra una comparación entre la versión actual y una versión anterior
+ */
+const compareOdontogramVersion = (historyEntry) => {
+  // En una implementación completa, esto abriría un modal de comparación
+  alert(`Comparando con versión del ${historyEntry.date}\n\nEsta funcionalidad mostraría las diferencias entre versiones.`)
+  
+  console.log('Comparando versiones:', {
+    current: currentOdontogramData.value,
+    previous: historyEntry.data
+  })
+}
+
+/**
+ * GUARDAR NOTAS DE SESIÓN
+ * 
+ * Guarda las notas de la sesión actual
+ */
+const saveSessionNotes = async () => {
+  try {
+    if (!sessionNotes.value.trim()) {
+      alert('Por favor, ingresa algunas notas antes de guardar.')
+      return
     }
     
-    console.log('Solicitud de aprobación enviada:', approvalRequest)
+    // Simular llamada a API
+    await new Promise(resolve => setTimeout(resolve, 500))
     
-    // Limpiar tratamientos pendientes
-    pendingTreatments.value = []
+    // Agregar entrada al historial con las notas
+    const notesEntry = {
+      id: odontogramHistory.value.length + 1,
+      date: new Date().toLocaleDateString('es-ES'),
+      time: new Date().toLocaleTimeString('es-ES', { 
+        hour: '2-digit', 
+        minute: '2-digit' 
+      }),
+      description: `Notas de sesión: ${sessionNotes.value.substring(0, 50)}${sessionNotes.value.length > 50 ? '...' : ''}`,
+      modifiedBy: authStore.user?.name || 'Estudiante',
+      data: currentOdontogramData.value,
+      notes: sessionNotes.value
+    }
     
-    alert('Solicitud de aprobación enviada al supervisor')
+    odontogramHistory.value.unshift(notesEntry)
+    
+    // Limpiar notas después de guardar
+    sessionNotes.value = ''
+    
+    alert('Notas guardadas exitosamente')
+    
   } catch (error) {
-    console.error('Error al solicitar aprobación:', error)
-    alert('Error al enviar la solicitud de aprobación')
+    console.error('Error al guardar notas:', error)
+    alert('Error al guardar las notas')
   }
 }
 
@@ -385,12 +476,6 @@ const requestApproval = async () => {
  * Se ejecuta cuando el componente se monta en el DOM
  */
 onMounted(() => {
-  console.log('Página de odontograma para estudiantes inicializada')
-  
-  // Si hay pacientes asignados, seleccionar el primero por defecto
-  if (assignedPatients.value.length > 0) {
-    // No seleccionar automáticamente, dejar que el usuario elija
-    console.log(`${assignedPatients.value.length} pacientes asignados disponibles`)
-  }
+  console.log('Página de Odontograma inicializada para estudiante:', authStore.user?.name)
 })
 </script>
