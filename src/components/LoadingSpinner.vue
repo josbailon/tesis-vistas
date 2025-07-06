@@ -1,160 +1,119 @@
 <!--
-  COMPONENTE DE SPINNER DE CARGA CON TYPESCRIPT
+  COMPONENTE DE LOADING SPINNER
   
-  Componente reutilizable y tipado para mostrar estados de carga
-  con diferentes tamaños, colores y configuraciones
+  Spinner reutilizable con diferentes tamaños y colores
+  para mostrar estados de carga en toda la aplicación
 -->
 <template>
-  <div :class="containerClasses" :role="role" :aria-label="ariaLabel">
-    <!-- Spinner SVG animado -->
-    <div :class="spinnerClasses">
-      <svg 
-        class="animate-spin h-full w-full" 
-        xmlns="http://www.w3.org/2000/svg" 
-        fill="none" 
-        viewBox="0 0 24 24"
-        :aria-hidden="true"
-      >
-        <circle 
-          class="opacity-25" 
-          cx="12" 
-          cy="12" 
-          r="10" 
-          stroke="currentColor" 
-          stroke-width="4"
-        />
-        <path 
-          class="opacity-75" 
-          fill="currentColor" 
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        />
-      </svg>
-    </div>
+  <div 
+    :class="containerClasses"
+    role="status" 
+    :aria-label="ariaLabel"
+  >
+    <!-- Spinner SVG -->
+    <svg
+      :class="spinnerClasses"
+      xmlns="http://www.w3.org/2000/svg"
+      fill="none"
+      viewBox="0 0 24 24"
+    >
+      <circle
+        class="opacity-25"
+        cx="12"
+        cy="12"
+        r="10"
+        stroke="currentColor"
+        stroke-width="4"
+      />
+      <path
+        class="opacity-75"
+        fill="currentColor"
+        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+      />
+    </svg>
     
-    <!-- Texto de carga (opcional) -->
-    <p v-if="text" :class="textClasses">
+    <!-- Texto opcional -->
+    <span v-if="text" :class="textClasses">
       {{ text }}
-    </p>
+    </span>
   </div>
 </template>
 
 <script setup lang="ts">
 /**
- * LÓGICA DEL COMPONENTE LOADING SPINNER CON TYPESCRIPT
+ * PROPS DEL COMPONENTE
  */
-
-import { computed } from 'vue'
-
-/**
- * TIPOS PARA LAS PROPS
- */
-interface LoadingSpinnerProps {
-  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl'
-  color?: 'white' | 'blue' | 'green' | 'red' | 'yellow' | 'gray' | 'purple'
+interface Props {
+  size?: 'small' | 'medium' | 'large'
+  color?: 'primary' | 'white' | 'gray' | 'green'
   text?: string
-  fullscreen?: boolean
-  overlay?: boolean
-  center?: boolean
+  centered?: boolean
 }
 
-/**
- * DEFINICIÓN DE PROPS CON VALORES POR DEFECTO
- */
-const props = withDefaults(defineProps<LoadingSpinnerProps>(), {
-  size: 'md',
-  color: 'blue',
+const props = withDefaults(defineProps<Props>(), {
+  size: 'medium',
+  color: 'primary',
   text: '',
-  fullscreen: false,
-  overlay: false,
-  center: true
+  centered: false
 })
 
 /**
- * PROPIEDADES COMPUTADAS PARA CLASES CSS
+ * PROPIEDADES COMPUTADAS
  */
-const containerClasses = computed(() => {
-  const baseClasses = ['flex', 'items-center']
-  
-  if (props.center) {
-    baseClasses.push('justify-center')
-  }
-  
-  if (props.text) {
-    baseClasses.push('flex-col', 'gap-2')
-  } else {
-    baseClasses.push('flex-row')
-  }
-  
-  if (props.fullscreen) {
-    baseClasses.push(
-      'fixed', 'inset-0', 'z-50',
-      'bg-white', 'bg-opacity-90'
-    )
-  } else if (props.overlay) {
-    baseClasses.push(
-      'absolute', 'inset-0', 'z-10',
-      'bg-white', 'bg-opacity-75'
-    )
-  } else {
-    baseClasses.push('p-4')
-  }
-  
-  return baseClasses.join(' ')
-})
+import { computed } from 'vue'
 
-const spinnerClasses = computed(() => {
-  const sizeClasses = {
-    xs: 'w-3 h-3',
-    sm: 'w-4 h-4',
-    md: 'w-6 h-6',
-    lg: 'w-8 h-8',
-    xl: 'w-12 h-12'
+const containerClasses = computed(() => [
+  'flex items-center',
+  {
+    'justify-center': props.centered,
+    'gap-2': props.text,
+    'gap-3': props.text && props.size === 'large'
   }
-  
-  const colorClasses = {
-    white: 'text-white',
-    blue: 'text-blue-600',
-    green: 'text-green-600',
-    red: 'text-red-600',
-    yellow: 'text-yellow-600',
-    gray: 'text-gray-600',
-    purple: 'text-purple-600'
-  }
-  
-  return `${sizeClasses[props.size]} ${colorClasses[props.color]}`
-})
+])
 
-const textClasses = computed(() => {
-  const sizeClasses = {
-    xs: 'text-xs',
-    sm: 'text-sm',
-    md: 'text-base',
-    lg: 'text-lg',
-    xl: 'text-xl'
+const spinnerClasses = computed(() => [
+  'animate-spin',
+  // Tamaños
+  {
+    'h-4 w-4': props.size === 'small',
+    'h-6 w-6': props.size === 'medium',
+    'h-8 w-8': props.size === 'large'
+  },
+  // Colores
+  {
+    'text-green-600': props.color === 'primary',
+    'text-white': props.color === 'white',
+    'text-gray-600': props.color === 'gray',
+    'text-green-500': props.color === 'green'
   }
-  
-  const colorClasses = {
-    white: 'text-white',
-    blue: 'text-blue-600',
-    green: 'text-green-600',
-    red: 'text-red-600',
-    yellow: 'text-yellow-600',
-    gray: 'text-gray-600',
-    purple: 'text-purple-600'
-  }
-  
-  return `${sizeClasses[props.size]} ${colorClasses[props.color]} font-medium`
-})
+])
 
-/**
- * PROPIEDADES PARA ACCESIBILIDAD
- */
-const role = computed(() => props.fullscreen || props.overlay ? 'status' : undefined)
-const ariaLabel = computed(() => props.text || 'Cargando...')
+const textClasses = computed(() => [
+  'font-medium',
+  // Tamaños de texto
+  {
+    'text-sm': props.size === 'small',
+    'text-base': props.size === 'medium',
+    'text-lg': props.size === 'large'
+  },
+  // Colores de texto
+  {
+    'text-green-600': props.color === 'primary',
+    'text-white': props.color === 'white',
+    'text-gray-600': props.color === 'gray',
+    'text-green-500': props.color === 'green'
+  }
+])
+
+const ariaLabel = computed(() => {
+  return props.text || 'Cargando...'
+})
 </script>
 
 <style scoped>
-/* Animación personalizada para el spinner */
+/**
+ * ANIMACIÓN PERSONALIZADA PARA EL SPINNER
+ */
 @keyframes spin {
   from {
     transform: rotate(0deg);
@@ -168,7 +127,9 @@ const ariaLabel = computed(() => props.text || 'Cargando...')
   animation: spin 1s linear infinite;
 }
 
-/* Mejoras de accesibilidad para usuarios con preferencias de movimiento reducido */
+/**
+ * MEJORAS DE ACCESIBILIDAD
+ */
 @media (prefers-reduced-motion: reduce) {
   .animate-spin {
     animation: none;
