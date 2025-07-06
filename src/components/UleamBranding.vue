@@ -1,128 +1,237 @@
 <!--
-  COMPONENTE DE BRANDING DE ULEAM
+  COMPONENTE DE BRANDING ULEAM
   
-  Este componente muestra el logo y branding de la Universidad Laica Eloy Alfaro de Manabí
-  en diferentes variantes según el contexto donde se use.
+  Componente reutilizable que muestra el logo y branding
+  de la Universidad Laica Eloy Alfaro de Manabí
 -->
 <template>
-  <!-- 
-    Contenedor principal con clases dinámicas según la variante
-    getVariantClasses() retorna las clases CSS apropiadas
-  -->
-  <div :class="getVariantClasses()">
-    
-    <!-- VARIANTE: Solo Logo -->
-    <div v-if="variant === 'logo-only'" class="flex items-center">
-      <!-- Logo circular con gradiente verde -->
-      <div class="w-8 h-8 bg-gradient-to-br from-green-600 to-green-700 rounded-full flex items-center justify-center">
-        <span class="text-white font-bold text-sm">U</span>
-      </div>
+  <div :class="containerClass">
+    <!-- Logo SVG -->
+    <div v-if="showLogo" :class="logoClass">
+      <svg 
+        viewBox="0 0 100 100" 
+        fill="none" 
+        xmlns="http://www.w3.org/2000/svg"
+        class="w-full h-full"
+      >
+        <!-- Círculo exterior -->
+        <circle 
+          cx="50" 
+          cy="50" 
+          r="45" 
+          stroke="currentColor" 
+          stroke-width="3" 
+          fill="none"
+        />
+        
+        <!-- Símbolo dental estilizado -->
+        <path 
+          d="M35 30 C35 25, 40 20, 50 20 C60 20, 65 25, 65 30 L65 45 C65 55, 60 65, 50 70 C40 65, 35 55, 35 45 Z" 
+          fill="currentColor" 
+          opacity="0.8"
+        />
+        
+        <!-- Detalle interno -->
+        <ellipse 
+          cx="50" 
+          cy="40" 
+          rx="8" 
+          ry="12" 
+          fill="white"
+        />
+        
+        <!-- Texto ULEAM estilizado -->
+        <text 
+          x="50" 
+          y="85" 
+          text-anchor="middle" 
+          class="text-xs font-bold" 
+          fill="currentColor"
+        >
+          ULEAM
+        </text>
+      </svg>
     </div>
     
-    <!-- VARIANTE: Completa con descripción -->
-    <div v-else-if="variant === 'full'" class="text-center">
-      <div class="flex items-center justify-center mb-2">
-        <!-- Logo más grande para variante completa -->
-        <div class="w-12 h-12 bg-gradient-to-br from-green-600 to-green-700 rounded-full flex items-center justify-center mr-3">
-          <span class="text-white font-bold text-lg">U</span>
-        </div>
-        <div>
-          <!-- Nombre de la universidad -->
-          <h1 class="text-2xl font-bold text-green-800">ULEAM</h1>
-          <p class="text-sm text-green-600">Universidad Laica Eloy Alfaro de Manabí</p>
-        </div>
-      </div>
-      <!-- Descripción adicional -->
-      <p class="text-xs text-green-600">Clínica Dental Universitaria</p>
+    <!-- Texto -->
+    <div v-if="showText" :class="textContainerClass">
+      <h1 v-if="variant === 'full' || variant === 'header'" :class="titleClass">
+        {{ title }}
+      </h1>
+      <p v-if="showSubtitle" :class="subtitleClass">
+        {{ subtitle }}
+      </p>
     </div>
-    
-    <!-- VARIANTE: Header (para páginas principales) -->
-    <div v-else-if="variant === 'header'" class="text-center">
-      <div class="flex items-center justify-center mb-4">
-        <!-- Logo extra grande para headers -->
-        <div class="w-16 h-16 bg-gradient-to-br from-green-600 to-green-700 rounded-full flex items-center justify-center mr-4">
-          <span class="text-white font-bold text-2xl">U</span>
-        </div>
-        <div>
-          <!-- Títulos grandes para headers -->
-          <h1 class="text-3xl font-bold text-green-800">ULEAM</h1>
-          <p class="text-lg text-green-600">Clínica Dental</p>
-        </div>
-      </div>
-    </div>
-    
-    <!-- VARIANTE: Footer -->
-    <div v-else-if="variant === 'footer'" class="flex items-center">
-      <!-- Logo mediano para footer -->
-      <div class="w-10 h-10 bg-gradient-to-br from-green-600 to-green-700 rounded-full flex items-center justify-center mr-3">
-        <span class="text-white font-bold">U</span>
-      </div>
-      <div>
-        <h3 class="font-bold text-green-800">ULEAM</h3>
-        <p class="text-sm text-green-600">Clínica Dental</p>
-      </div>
-    </div>
-    
-    <!-- VARIANTE: Por defecto (compacta) -->
-    <div v-else class="flex items-center">
-      <!-- Logo pequeño para uso general -->
-      <div class="w-8 h-8 bg-gradient-to-br from-green-600 to-green-700 rounded-full flex items-center justify-center mr-2">
-        <span class="text-white font-bold text-sm">U</span>
-      </div>
-      <span class="font-semibold text-green-800">ULEAM</span>
-    </div>
-    
   </div>
 </template>
 
 <script setup>
 /**
- * LÓGICA DEL COMPONENTE DE BRANDING
+ * LÓGICA DEL COMPONENTE ULEAM BRANDING
  * 
- * Maneja las diferentes variantes de presentación del logo ULEAM
+ * Componente flexible que puede mostrar diferentes variantes
+ * del branding de ULEAM según las necesidades
  */
 
-// Importar computed para propiedades reactivas calculadas
 import { computed } from 'vue'
 
-/**
- * DEFINICIÓN DE PROPS
- * 
- * Props que recibe el componente desde el componente padre
- */
+// Props del componente
 const props = defineProps({
-  // Variante del branding a mostrar
+  // Variante del branding
   variant: {
     type: String,
-    default: 'default', // Valor por defecto
-    // Validador para asegurar que solo se usen variantes válidas
-    validator: (value) => [
-      'logo-only', 
-      'full', 
-      'header', 
-      'footer', 
-      'sidebar', 
-      'default'
-    ].includes(value)
+    default: 'full',
+    validator: (value) => ['full', 'logo-only', 'text-only', 'header', 'compact'].includes(value)
+  },
+  // Tamaño del componente
+  size: {
+    type: String,
+    default: 'medium',
+    validator: (value) => ['small', 'medium', 'large'].includes(value)
+  },
+  // Color del branding
+  color: {
+    type: String,
+    default: 'green',
+    validator: (value) => ['green', 'blue', 'white', 'gray'].includes(value)
+  },
+  // Título personalizado
+  customTitle: {
+    type: String,
+    default: ''
+  },
+  // Subtítulo personalizado
+  customSubtitle: {
+    type: String,
+    default: ''
   }
 })
 
-/**
- * COMPUTED PROPERTY PARA CLASES CSS
- * 
- * Retorna las clases CSS apropiadas según la variante seleccionada
- * Se recalcula automáticamente cuando cambia la prop variant
- */
-const getVariantClasses = computed(() => {
-  switch (props.variant) {
-    case 'full':
-      return 'p-4' // Padding para variante completa
-    case 'header':
-      return 'p-6' // Padding mayor para headers
-    case 'footer':
-      return 'mb-4' // Margen inferior para footers
-    default:
-      return '' // Sin clases adicionales para variante por defecto
+// Títulos y subtítulos por defecto
+const defaultTitles = {
+  full: 'Universidad Laica Eloy Alfaro de Manabí',
+  header: 'ULEAM',
+  compact: 'ULEAM'
+}
+
+const defaultSubtitles = {
+  full: 'Clínica Dental Universitaria',
+  header: 'Clínica Dental',
+  compact: 'Dental'
+}
+
+// Computed properties
+const showLogo = computed(() => {
+  return ['full', 'logo-only', 'header', 'compact'].includes(props.variant)
+})
+
+const showText = computed(() => {
+  return ['full', 'text-only', 'header', 'compact'].includes(props.variant)
+})
+
+const showSubtitle = computed(() => {
+  return ['full', 'header'].includes(props.variant)
+})
+
+const title = computed(() => {
+  return props.customTitle || defaultTitles[props.variant] || 'ULEAM'
+})
+
+const subtitle = computed(() => {
+  return props.customSubtitle || defaultSubtitles[props.variant] || 'Clínica Dental'
+})
+
+// Clases CSS computadas
+const containerClass = computed(() => {
+  const baseClasses = 'flex items-center'
+  const orientationClasses = {
+    full: 'flex-col text-center',
+    'logo-only': 'justify-center',
+    'text-only': 'flex-col',
+    header: 'gap-3',
+    compact: 'gap-2'
   }
+  
+  return `${baseClasses} ${orientationClasses[props.variant] || ''}`
+})
+
+const logoClass = computed(() => {
+  const sizeClasses = {
+    small: 'w-8 h-8',
+    medium: 'w-12 h-12',
+    large: 'w-16 h-16'
+  }
+  
+  const colorClasses = {
+    green: 'text-green-600',
+    blue: 'text-blue-600',
+    white: 'text-white',
+    gray: 'text-gray-600'
+  }
+  
+  // Ajustar tamaño según variante
+  let size = props.size
+  if (props.variant === 'compact') {
+    size = 'small'
+  } else if (props.variant === 'full') {
+    size = props.size === 'small' ? 'medium' : props.size === 'medium' ? 'large' : 'large'
+  }
+  
+  return `${sizeClasses[size]} ${colorClasses[props.color]} flex-shrink-0`
+})
+
+const textContainerClass = computed(() => {
+  if (props.variant === 'full') {
+    return 'mt-3'
+  } else if (props.variant === 'compact') {
+    return 'min-w-0'
+  }
+  return ''
+})
+
+const titleClass = computed(() => {
+  const sizeClasses = {
+    small: 'text-sm',
+    medium: 'text-lg',
+    large: 'text-2xl'
+  }
+  
+  const colorClasses = {
+    green: 'text-green-700',
+    blue: 'text-blue-700',
+    white: 'text-white',
+    gray: 'text-gray-700'
+  }
+  
+  let size = props.size
+  if (props.variant === 'compact') {
+    size = 'small'
+  } else if (props.variant === 'header') {
+    size = props.size === 'large' ? 'large' : 'medium'
+  }
+  
+  return `font-bold ${sizeClasses[size]} ${colorClasses[props.color]} leading-tight`
+})
+
+const subtitleClass = computed(() => {
+  const sizeClasses = {
+    small: 'text-xs',
+    medium: 'text-sm',
+    large: 'text-base'
+  }
+  
+  const colorClasses = {
+    green: 'text-green-600',
+    blue: 'text-blue-600',
+    white: 'text-white opacity-90',
+    gray: 'text-gray-600'
+  }
+  
+  let size = props.size
+  if (props.variant === 'compact') {
+    size = 'small'
+  }
+  
+  return `${sizeClasses[size]} ${colorClasses[props.color]} mt-1`
 })
 </script>
