@@ -29,7 +29,7 @@ export default function Error({
         <CardContent className="space-y-4">
           {process.env.NODE_ENV === "development" && (
             <div className="rounded-md bg-red-50 p-3">
-              <p className="text-sm font-medium text-red-800">Error Details:</p>
+              <p className="text-sm font-medium text-red-800">Detalles del Error:</p>
               <p className="text-xs text-red-700 mt-1">{error.message}</p>
               {error.digest && <p className="text-xs text-red-700 mt-1">Digest: {error.digest}</p>}
             </div>

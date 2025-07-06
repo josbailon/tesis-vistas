@@ -52,6 +52,36 @@ module.exports = {
           DEFAULT: "hsl(var(--card))",
           foreground: "hsl(var(--card-foreground))",
         },
+        // Dental specialty colors
+        dental: {
+          endodoncia: "hsl(var(--dental-endodoncia))",
+          ortodoncia: "hsl(var(--dental-ortodoncia))",
+          cirugia: "hsl(var(--dental-cirugia))",
+          odontopediatria: "hsl(var(--dental-odontopediatria))",
+          periodoncia: "hsl(var(--dental-periodoncia))",
+          protesis: "hsl(var(--dental-protesis))",
+        },
+        // Role-based colors
+        role: {
+          admin: "hsl(var(--role-admin))",
+          profesor: "hsl(var(--role-profesor))",
+          estudiante: "hsl(var(--role-estudiante))",
+          paciente: "hsl(var(--role-paciente))",
+          secretario: "hsl(var(--role-secretario))",
+        },
+        // Status colors
+        success: {
+          DEFAULT: "hsl(var(--success))",
+          foreground: "hsl(var(--success-foreground))",
+        },
+        warning: {
+          DEFAULT: "hsl(var(--warning))",
+          foreground: "hsl(var(--warning-foreground))",
+        },
+        info: {
+          DEFAULT: "hsl(var(--info))",
+          foreground: "hsl(var(--info-foreground))",
+        },
         chart: {
           1: "hsl(var(--chart-1))",
           2: "hsl(var(--chart-2))",
@@ -74,20 +104,27 @@ module.exports = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: "0" },
         },
-        float: {
-          "0%, 100%": { transform: "translateY(0px)" },
-          "50%": { transform: "translateY(-20px)" },
+        "fade-in": {
+          "0%": { opacity: "0", transform: "translateY(10px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        "slide-in": {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(0)" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        float: "float 6s ease-in-out infinite",
-        "float-delayed": "float 6s ease-in-out infinite 2s",
-        "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+        "fade-in": "fade-in 0.5s ease-out",
+        "slide-in": "slide-in 0.3s ease-out",
+      },
+      fontFamily: {
+        sans: ["Inter", "system-ui", "sans-serif"],
       },
       spacing: {
-        128: "32rem",
+        18: "4.5rem",
+        88: "22rem",
       },
     },
   },
