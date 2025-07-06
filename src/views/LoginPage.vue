@@ -1,259 +1,151 @@
-<!--
-  PÁGINA DE LOGIN
-  
-  Esta página permite a los usuarios autenticarse en el sistema.
-  Incluye formulario de login y credenciales de demostración.
--->
 <template>
-  <!-- Contenedor principal con diseño de dos columnas -->
-  <div class="min-h-screen bg-gradient-to-br from-green-50 via-white to-green-50 flex">
-    
-    <!-- COLUMNA IZQUIERDA: Formulario de Login -->
-    <div class="flex-1 flex items-center justify-center p-4 sm:p-8">
-      <div class="w-full max-w-md space-y-8">
-        
-        <!-- HEADER DEL FORMULARIO -->
-        <div class="text-center">
-          <UleamBranding variant="full" />
-          <h2 class="mt-6 text-3xl font-bold text-green-800">Iniciar Sesión</h2>
-          <p class="mt-2 text-sm text-green-600">Accede a la plataforma de la Clínica Dental Universitaria</p>
-        </div>
+  <div class="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+    <div class="w-full max-w-md">
+      <!-- Branding -->
+      <div class="text-center mb-8">
+        <UleamBranding />
+        <h1 class="text-3xl font-bold text-gray-900 mt-4">
+          Sistema de Gestión Dental
+        </h1>
+        <p class="text-gray-600 mt-2">
+          Ingresa a tu cuenta para continuar
+        </p>
+      </div>
 
-        <!-- TARJETA DEL FORMULARIO -->
-        <div class="border border-green-200 shadow-lg rounded-lg bg-white">
-          <div class="p-6">
-            <h3 class="text-center text-green-800 text-lg font-semibold mb-2">Bienvenido</h3>
-            <p class="text-center text-green-600 text-sm mb-6">Ingresa tus credenciales para continuar</p>
-            
-            <!-- FORMULARIO DE LOGIN -->
-            <form @submit.prevent="handleSubmit" class="space-y-4" novalidate>
-              
-              <!-- MENSAJE DE ERROR GLOBAL -->
-              <div 
-                v-if="formError" 
-                class="bg-red-50 border border-red-200 rounded-md p-3 flex items-start gap-2"
-                role="alert"
-                aria-live="polite"
-              >
-                <AlertCircle class="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
-                <span class="text-red-700 text-sm">{{ formError }}</span>
-              </div>
-              
-              <!-- CAMPO EMAIL -->
-              <div class="space-y-2">
-                <label for="email" class="block text-sm font-medium text-gray-700">Correo electrónico</label>
-                <input
-                  id="email"
-                  type="email"
-                  v-model="form.email"
-                  :class="[
-                    'w-full px-3 py-2 border rounded-md shadow-sm transition-colors',
-                    'focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500',
-                    errors.email 
-                      ? 'border-red-300 bg-red-50' 
-                      : 'border-gray-300 hover:border-gray-400'
-                  ]"
-                  placeholder="correo@ejemplo.com"
-                  autocomplete="email"
-                  required
-                  :disabled="loading"
-                  @blur="validateField('email')"
-                  @input="clearFieldError('email')"
-                />
-                <p v-if="errors.email" class="text-red-600 text-xs mt-1" role="alert">
-                  {{ errors.email }}
-                </p>
-              </div>
-              
-              <!-- CAMPO CONTRASEÑA -->
-              <div class="space-y-2">
-                <label for="password" class="block text-sm font-medium text-gray-700">Contraseña</label>
-                <div class="relative">
-                  <input
-                    id="password"
-                    :type="showPassword ? 'text' : 'password'"
-                    v-model="form.password"
-                    :class="[
-                      'w-full px-3 py-2 pr-10 border rounded-md shadow-sm transition-colors',
-                      'focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500',
-                      errors.password 
-                        ? 'border-red-300 bg-red-50' 
-                        : 'border-gray-300 hover:border-gray-400'
-                    ]"
-                    placeholder="Ingresa tu contraseña"
-                    autocomplete="current-password"
-                    required
-                    :disabled="loading"
-                    @blur="validateField('password')"
-                    @input="clearFieldError('password')"
-                  />
-                  <button
-                    type="button"
-                    @click="showPassword = !showPassword"
-                    class="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                    :disabled="loading"
-                  >
-                    <Eye v-if="!showPassword" class="h-4 w-4" />
-                    <EyeOff v-else class="h-4 w-4" />
-                  </button>
-                </div>
-                <p v-if="errors.password" class="text-red-600 text-xs mt-1" role="alert">
-                  {{ errors.password }}
-                </p>
-              </div>
+      <!-- Login Form -->
+      <div class="bg-white rounded-xl shadow-lg p-8">
+        <form @submit.prevent="handleLogin" class="space-y-6">
+          <!-- Email Field -->
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+              Correo Electrónico
+            </label>
+            <input
+              id="email"
+              v-model="form.email"
+              type="email"
+              required
+              :disabled="isLoading"
+              class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              placeholder="tu@email.com"
+            />
+            <div v-if="errors.email" class="text-red-500 text-sm mt-1">
+              {{ errors.email }}
+            </div>
+          </div>
 
-              <!-- CHECKBOX RECORDARME -->
-              <div class="flex items-center">
-                <input
-                  id="rememberMe"
-                  type="checkbox"
-                  v-model="form.rememberMe"
-                  class="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                  :disabled="loading"
-                />
-                <label for="rememberMe" class="ml-2 block text-sm text-gray-900">Recordarme por 7 días</label>
-              </div>
-              
-              <!-- BOTÓN DE SUBMIT -->
+          <!-- Password Field -->
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-2">
+              Contraseña
+            </label>
+            <div class="relative">
+              <input
+                id="password"
+                v-model="form.password"
+                :type="showPassword ? 'text' : 'password'"
+                required
+                :disabled="isLoading"
+                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-colors disabled:opacity-50 disabled:cursor-not-allowed pr-12"
+                placeholder="••••••••"
+              />
               <button
-                type="submit"
-                :disabled="loading || !isFormValid"
-                class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-md transition-colors disabled:opacity-50"
+                type="button"
+                @click="showPassword = !showPassword"
+                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors"
+                :disabled="isLoading"
               >
-                <LoadingSpinner v-if="loading" size="small" color="white" class="mr-2" />
-                {{ loading ? 'Iniciando sesión...' : 'Iniciar Sesión' }}
+                <svg v-if="showPassword" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                </svg>
+                <svg v-else class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                </svg>
               </button>
-            </form>
-            
-            <!-- ENLACE A REGISTRO -->
-            <div class="mt-4 text-center">
-              <p class="text-sm text-green-600">
-                ¿No tienes una cuenta?
-                <router-link to="/register" class="text-green-600 hover:underline">Regístrate</router-link>
-              </p>
             </div>
-
-            <!-- CREDENCIALES DE PRUEBA -->
-            <div class="mt-6 pt-4 border-t border-green-200">
-              <p class="text-sm font-medium mb-2 text-green-800">Credenciales de prueba:</p>
-              <div class="space-y-2">
-                <!-- CREDENCIAL PACIENTE -->
-                <button
-                  @click="fillCredentials('paciente@clinica.com', 'demo123')"
-                  :disabled="loading"
-                  class="w-full flex items-center justify-between p-2 bg-white rounded border border-blue-200 hover:border-blue-300 hover:bg-blue-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div class="flex items-center gap-2">
-                    <Users class="h-4 w-4 text-blue-600" />
-                    <span class="text-sm font-medium text-gray-800">Paciente</span>
-                  </div>
-                  <span class="bg-blue-100 text-blue-700 border border-blue-300 px-2 py-1 rounded text-xs">Ana López</span>
-                </button>
-                
-                <!-- CREDENCIAL ESTUDIANTE -->
-                <button
-                  @click="fillCredentials('estudiante@clinica.com', 'demo123')"
-                  :disabled="loading"
-                  class="w-full flex items-center justify-between p-2 bg-white rounded border border-green-200 hover:border-green-300 hover:bg-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div class="flex items-center gap-2">
-                    <GraduationCap class="h-4 w-4 text-green-600" />
-                    <span class="text-sm font-medium text-gray-800">Estudiante</span>
-                  </div>
-                  <span class="bg-green-100 text-green-700 border border-green-300 px-2 py-1 rounded text-xs">Juan Pérez</span>
-                </button>
-                
-                <!-- CREDENCIAL PROFESOR -->
-                <button
-                  @click="fillCredentials('profesor@clinica.com', 'demo123')"
-                  :disabled="loading"
-                  class="w-full flex items-center justify-between p-2 bg-white rounded border border-purple-200 hover:border-purple-300 hover:bg-purple-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div class="flex items-center gap-2">
-                    <Stethoscope class="h-4 w-4 text-purple-600" />
-                    <span class="text-sm font-medium text-gray-800">Profesor</span>
-                  </div>
-                  <span class="bg-purple-100 text-purple-700 border border-purple-300 px-2 py-1 rounded text-xs">Dra. González</span>
-                </button>
-                
-                <!-- CREDENCIAL ADMIN -->
-                <button
-                  @click="fillCredentials('admin@clinica.com', 'demo123')"
-                  :disabled="loading"
-                  class="w-full flex items-center justify-between p-2 bg-white rounded border border-red-200 hover:border-red-300 hover:bg-red-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <div class="flex items-center gap-2">
-                    <Shield class="h-4 w-4 text-red-600" />
-                    <span class="text-sm font-medium text-gray-800">Admin</span>
-                  </div>
-                  <span class="bg-red-100 text-red-700 border border-red-300 px-2 py-1 rounded text-xs">Dr. Admin</span>
-                </button>
-              </div>
-              <p class="text-xs text-blue-700 text-center mt-3">
-                Contraseña para todas las cuentas: <strong>demo123</strong>
-              </p>
+            <div v-if="errors.password" class="text-red-500 text-sm mt-1">
+              {{ errors.password }}
             </div>
           </div>
+
+          <!-- Remember Me -->
+          <div class="flex items-center justify-between">
+            <label class="flex items-center">
+              <input
+                v-model="form.rememberMe"
+                type="checkbox"
+                :disabled="isLoading"
+                class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500 disabled:opacity-50"
+              />
+              <span class="ml-2 text-sm text-gray-600">Recordarme</span>
+            </label>
+            <a href="#" class="text-sm text-blue-600 hover:text-blue-500 transition-colors">
+              ¿Olvidaste tu contraseña?
+            </a>
+          </div>
+
+          <!-- Error Message -->
+          <div v-if="errors.general" class="bg-red-50 border border-red-200 rounded-lg p-4">
+            <div class="flex items-center">
+              <svg class="w-5 h-5 text-red-400 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <p class="text-red-700 text-sm">{{ errors.general }}</p>
+            </div>
+          </div>
+
+          <!-- Login Button -->
+          <button
+            type="submit"
+            :disabled="isLoading || !isFormValid"
+            class="w-full bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-3 px-4 rounded-lg font-medium hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] active:scale-[0.98]"
+          >
+            <div v-if="isLoading" class="flex items-center justify-center">
+              <LoadingSpinner size="sm" class="mr-2" />
+              Iniciando sesión...
+            </div>
+            <span v-else>Iniciar Sesión</span>
+          </button>
+        </form>
+
+        <!-- Quick Access Demo Credentials -->
+        <div class="mt-8 pt-6 border-t border-gray-200">
+          <h3 class="text-sm font-medium text-gray-700 mb-4 text-center">
+            Acceso Rápido - Credenciales Demo
+          </h3>
+          <div class="grid grid-cols-2 gap-3">
+            <button
+              v-for="credential in demoCredentials"
+              :key="credential.role"
+              @click="fillCredentials(credential)"
+              :disabled="isLoading"
+              class="p-3 text-left border border-gray-200 rounded-lg hover:border-blue-300 hover:bg-blue-50 transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed group"
+            >
+              <div class="flex items-center">
+                <div :class="credential.iconClass" class="w-8 h-8 rounded-full flex items-center justify-center mr-3">
+                  <component :is="credential.icon" class="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <p class="font-medium text-gray-900 text-sm">{{ credential.name }}</p>
+                  <p class="text-xs text-gray-500">{{ credential.role }}</p>
+                </div>
+              </div>
+            </button>
+          </div>
+          <p class="text-xs text-gray-500 text-center mt-3">
+            Haz clic en cualquier rol para llenar automáticamente las credenciales
+          </p>
         </div>
 
-        <!-- COLUMNA DERECHA: Información de la Clínica -->
-        <div class="hidden lg:flex flex-1 bg-gradient-to-br from-green-600 to-green-700 text-white p-8 items-center justify-center">
-          <div class="max-w-lg space-y-8">
-            
-            <!-- HEADER INFORMATIVO -->
-            <div class="text-center">
-              <Heart class="h-16 w-16 mx-auto mb-4 text-white" />
-              <h3 class="text-2xl font-bold mb-4">Clínica Dental Universitaria ULEAM</h3>
-              <p class="text-green-100 leading-relaxed">
-                Plataforma integral para la gestión de la clínica dental universitaria, conectando estudiantes,
-                profesores, pacientes y administradores en un ecosistema digital moderno y eficiente.
-              </p>
-            </div>
-
-            <!-- CARACTERÍSTICAS -->
-            <div class="space-y-4">
-              <div class="flex items-center gap-3">
-                <CheckCircle class="h-5 w-5 text-green-200 flex-shrink-0" />
-                <span class="text-green-100">Servicios odontológicos gratuitos de calidad</span>
-              </div>
-              <div class="flex items-center gap-3">
-                <CheckCircle class="h-5 w-5 text-green-200 flex-shrink-0" />
-                <span class="text-green-100">Atención supervisada por especialistas certificados</span>
-              </div>
-              <div class="flex items-center gap-3">
-                <CheckCircle class="h-5 w-5 text-green-200 flex-shrink-0" />
-                <span class="text-green-100">Tecnología de última generación</span>
-              </div>
-              <div class="flex items-center gap-3">
-                <CheckCircle class="h-5 w-5 text-green-200 flex-shrink-0" />
-                <span class="text-green-100">Formación práctica de excelencia académica</span>
-              </div>
-              <div class="flex items-center gap-3">
-                <CheckCircle class="h-5 w-5 text-green-200 flex-shrink-0" />
-                <span class="text-green-100">Sistema de gestión digital integrado</span>
-              </div>
-            </div>
-
-            <!-- ESTADÍSTICAS -->
-            <div class="grid grid-cols-2 gap-4 pt-8">
-              <div class="text-center">
-                <div class="text-3xl font-bold text-white">6</div>
-                <div class="text-sm text-green-200">Especialidades</div>
-              </div>
-              <div class="text-center">
-                <div class="text-3xl font-bold text-white">100%</div>
-                <div class="text-sm text-green-200">Gratuito</div>
-              </div>
-              <div class="text-center">
-                <div class="text-3xl font-bold text-white">15+</div>
-                <div class="text-sm text-green-200">Años de experiencia</div>
-              </div>
-              <div class="text-center">
-                <div class="text-3xl font-bold text-white">500+</div>
-                <div class="text-sm text-green-200">Pacientes atendidos</div>
-              </div>
-            </div>
-          </div>
+        <!-- Register Link -->
+        <div class="mt-6 text-center">
+          <p class="text-sm text-gray-600">
+            ¿No tienes una cuenta?
+            <router-link to="/register" class="text-blue-600 hover:text-blue-500 font-medium transition-colors">
+              Regístrate aquí
+            </router-link>
+          </p>
         </div>
       </div>
     </div>
@@ -261,257 +153,216 @@
 </template>
 
 <script setup lang="ts">
-/**
- * LÓGICA DE LA PÁGINA DE LOGIN
- * 
- * Maneja la autenticación del usuario y redirección según el rol
- */
-
-// Importar hooks de Vue
-import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { useRouter, useRoute } from 'vue-router'
-// Importar store de autenticación
+import { ref, computed, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
-// Importar componentes
+import { validateEmail, validatePassword } from '@/utils/helpers'
 import UleamBranding from '@/components/UleamBranding.vue'
 import LoadingSpinner from '@/components/LoadingSpinner.vue'
 
-// Importar iconos
-import { 
-  AlertCircle, 
-  Eye, 
-  EyeOff, 
-  Info,
-  Users, 
-  GraduationCap, 
-  Stethoscope, 
-  Shield, 
-  Heart, 
-  CheckCircle 
-} from 'lucide-vue-next'
+// Icons (you can replace these with actual icon components)
+const UserIcon = 'div'
+const AcademicCapIcon = 'div'
+const UserGroupIcon = 'div'
+const ClipboardDocumentListIcon = 'div'
+const ShieldCheckIcon = 'div'
 
-// Importar tipos y utilidades
-import type { LoginCredentials } from '@/types'
-import { isValidEmail, isValidPassword } from '@/utils/helpers'
-import { ERROR_MESSAGES } from '@/utils/constants'
-
-// Obtener instancias del router y store
 const router = useRouter()
-const route = useRoute()
 const authStore = useAuthStore()
 
-/**
- * ESTADO REACTIVO DEL FORMULARIO
- * 
- * Variables que almacenan los datos del formulario y estado de la UI
- */
-const form = ref<LoginCredentials>({
-  email: '',           // Email ingresado por el usuario
-  password: '',        // Contraseña ingresada por el usuario
-  rememberMe: false   // Checkbox para recordar la sesión
+// Form state
+const form = ref({
+  email: '',
+  password: '',
+  rememberMe: false
 })
 
-const errors = ref<Record<string, string>>({})
-const formError = ref<string>('')
-const showPassword = ref<boolean>(false)
-const loading = ref<boolean>(false)
+const showPassword = ref(false)
+const isLoading = ref(false)
 
-/**
- * PROPIEDADES COMPUTADAS
- * 
- * Determina si el formulario es válido basado en los campos y errores
- */
+// Validation errors
+const errors = ref({
+  email: '',
+  password: '',
+  general: ''
+})
+
+// Demo credentials for quick access
+const demoCredentials = ref([
+  {
+    role: 'admin',
+    name: 'Administrador',
+    email: 'admin@uleam.edu.ec',
+    password: 'admin123',
+    icon: ShieldCheckIcon,
+    iconClass: 'bg-red-500'
+  },
+  {
+    role: 'profesor',
+    name: 'Profesor',
+    email: 'profesor@uleam.edu.ec',
+    password: 'profesor123',
+    icon: AcademicCapIcon,
+    iconClass: 'bg-purple-500'
+  },
+  {
+    role: 'estudiante',
+    name: 'Estudiante',
+    email: 'estudiante@uleam.edu.ec',
+    password: 'estudiante123',
+    icon: UserGroupIcon,
+    iconClass: 'bg-green-500'
+  },
+  {
+    role: 'paciente',
+    name: 'Paciente',
+    email: 'paciente@uleam.edu.ec',
+    password: 'paciente123',
+    icon: UserIcon,
+    iconClass: 'bg-blue-500'
+  },
+  {
+    role: 'secretario',
+    name: 'Secretario',
+    email: 'secretario@uleam.edu.ec',
+    password: 'secretario123',
+    icon: ClipboardDocumentListIcon,
+    iconClass: 'bg-indigo-500'
+  }
+])
+
+// Computed properties
 const isFormValid = computed(() => {
   return form.value.email.length > 0 && 
          form.value.password.length > 0 && 
-         Object.keys(errors.value).length === 0
+         !errors.value.email && 
+         !errors.value.password
 })
 
-/**
- * MÉTODOS DE VALIDACIÓN
- * 
- * Valida campos individuales y el formulario completo
- */
-const validateField = (field: keyof LoginCredentials): void => {
-  switch (field) {
-    case 'email':
-      if (!form.value.email) {
-        errors.value.email = 'El email es requerido'
-      } else if (!isValidEmail(form.value.email)) {
-        errors.value.email = 'El email no es válido'
-      } else {
-        delete errors.value.email
-      }
-      break
-      
-    case 'password':
-      if (!form.value.password) {
-        errors.value.password = 'La contraseña es requerida'
-      } else if (!isValidPassword(form.value.password)) {
-        errors.value.password = 'La contraseña debe tener al menos 6 caracteres'
-      } else {
-        delete errors.value.password
-      }
-      break
-  }
-}
-
-const validateForm = (): boolean => {
-  validateField('email')
-  validateField('password')
-  return Object.keys(errors.value).length === 0
-}
-
-const clearFieldError = (field: string): void => {
-  if (errors.value[field]) {
-    delete errors.value[field]
-  }
-  if (formError.value) {
-    formError.value = ''
-  }
-}
-
-/**
- * MÉTODOS DE FORMULARIO
- * 
- * Llena las credenciales de prueba y maneja el submit del formulario
- */
-const fillCredentials = (email: string, password: string): void => {
-  form.value.email = email
-  form.value.password = password
+// Methods
+const validateForm = () => {
+  errors.value = { email: '', password: '', general: '' }
   
-  // Limpiar errores
-  errors.value = {}
-  formError.value = ''
+  // Validate email
+  if (!form.value.email) {
+    errors.value.email = 'El correo electrónico es requerido'
+  } else if (!validateEmail(form.value.email)) {
+    errors.value.email = 'Ingresa un correo electrónico válido'
+  }
   
-  // Validar campos automáticamente
-  validateField('email')
-  validateField('password')
+  // Validate password
+  if (!form.value.password) {
+    errors.value.password = 'La contraseña es requerida'
+  } else if (!validatePassword(form.value.password)) {
+    errors.value.password = 'La contraseña debe tener al menos 6 caracteres'
+  }
+  
+  return !errors.value.email && !errors.value.password
 }
 
-const handleSubmit = async (): Promise<void> => {
-  // Activar estado de carga
-  loading.value = true
-  // Limpiar errores previos
-  formError.value = ''
+const fillCredentials = (credential: any) => {
+  if (isLoading.value) return
   
-  // Validar formulario
-  if (!validateForm()) {
-    formError.value = 'Por favor, corrige los errores en el formulario'
-    loading.value = false
-    return
-  }
-
-  try {
-    // Intentar hacer login usando el store de autenticación
-    const result = await authStore.login(form.value)
-    
-    if (result.success && result.user) {
-      /**
-       * LOGIN EXITOSO - REDIRIGIR SEGÚN ROL
-       * 
-       * Cada rol tiene una página de destino diferente
-       * para optimizar la experiencia del usuario
-       */
-      let redirectPath = getRedirectPath(result.user.role)
-      
-      // Verificar si hay una URL de redirección en los query params
-      const redirectTo = route.query.redirect as string
-      const finalRedirect = redirectTo || redirectPath
-      
-      // Realizar la redirección
-      await router.push(finalRedirect)
-    } else {
-      // Mostrar mensaje de error si el login falló
-      formError.value = result.message || ERROR_MESSAGES.INVALID_CREDENTIALS
+  form.value.email = credential.email
+  form.value.password = credential.password
+  
+  // Clear any existing errors
+  errors.value = { email: '', password: '', general: '' }
+  
+  // Optional: Auto-submit after a short delay
+  setTimeout(() => {
+    if (isFormValid.value) {
+      handleLogin()
     }
-  } catch (err) {
-    // Manejar errores inesperados
-    formError.value = ERROR_MESSAGES.SERVER_ERROR
+  }, 500)
+}
+
+const handleLogin = async () => {
+  if (!validateForm()) return
+  
+  isLoading.value = true
+  errors.value.general = ''
+  
+  try {
+    const success = await authStore.login({
+      email: form.value.email,
+      password: form.value.password,
+      rememberMe: form.value.rememberMe
+    })
+    
+    if (success) {
+      // Redirect based on user role
+      const user = authStore.user
+      if (user) {
+        switch (user.role) {
+          case 'admin':
+            router.push('/dashboard/admin')
+            break
+          case 'profesor':
+            router.push('/dashboard/professor')
+            break
+          case 'estudiante':
+            router.push('/dashboard/student')
+            break
+          case 'paciente':
+            router.push('/dashboard/patient')
+            break
+          case 'secretario':
+            router.push('/dashboard/secretary')
+            break
+          default:
+            router.push('/dashboard')
+        }
+      } else {
+        router.push('/dashboard')
+      }
+    } else {
+      errors.value.general = 'Credenciales inválidas. Por favor, verifica tu correo y contraseña.'
+    }
+  } catch (error) {
+    console.error('Login error:', error)
+    errors.value.general = 'Error al iniciar sesión. Por favor, intenta de nuevo.'
   } finally {
-    // Desactivar estado de carga
-    loading.value = false
+    isLoading.value = false
   }
 }
 
-/**
- * FUNCIÓN PARA OBTENER RUTA DE REDIRECCIÓN SEGÚN ROL
- */
-const getRedirectPath = (role: string): string => {
-  switch (role) {
-    case 'patient':
-      return '/dashboard/my-appointments'
-    case 'student':
-      return '/dashboard/patients'
-    case 'professor':
-      return '/dashboard/teacher'
-    case 'admin':
-      return '/dashboard/admin'
-    default:
-      return '/dashboard'
-  }
-}
-
-/**
- * MANEJO DE EVENTOS DE TECLADO
- */
-const handleKeydown = (event: KeyboardEvent): void => {
-  // Enviar formulario con Enter si es válido
-  if (event.key === 'Enter' && isFormValid.value && !loading.value) {
-    handleSubmit()
-  }
-}
-
-/**
- * LIFECYCLE HOOKS
- */
+// Check if user is already authenticated
 onMounted(() => {
-  // Agregar listener para eventos de teclado
-  document.addEventListener('keydown', handleKeydown)
-  
-  // Si el usuario ya está autenticado, redirigir
   if (authStore.isAuthenticated) {
-    const redirectPath = getRedirectPath(authStore.userRole || 'patient')
-    router.push(redirectPath)
+    router.push('/dashboard')
   }
-  
-  // Focus en el campo email
-  const emailInput = document.getElementById('email')
-  if (emailInput) {
-    emailInput.focus()
-  }
-})
-
-onUnmounted(() => {
-  // Limpiar listener
-  document.removeEventListener('keydown', handleKeydown)
 })
 </script>
 
 <style scoped>
-/* Estilos adicionales si son necesarios */
-.transition-colors {
-  transition-property: color, background-color, border-color;
-  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-  transition-duration: 150ms;
-}
-
-/* Animación para los botones de credenciales */
-button:hover {
-  transform: translateY(-1px);
+/* Custom animations */
+.transform {
   transition: transform 0.2s ease-in-out;
 }
 
-button:active {
+/* Focus styles */
+input:focus {
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Button hover effects */
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+
+button:not(:disabled):active {
   transform: translateY(0);
 }
 
-/* Mejoras de accesibilidad */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
+/* Loading animation */
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
   }
+}
+
+.animate-spin {
+  animation: spin 1s linear infinite;
 }
 </style>

@@ -1,420 +1,346 @@
-/**
- * CONFIGURACIÓN DEL ROUTER DE VUE CON TYPESCRIPT
- *
- * Este archivo define todas las rutas de la aplicación y maneja:
- * - Navegación entre páginas con lazy loading
- * - Protección de rutas (autenticación y autorización)
- * - Guards de navegación con tipos seguros
- * - Manejo de errores de navegación
- */
-
 import { createRouter, createWebHistory } from "vue-router"
-import type { RouteRecordRaw, NavigationGuardNext, RouteLocationNormalized } from "vue-router"
 import { useAuthStore } from "@/stores/auth"
-import type { UserRole } from "@/types"
+import type { RouteRecordRaw } from "vue-router"
 
-/**
- * DEFINICIÓN DE RUTAS CON TIPOS SEGUROS
- */
+// Lazy load components for better performance
+const HomePage = () => import("@/views/HomePage.vue")
+const LoginPage = () => import("@/views/LoginPage.vue")
+const RegisterPage = () => import("@/views/RegisterPage.vue")
+const DashboardLayout = () => import("@/layouts/DashboardLayout.vue")
+const DashboardPage = () => import("@/views/dashboard/DashboardPage.vue")
+const MyProfile = () => import("@/views/dashboard/MyProfile.vue")
+const Settings = () => import("@/views/dashboard/Settings.vue")
+const Specialties = () => import("@/views/dashboard/Specialties.vue")
+
+// Admin views
+const AdminDashboard = () => import("@/views/dashboard/admin/Admin.vue")
+const AdminUsers = () => import("@/views/dashboard/admin/Users.vue")
+const AdminAnalytics = () => import("@/views/dashboard/admin/Analytics.vue")
+
+// Professor views
+const ProfessorDashboard = () => import("@/views/dashboard/professor/Teacher.vue")
+const ProfessorStudents = () => import("@/views/dashboard/professor/Students.vue")
+const ProfessorApprovals = () => import("@/views/dashboard/professor/Approvals.vue")
+const ProfessorSpecialty = () => import("@/views/dashboard/professor/Specialty.vue")
+
+// Student views
+const StudentDashboard = () => import("@/views/dashboard/student/Academic.vue")
+const StudentAppointments = () => import("@/views/dashboard/student/Appointments.vue")
+const StudentPatients = () => import("@/views/dashboard/student/Patients.vue")
+const StudentClinicalCases = () => import("@/views/dashboard/student/ClinicalCases.vue")
+const StudentClinicalHistory = () => import("@/views/dashboard/student/ClinicalHistory.vue")
+const StudentOdontogram = () => import("@/views/dashboard/student/Odontogram.vue")
+
+// Patient views
+const PatientDashboard = () => import("@/views/dashboard/patient/MyAppointments.vue")
+const PatientBookAppointment = () => import("@/views/dashboard/patient/BookAppointment.vue")
+const PatientRecords = () => import("@/views/dashboard/patient/MyRecords.vue")
+
 const routes: RouteRecordRaw[] = [
-  /**
-   * RUTA PRINCIPAL (HOME)
-   */
   {
     path: "/",
-    name: "Home",
-    component: () => import("@/views/HomePage.vue"),
+    name: "home",
+    component: HomePage,
     meta: {
-      title: "Inicio - ULEAM Clínica Dental",
-      description: "Clínica Dental Universitaria ULEAM - Atención odontológica de calidad",
+      title: "Inicio",
       requiresAuth: false,
     },
   },
-
-  /**
-   * RUTA DE LOGIN
-   */
   {
     path: "/login",
-    name: "Login",
-    component: () => import("@/views/LoginPage.vue"),
+    name: "login",
+    component: LoginPage,
     meta: {
-      requiresGuest: true,
-      title: "Iniciar Sesión - ULEAM Clínica Dental",
+      title: "Iniciar Sesión",
+      requiresAuth: false,
+      hideForAuth: true,
     },
   },
-
-  /**
-   * RUTA DE REGISTRO
-   */
   {
     path: "/register",
-    name: "Register",
-    component: () => import("@/views/RegisterPage.vue"),
+    name: "register",
+    component: RegisterPage,
     meta: {
-      requiresGuest: true,
-      title: "Registro - ULEAM Clínica Dental",
+      title: "Registro",
+      requiresAuth: false,
+      hideForAuth: true,
     },
   },
-
-  /**
-   * RUTAS DEL DASHBOARD
-   */
   {
     path: "/dashboard",
-    component: () => import("@/layouts/DashboardLayout.vue"),
+    component: DashboardLayout,
     meta: {
       requiresAuth: true,
-      title: "Dashboard - ULEAM Clínica Dental",
     },
     children: [
-      /**
-       * DASHBOARD PRINCIPAL
-       */
       {
         path: "",
-        name: "Dashboard",
-        component: () => import("@/views/dashboard/DashboardPage.vue"),
+        name: "dashboard",
+        component: DashboardPage,
         meta: {
-          title: "Dashboard - ULEAM Clínica Dental",
-        },
-      },
-
-      /**
-       * RUTAS PARA PACIENTES
-       */
-      {
-        path: "my-appointments",
-        name: "MyAppointments",
-        component: () => import("@/views/dashboard/patient/MyAppointments.vue"),
-        meta: {
-          roles: ["patient"] as UserRole[],
-          title: "Mis Citas - ULEAM Clínica Dental",
+          title: "Dashboard",
+          roles: ["admin", "profesor", "estudiante", "paciente", "secretario"],
         },
       },
       {
-        path: "book-appointment",
-        name: "BookAppointment",
-        component: () => import("@/views/dashboard/patient/BookAppointment.vue"),
+        path: "profile",
+        name: "profile",
+        component: MyProfile,
         meta: {
-          roles: ["patient"] as UserRole[],
-          title: "Reservar Cita - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "my-records",
-        name: "MyRecords",
-        component: () => import("@/views/dashboard/patient/MyRecords.vue"),
-        meta: {
-          roles: ["patient"] as UserRole[],
-          title: "Mi Historial - ULEAM Clínica Dental",
-        },
-      },
-
-      /**
-       * RUTAS PARA ESTUDIANTES
-       */
-      {
-        path: "patients",
-        name: "Patients",
-        component: () => import("@/views/dashboard/student/Patients.vue"),
-        meta: {
-          roles: ["student"] as UserRole[],
-          title: "Pacientes - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "appointments",
-        name: "Appointments",
-        component: () => import("@/views/dashboard/student/Appointments.vue"),
-        meta: {
-          roles: ["student"] as UserRole[],
-          title: "Citas - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "clinical-cases",
-        name: "ClinicalCases",
-        component: () => import("@/views/dashboard/student/ClinicalCases.vue"),
-        meta: {
-          roles: ["student"] as UserRole[],
-          title: "Casos Clínicos - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "clinical-history",
-        name: "ClinicalHistory",
-        component: () => import("@/views/dashboard/student/ClinicalHistory.vue"),
-        meta: {
-          roles: ["student"] as UserRole[],
-          title: "Historial Clínico - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "academic",
-        name: "Academic",
-        component: () => import("@/views/dashboard/student/Academic.vue"),
-        meta: {
-          roles: ["student"] as UserRole[],
-          title: "Académico - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "odontogram",
-        name: "Odontogram",
-        component: () => import("@/views/dashboard/student/Odontogram.vue"),
-        meta: {
-          roles: ["student"] as UserRole[],
-          title: "Odontograma - ULEAM Clínica Dental",
-        },
-      },
-
-      /**
-       * RUTAS PARA PROFESORES
-       */
-      {
-        path: "teacher",
-        name: "Teacher",
-        component: () => import("@/views/dashboard/professor/Teacher.vue"),
-        meta: {
-          roles: ["professor"] as UserRole[],
-          title: "Panel Profesor - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "teacher/students",
-        name: "TeacherStudents",
-        component: () => import("@/views/dashboard/professor/Students.vue"),
-        meta: {
-          roles: ["professor"] as UserRole[],
-          title: "Estudiantes - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "teacher/approvals",
-        name: "TeacherApprovals",
-        component: () => import("@/views/dashboard/professor/Approvals.vue"),
-        meta: {
-          roles: ["professor"] as UserRole[],
-          title: "Aprobaciones - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "specialty",
-        name: "Specialty",
-        component: () => import("@/views/dashboard/professor/Specialty.vue"),
-        meta: {
-          roles: ["professor"] as UserRole[],
-          title: "Mi Especialidad - ULEAM Clínica Dental",
-        },
-      },
-
-      /**
-       * RUTAS PARA ADMINISTRADORES
-       */
-      {
-        path: "admin",
-        name: "Admin",
-        component: () => import("@/views/dashboard/admin/Admin.vue"),
-        meta: {
-          roles: ["admin"] as UserRole[],
-          title: "Administración - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "admin/users",
-        name: "AdminUsers",
-        component: () => import("@/views/dashboard/admin/Users.vue"),
-        meta: {
-          roles: ["admin"] as UserRole[],
-          title: "Gestión de Usuarios - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "admin/analytics",
-        name: "AdminAnalytics",
-        component: () => import("@/views/dashboard/admin/Analytics.vue"),
-        meta: {
-          roles: ["admin"] as UserRole[],
-          title: "Analíticas - ULEAM Clínica Dental",
-        },
-      },
-
-      /**
-       * RUTAS COMUNES
-       */
-      {
-        path: "specialties",
-        name: "Specialties",
-        component: () => import("@/views/dashboard/Specialties.vue"),
-        meta: {
-          title: "Especialidades - ULEAM Clínica Dental",
-        },
-      },
-      {
-        path: "my-profile",
-        name: "MyProfile",
-        component: () => import("@/views/dashboard/MyProfile.vue"),
-        meta: {
-          title: "Mi Perfil - ULEAM Clínica Dental",
+          title: "Mi Perfil",
+          roles: ["admin", "profesor", "estudiante", "paciente", "secretario"],
         },
       },
       {
         path: "settings",
-        name: "Settings",
-        component: () => import("@/views/dashboard/Settings.vue"),
+        name: "settings",
+        component: Settings,
         meta: {
-          title: "Configuración - ULEAM Clínica Dental",
+          title: "Configuración",
+          roles: ["admin", "profesor", "estudiante", "paciente", "secretario"],
+        },
+      },
+      {
+        path: "specialties",
+        name: "specialties",
+        component: Specialties,
+        meta: {
+          title: "Especialidades",
+          roles: ["admin", "profesor", "estudiante"],
+        },
+      },
+      // Admin routes
+      {
+        path: "admin",
+        name: "admin",
+        component: AdminDashboard,
+        meta: {
+          title: "Administración",
+          roles: ["admin"],
+        },
+      },
+      {
+        path: "admin/users",
+        name: "admin-users",
+        component: AdminUsers,
+        meta: {
+          title: "Gestión de Usuarios",
+          roles: ["admin"],
+        },
+      },
+      {
+        path: "admin/analytics",
+        name: "admin-analytics",
+        component: AdminAnalytics,
+        meta: {
+          title: "Analíticas",
+          roles: ["admin"],
+        },
+      },
+      // Professor routes
+      {
+        path: "professor",
+        name: "professor",
+        component: ProfessorDashboard,
+        meta: {
+          title: "Panel Profesor",
+          roles: ["profesor"],
+        },
+      },
+      {
+        path: "professor/students",
+        name: "professor-students",
+        component: ProfessorStudents,
+        meta: {
+          title: "Mis Estudiantes",
+          roles: ["profesor"],
+        },
+      },
+      {
+        path: "professor/approvals",
+        name: "professor-approvals",
+        component: ProfessorApprovals,
+        meta: {
+          title: "Aprobaciones",
+          roles: ["profesor"],
+        },
+      },
+      {
+        path: "professor/specialty",
+        name: "professor-specialty",
+        component: ProfessorSpecialty,
+        meta: {
+          title: "Mi Especialidad",
+          roles: ["profesor"],
+        },
+      },
+      // Student routes
+      {
+        path: "student",
+        name: "student",
+        component: StudentDashboard,
+        meta: {
+          title: "Panel Estudiante",
+          roles: ["estudiante"],
+        },
+      },
+      {
+        path: "student/appointments",
+        name: "student-appointments",
+        component: StudentAppointments,
+        meta: {
+          title: "Mis Citas",
+          roles: ["estudiante"],
+        },
+      },
+      {
+        path: "student/patients",
+        name: "student-patients",
+        component: StudentPatients,
+        meta: {
+          title: "Mis Pacientes",
+          roles: ["estudiante"],
+        },
+      },
+      {
+        path: "student/clinical-cases",
+        name: "student-clinical-cases",
+        component: StudentClinicalCases,
+        meta: {
+          title: "Casos Clínicos",
+          roles: ["estudiante"],
+        },
+      },
+      {
+        path: "student/clinical-history",
+        name: "student-clinical-history",
+        component: StudentClinicalHistory,
+        meta: {
+          title: "Historia Clínica",
+          roles: ["estudiante"],
+        },
+      },
+      {
+        path: "student/odontogram",
+        name: "student-odontogram",
+        component: StudentOdontogram,
+        meta: {
+          title: "Odontograma",
+          roles: ["estudiante"],
+        },
+      },
+      // Patient routes
+      {
+        path: "patient",
+        name: "patient",
+        component: PatientDashboard,
+        meta: {
+          title: "Mis Citas",
+          roles: ["paciente"],
+        },
+      },
+      {
+        path: "patient/book-appointment",
+        name: "patient-book-appointment",
+        component: PatientBookAppointment,
+        meta: {
+          title: "Agendar Cita",
+          roles: ["paciente"],
+        },
+      },
+      {
+        path: "patient/records",
+        name: "patient-records",
+        component: PatientRecords,
+        meta: {
+          title: "Mis Registros",
+          roles: ["paciente"],
         },
       },
     ],
   },
-
-  /**
-   * RUTA 404 - NO ENCONTRADO
-   */
+  // Catch all route - must be last
   {
     path: "/:pathMatch(.*)*",
-    name: "NotFound",
-    component: () => import("@/views/NotFoundPage.vue"),
-    meta: {
-      title: "Página no encontrada - ULEAM Clínica Dental",
-    },
+    name: "not-found",
+    redirect: "/",
   },
 ]
 
-/**
- * CREAR INSTANCIA DEL ROUTER
- */
 const router = createRouter({
-  history: createWebHistory(import.meta.env.BASE_URL),
+  history: createWebHistory(),
   routes,
   scrollBehavior(to, from, savedPosition) {
     if (savedPosition) {
       return savedPosition
+    } else {
+      return { top: 0 }
     }
-    if (to.hash) {
-      return {
-        el: to.hash,
-        behavior: "smooth",
-      }
-    }
-    return { top: 0 }
   },
 })
 
-/**
- * FUNCIÓN AUXILIAR PARA OBTENER RUTA POR DEFECTO SEGÚN ROL
- */
-function getDefaultRouteForRole(role: UserRole): string {
-  switch (role) {
-    case "patient":
-      return "/dashboard/my-appointments"
-    case "student":
-      return "/dashboard/patients"
-    case "professor":
-      return "/dashboard/teacher"
-    case "admin":
-      return "/dashboard/admin"
-    default:
-      return "/dashboard"
-  }
-}
-
-/**
- * GUARD DE NAVEGACIÓN GLOBAL - BEFORE EACH
- */
-router.beforeEach(async (to: RouteLocationNormalized, from: RouteLocationNormalized, next: NavigationGuardNext) => {
-  // Obtener store de autenticación
+// Navigation guards
+router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
 
-  try {
-    console.log(`🔄 Navegando de ${from.path} a ${to.path}`)
-    console.log(`👤 Usuario autenticado:`, authStore.isAuthenticated)
-    console.log(`🎭 Rol del usuario:`, authStore.userRole)
+  // Set page title
+  if (to.meta.title) {
+    document.title = `${to.meta.title} - Sistema Dental ULEAM`
+  }
 
-    /**
-     * VERIFICAR RUTAS QUE REQUIEREN SER INVITADO (no autenticado)
-     */
-    if (to.meta.requiresGuest && authStore.isAuthenticated) {
-      console.log(`🚫 Ruta ${to.path} requiere ser invitado, pero usuario está autenticado`)
-      next({ name: "Dashboard", replace: true })
-      return
-    }
-
-    /**
-     * VERIFICAR RUTAS QUE REQUIEREN AUTENTICACIÓN
-     */
-    if (to.meta.requiresAuth && !authStore.isAuthenticated) {
-      console.log(`🔒 Ruta ${to.path} requiere autenticación`)
+  // Check if route requires authentication
+  if (to.meta.requiresAuth) {
+    if (!authStore.isAuthenticated) {
+      // Redirect to login with return url
       next({
-        name: "Login",
+        name: "login",
         query: { redirect: to.fullPath },
-        replace: true,
       })
       return
     }
 
-    /**
-     * VERIFICAR AUTORIZACIÓN POR ROLES
-     */
-    if (to.meta.roles && authStore.user) {
-      const requiredRoles = to.meta.roles as UserRole[]
+    // Check role-based access
+    if (to.meta.roles && Array.isArray(to.meta.roles)) {
       const userRole = authStore.userRole
-
-      if (userRole && !requiredRoles.includes(userRole)) {
-        console.log(
-          `🚫 Usuario con rol '${userRole}' no tiene acceso a ruta que requiere roles: ${requiredRoles.join(", ")}`,
-        )
-
-        // Redirigir a la página apropiada según el rol
-        const redirectPath = getDefaultRouteForRole(userRole)
-        next({ path: redirectPath, replace: true })
+      if (!userRole || !to.meta.roles.includes(userRole)) {
+        // Redirect to appropriate dashboard based on role
+        const dashboardRoute = getDashboardRouteForRole(userRole)
+        next({ name: dashboardRoute })
         return
       }
     }
 
-    // Si todas las verificaciones pasan, continuar
-    console.log(`✅ Acceso permitido a ${to.path}`)
-    next()
-  } catch (error) {
-    console.error("❌ Error en guard de navegación:", error)
-    next({ name: "Login", replace: true })
+    // Refresh session activity
+    authStore.refreshSession()
   }
+
+  // Hide routes for authenticated users (like login, register)
+  if (to.meta.hideForAuth && authStore.isAuthenticated) {
+    const userRole = authStore.userRole
+    const dashboardRoute = getDashboardRouteForRole(userRole)
+    next({ name: dashboardRoute })
+    return
+  }
+
+  next()
 })
 
-/**
- * GUARD DE NAVEGACIÓN GLOBAL - AFTER EACH
- */
-router.afterEach((to, from) => {
-  // Actualizar título de la página
-  if (to.meta.title) {
-    document.title = to.meta.title as string
-  } else {
-    document.title = "ULEAM Clínica Dental"
+// Helper function to get dashboard route based on role
+function getDashboardRouteForRole(role: string | null): string {
+  switch (role) {
+    case "admin":
+      return "admin"
+    case "profesor":
+      return "professor"
+    case "estudiante":
+      return "student"
+    case "paciente":
+      return "patient"
+    case "secretario":
+      return "dashboard" // Secretary uses general dashboard
+    default:
+      return "dashboard"
   }
-
-  // Actualizar meta description
-  if (to.meta.description) {
-    const metaDescription = document.querySelector('meta[name="description"]')
-    if (metaDescription) {
-      metaDescription.setAttribute("content", to.meta.description as string)
-    }
-  }
-
-  console.log(`✅ Navegación completada: ${from.path} → ${to.path}`)
-})
-
-/**
- * MANEJO DE ERRORES DE NAVEGACIÓN
- */
-router.onError((error) => {
-  console.error("❌ Error de navegación:", error)
-
-  // En producción, enviar error a servicio de monitoreo
-  if (import.meta.env.PROD) {
-    // Enviar a Sentry, LogRocket, etc.
-  }
-})
+}
 
 export default router
