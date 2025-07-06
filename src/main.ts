@@ -28,7 +28,6 @@ const app = createApp(App)
  * INICIALIZAR APLICACIÓN
  */
 const initializeApp = async () => {
-  const authStore = useAuthStore()
   try {
     // Configurar PINIA (GESTIÓN DE ESTADO)
     const pinia = createPinia()
@@ -36,6 +35,9 @@ const initializeApp = async () => {
 
     // Configurar ROUTER
     app.use(router)
+
+    // Importar store de autenticación para inicialización
+    const authStore = useAuthStore()
 
     // PROPIEDADES GLOBALES
     app.config.globalProperties.$appName = "ULEAM Clínica Dental"
